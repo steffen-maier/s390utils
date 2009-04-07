@@ -1,0 +1,40 @@
+From 1fc8467cdb52feb751a711c304ef0fc88ec82155 Mon Sep 17 00:00:00 2001
+From: Dan Horak <dan@danny.cz>
+Date: Fri, 25 Jul 2008 13:57:00 +0200
+Subject: [PATCH] s390-tools-1.5.3-fdasd-raid
+
+---
+ fdasd/fdasd.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/fdasd/fdasd.c b/fdasd/fdasd.c
+index 9101c01..f63ce5a 100644
+--- a/fdasd/fdasd.c
++++ b/fdasd/fdasd.c
+@@ -1068,6 +1068,7 @@ fdasd_write_vtoc_labels (fdasd_anchor_t *anc)
+ 		else {
+ 			char str[20];
+ 			char *tmp = strstr(ch, "SWAP");
++			char *tmp1 = strstr(ch, "RAID");
+ 
+ 			/* create a new data set name */
+ 			while (getpos(anc, k) > -1)
+@@ -1098,9 +1099,12 @@ fdasd_write_vtoc_labels (fdasd_anchor_t *anc)
+ 			strncpy(c1, dsno, 4);
+ 
+ 			c1 += 4;
+-			if (tmp)
+-				strncpy(c1, ".SWAP", 5);
+-			else {
++			if (tmp || tmp1) {
++				if (tmp)
++					strncpy(c1, ".SWAP", 5);
++				if (tmp1)
++					strncpy(c1, ".RAID", 5);
++			} else {
+ 				if (strcmp("unknown", str) == 0) {
+ 					strncpy(c1, ".NATIVE", 7);
+ 				}
+-- 
+1.6.0.6
+

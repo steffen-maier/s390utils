@@ -1,0 +1,33 @@
+From 52473d7292d58ec0343123ee10b1005d9ff62d37 Mon Sep 17 00:00:00 2001
+From: Dan Horak <dan@danny.cz>
+Date: Sun, 20 Jul 2008 09:22:48 +0200
+Subject: [PATCH] s390-tools-1.5.3-dumpconf-vmlinuz
+
+---
+ etc/init.d/dumpconf |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+ mode change 100755 => 100644 etc/init.d/dumpconf
+
+diff --git a/etc/init.d/dumpconf b/etc/init.d/dumpconf
+old mode 100755
+new mode 100644
+index 17a7c29..1f719f5
+--- a/etc/init.d/dumpconf
++++ b/etc/init.d/dumpconf
+@@ -287,6 +287,13 @@ status_vmcmd()
+ 
+ start()
+ {
++	# create zfcp dump symlink
++	if [ -f /boot/vmlinuz-`uname -r`kdump ]; then
++		ln -sf /boot/vmlinuz-`uname -r`kdump /boot/zfcpdump
++	else
++		rm -f /boot/zfcpdump
++	fi
++	
+ 	if [ "$ON_PANIC" == "" ]; then
+ 		ON_PANIC="stop"
+ 	fi
+-- 
+1.6.0.6
+

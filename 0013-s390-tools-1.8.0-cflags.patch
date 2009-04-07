@@ -1,0 +1,25 @@
+From a6ca2114c948a71c0bb5c9a5e7d0392315f1cefd Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 25 Mar 2009 08:56:38 +0100
+Subject: [PATCH] allow override of default optimization level
+
+---
+ common.mak |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/common.mak b/common.mak
+index 3acb534..0aff3ba 100644
+--- a/common.mak
++++ b/common.mak
+@@ -22,7 +22,7 @@ STRIP           = $(CROSS_COMPILE)strip
+ OBJCOPY         = $(CROSS_COMPILE)objcopy
+ OBJDUMP         = $(CROSS_COMPILE)objdump
+ INSTALL         = install # FIXME: We need s390-install (strip)
+-CFLAGS		= $(OPT_FLAGS) -Wall -O3 -DS390_TOOLS_RELEASE=$(S390_TOOLS_RELEASE)
++CFLAGS		= -Wall -O3 -DS390_TOOLS_RELEASE=$(S390_TOOLS_RELEASE) $(OPT_FLAGS)
+ export AS LD CC CPP AR NM STRIP OBJCOPY OBJDUMP INSTALL CFLAGS
+ 
+ # Support alternate install root
+-- 
+1.6.0.6
+

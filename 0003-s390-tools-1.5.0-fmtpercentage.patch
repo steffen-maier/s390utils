@@ -1,0 +1,116 @@
+From 6e939e7804c33e54577a6801e266bab9a8c6a24c Mon Sep 17 00:00:00 2001
+From: Dan Horak <dan@danny.cz>
+Date: Sat, 19 Jul 2008 16:32:52 +0200
+Subject: [PATCH] s390-tools-1.5.0-fmtpercentage
+
+---
+ dasdfmt/dasdfmt.c |   32 +++++++++++++++++++++++++++++---
+ dasdfmt/dasdfmt.h |    4 +++-
+ 2 files changed, 32 insertions(+), 4 deletions(-)
+
+diff --git a/dasdfmt/dasdfmt.c b/dasdfmt/dasdfmt.c
+index 55616cc..54e8950 100644
+--- a/dasdfmt/dasdfmt.c
++++ b/dasdfmt/dasdfmt.c
+@@ -47,6 +47,7 @@ static void exit_usage(int exitcode)
+ 	       "       -V or --version  means print version\n"
+ 	       "       -L or --no_label means don't write disk label\n"
+ 	       "       -p or --progressbar means show a progress bar\n"
++	       "       -P or --percentage means show a progress bar\n"
+ 	       "       -m x or --hashmarks=x means show a hashmark every x "
+ 	       "cylinders\n"
+ 	       "       -v means verbose mode\n"
+@@ -169,6 +170,7 @@ static void init_info(dasdfmt_info_t *info)
+ 	info->print_progressbar = 0;
+ 	info->print_hashmarks   = 0;
+ 	info->hashstep          = 0;
++	info->print_percentage  = 0;
+ 	info->force             = 0;
+ 	info->writenolabel      = 0;
+ 	info->labelspec         = 0;
+@@ -550,7 +552,7 @@ static void dasdfmt_format(dasdfmt_info_t *info, struct hd_geometry *drive_geo,
+ 			   format_data_t *format_params)
+ {
+ 	format_data_t format_step;
+-	int j, k, cyl, tmp, p1, p2;
++	int j, k, cyl, tmp, p1, p2, p;
+ 
+ 	if (info->print_hashmarks) {
+ 		if ((info->hashstep < 1) || (info->hashstep > 1000)) {
+@@ -609,6 +611,24 @@ static void dasdfmt_format(dasdfmt_info_t *info, struct hd_geometry *drive_geo,
+ 				printf("#");
+ 				fflush(stdout);
+ 			}
++                if(info->print_percentage)
++                {
++                        p2 = p1;
++                        p1 = cyl*100/drive_geo->cylinders;
++                        if (p1 != p2)
++                         {
++                                p = (k - format_params->start_unit) * 100 /
++                                    (format_params->stop_unit
++                                     - format_params->start_unit);
++                                printf("cyl %5d of %5d |  %3d%%\n",
++                                    (k - format_params->start_unit)
++                                    / drive_geo->heads,
++                                    (format_params->stop_unit
++                                     - format_params->start_unit)
++                                    / drive_geo->heads, p);
++                                fflush(stdout);
++                        }
++                }
+ 
+ 		if (k % drive_geo->heads == 0) {
+ 			k += drive_geo->heads;
+@@ -840,11 +860,17 @@ int main(int argc,char *argv[])
+ 			break;
+ 
+ 		case 'p':
+-			if (!info.print_hashmarks) info.print_progressbar=1;
++			if (!info.print_hashmarks && !info.print_percentage)
++				info.print_progressbar=1;
++			break;
++
++                case 'P':
++                        if (!info.print_hashmarks && !info.print_progressbar)
++                                info.print_percentage=1;
+ 			break;
+ 
+ 		case 'm':
+-			if (!info.print_progressbar) 
++			if (!info.print_progressbar && !info.print_percentage) 
+ 			{
+ 				hashstep_str=optarg;
+ 				info.print_hashmarks=1;
+diff --git a/dasdfmt/dasdfmt.h b/dasdfmt/dasdfmt.h
+index 2dc1583..32d0803 100644
+--- a/dasdfmt/dasdfmt.h
++++ b/dasdfmt/dasdfmt.h
+@@ -147,7 +147,7 @@ struct hd_geometry {
+ 	if (*endptr) ERRMSG_EXIT(EXIT_MISUSE,"%s: " str " "    \
+ 	"is in invalid format\n",prog_name);}
+ 
+-#define dasdfmt_getopt_string "b:n:l:f:d:m:hpLtyvVFk"
++#define dasdfmt_getopt_string "b:n:l:f:d:m:hpPLtyvVFk"
+ 
+ static struct option dasdfmt_getopt_long_options[]=
+ {
+@@ -158,6 +158,7 @@ static struct option dasdfmt_getopt_long_options[]=
+         { "force",       0, 0, 'F'},
+         { "progressbar", 0, 0, 'p'},
+         { "hashmarks",   1, 0, 'm'},
++	{ "percentage",  0, 0, 'P'},
+         { "label",       1, 0, 'l'},
+         { "devno",       1, 0, 'n'},
+         { "device",      1, 0, 'f'},
+@@ -192,6 +193,7 @@ typedef struct dasdfmt_info {
+         int   withoutprompt;
+         int   print_progressbar;
+         int   print_hashmarks, hashstep;
++	int   print_percentage;
+         int   force;
+         int   writenolabel;
+         int   labelspec;
+-- 
+1.6.0.6
+

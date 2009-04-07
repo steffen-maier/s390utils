@@ -1,0 +1,27 @@
+From 1536e0140cbce3c8837478cfc25ea45dc3681cce Mon Sep 17 00:00:00 2001
+From: Dan Horak <dan@danny.cz>
+Date: Sun, 20 Jul 2008 09:24:05 +0200
+Subject: [PATCH] s390-tools-1.5.3-zipl-zfcpdump-2
+
+---
+ common.mak |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/common.mak b/common.mak
+index 62c17e2..3acb534 100644
+--- a/common.mak
++++ b/common.mak
+@@ -38,8 +38,8 @@ GROUP		= $(shell id -gn)
+ export INSTROOT BINDIR LIBDIR MANDIR OWNER GROUP
+ 
+ # Special defines for zfcpdump
+-ZFCPDUMP_DIR    = /usr/local/share/zfcpdump
+-ZFCPDUMP_IMAGE  = zfcpdump.image
++ZFCPDUMP_DIR    = /boot
++ZFCPDUMP_IMAGE  = zfcpdump
+ ZFCPDUMP_RD     = zfcpdump.rd
+ export ZFCPDUMP_DIR ZFCPDUMP_IMAGE ZFCPDUMP_RD
+ endif
+-- 
+1.6.0.6
+

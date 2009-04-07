@@ -1,0 +1,2 @@
+KERNEL=="dasd*[a-z]", SUBSYSTEM=="block", PROGRAM=="/bin/sh -c 'cd /sys/block/$kernel/device;a=$$(pwd -P);echo $${a##*/}'", SYMLINK+="dasd/%c/disc"
+KERNEL=="dasd*[0-9]", SUBSYSTEM=="block", PROGRAM=="/bin/sh -c 'cd /sys/block/$parent/device;a=$$(pwd -P);echo $${a##*/}'", SYMLINK+="dasd/%c/part%n"

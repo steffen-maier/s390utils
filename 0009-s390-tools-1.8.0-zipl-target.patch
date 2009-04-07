@@ -1,0 +1,63 @@
+From a4d2366cc716f8ce3f159fd8e8b585b04b7a5924 Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Fri, 13 Mar 2009 10:35:14 +0100
+Subject: [PATCH] s390-tools-1.8.0-zipl-target
+
+---
+ zipl/src/job.c |   23 +++++++++++++++++++----
+ 1 files changed, 19 insertions(+), 4 deletions(-)
+
+diff --git a/zipl/src/job.c b/zipl/src/job.c
+index fe3286e..3be5520 100644
+--- a/zipl/src/job.c
++++ b/zipl/src/job.c
+@@ -246,7 +246,6 @@ get_command_line(int argc, char* argv[], struct command_line* line)
+ 		/* If either menu or section has been selected disable
+ 		   automenu generation */
+ 		cmdline.automenu = 0;
+-		scan_key_table[1][8] = req;
+ 		/* Config file mode */
+ 		if ((cmdline.menu != NULL) && (cmdline.section != NULL)) {
+ 			error_reason("Option 'menu' cannot be used when "
+@@ -1226,19 +1225,35 @@ get_section_job(struct scan_token* scan, char* section, struct job_data* job,
+ {
+ 	char* data[SCAN_KEYWORD_NUM];
+ 	char* buffer;
++	char* default_section;
+ 	int rc;
+ 	int i;
+ 
++	rc = get_default_section(scan, &default_section, &i);
++	if (rc)
++		return rc;
+ 	if (section == NULL) {
+-		rc = get_default_section(scan, &section, &i);
+-		if (rc)
+-			return rc;
++		section = default_section;
+ 		if (i) {
+ 			/* 'defaultmenu' was specified */
+ 			rc = get_menu_job(scan, section, job);
+ 			return rc;
+ 		}
+ 	}
++	else
++	{
++		char* name = NULL;
++		
++		for (i = 0; (int) scan[i].id != 0; i++) {
++			if (scan[i].id == scan_id_section_heading) {
++				name = scan[i].content.section.name;
++			}
++			if (scan[i].id == scan_id_keyword_assignment &&
++			    scan[i].content.keyword.keyword == scan_keyword_target &&
++			    !strcmp(DEFAULTBOOT_SECTION, name))
++				default_target = misc_strdup(scan[i].content.keyword.value);
++		}
++	}
+ 	if (strcmp(section, DEFAULTBOOT_SECTION) == 0) {
+ 		error_reason("Special section '" DEFAULTBOOT_SECTION "' cannot "
+ 			     "be used as target section");
+-- 
+1.6.0.6
+

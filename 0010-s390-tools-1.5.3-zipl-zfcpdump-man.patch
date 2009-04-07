@@ -1,0 +1,27 @@
+From eedf33ef46224a67e09c38ee58c57f3dd8d9acf8 Mon Sep 17 00:00:00 2001
+From: Dan Horak <dan@danny.cz>
+Date: Sun, 20 Jul 2008 09:26:13 +0200
+Subject: [PATCH] s390-tools-1.5.3-zipl-zfcpdump-man
+
+---
+ zipl/man/zipl.8 |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/zipl/man/zipl.8 b/zipl/man/zipl.8
+index 6ebf240..8d2b42c 100644
+--- a/zipl/man/zipl.8
++++ b/zipl/man/zipl.8
+@@ -198,6 +198,10 @@ larger than any single ECKD DASD partition could hold.
+ It is not possible to specify both this parameter and the name of a menu
+ or configuration section on the command line at the same time.
+ 
++Note that before using this option the "kernel-kdump" rpm has to be installed
++and the dumpconf service script has to be started using
++"service dumpconf start".
++
+ .TP
+ .BR "\-m <MENU>" " or " "--menu=<MENU>"
+ Install the multi-boot configuration defined in menu section <MENU> of the
+-- 
+1.6.0.6
+
