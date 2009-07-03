@@ -1,14 +1,14 @@
-From 91275200e3d22d56d8722ec308617c6b3ba9911b Mon Sep 17 00:00:00 2001
+From 1648e0dab246190c170e82244c790ef8e9144e40 Mon Sep 17 00:00:00 2001
 From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
-Date: Fri, 13 Mar 2009 10:33:22 +0100
-Subject: [PATCH] s390-tools-1.8.0-automenu.patch
+Date: Thu, 23 Apr 2009 11:45:36 +0200
+Subject: [PATCH] s390-tools-1.8.1-zipl-automenu
 
 ---
- zipl/man/zipl.8 |    7 +++
- zipl/src/job.c  |  162 +++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ zipl/man/zipl.8 |    7 ++
+ zipl/src/job.c  |  194 +++++++++++++++++++++++++++++++++++++++++++++++++++++--
  zipl/src/scan.c |    4 +-
  zipl/src/zipl.c |    1 +
- 4 files changed, 168 insertions(+), 6 deletions(-)
+ 4 files changed, 197 insertions(+), 9 deletions(-)
 
 diff --git a/zipl/man/zipl.8 b/zipl/man/zipl.8
 index 8a83c01..6ebf240 100644
@@ -29,7 +29,7 @@ index 8a83c01..6ebf240 100644
  1. Scenario: prepare disk for booting a Linux kernel image using the
  following parameters:
 diff --git a/zipl/src/job.c b/zipl/src/job.c
-index 2f69104..388e63a 100644
+index 2f69104..1b7bcb2 100644
 --- a/zipl/src/job.c
 +++ b/zipl/src/job.c
 @@ -43,6 +43,7 @@ static struct option options[] = {
@@ -156,18 +156,17 @@ index 2f69104..388e63a 100644
  		case 1:
  			/* Non-option is interpreted as section name */
  			if (cmdline.section != NULL) {
-@@ -214,6 +243,10 @@ get_command_line(int argc, char* argv[], struct command_line* line)
+@@ -214,6 +243,9 @@ get_command_line(int argc, char* argv[], struct command_line* line)
  	if (cmdline.help || cmdline.version) {
  		/* Always accept --help and --version */
  	} else if ((cmdline.menu != NULL) || (cmdline.section != NULL)) {
 +		/* If either menu or section has been selected disable
 +		   automenu generation */
 +		cmdline.automenu = 0;
-+		scan_key_table[1][8] = req;
  		/* Config file mode */
  		if ((cmdline.menu != NULL) && (cmdline.section != NULL)) {
  			error_reason("Option 'menu' cannot be used when "
-@@ -832,7 +865,14 @@ get_job_from_section_data(char* data[], struct job_data* job, char* section)
+@@ -832,7 +864,14 @@ get_job_from_section_data(char* data[], struct job_data* job, char* section)
  		/* IPL job */
  		job->id = job_ipl;
  		/* Fill in name of bootmap directory */
@@ -183,7 +182,7 @@ index 2f69104..388e63a 100644
  		if (job->bootmap_dir == NULL)
  			return -1;
  		/* Fill in name and address of image file */
-@@ -1102,6 +1142,8 @@ get_menu_job(struct scan_token* scan, char* menu, struct job_data* job)
+@@ -1102,6 +1141,8 @@ get_menu_job(struct scan_token* scan, char* menu, struct job_data* job)
  		if (temp_job == NULL)
  			return -1;
  		memset((void *) temp_job, 0, sizeof(struct job_data));
@@ -192,7 +191,62 @@ index 2f69104..388e63a 100644
  		rc = get_job_from_section_data(data, temp_job,
  					job->data.menu.entry[current].name);
  		if (rc) {
-@@ -1268,10 +1310,109 @@ get_section_job(struct scan_token* scan, char* section, struct job_data* job,
+@@ -1150,6 +1191,7 @@ get_default_section(struct scan_token* scan, char** section, int* is_menu)
+ 	i = scan_find_section(scan, DEFAULTBOOT_SECTION,
+ 			      scan_id_section_heading, 0);
+ 	if (i<0) {
++		*section = NULL;
+ 		error_reason("No '" DEFAULTBOOT_SECTION "' section found and "
+ 			     "no section specified on command line");
+ 		return -1;
+@@ -1169,6 +1211,7 @@ get_default_section(struct scan_token* scan, char** section, int* is_menu)
+ 		}
+ 	}
+ 	/* Should not happen */
++	*section = NULL;
+ 	error_reason("No default section specified");
+ 	return -1;
+ }
+@@ -1184,19 +1227,35 @@ get_section_job(struct scan_token* scan, char* section, struct job_data* job,
+ {
+ 	char* data[SCAN_KEYWORD_NUM];
+ 	char* buffer;
++	char* default_section;
+ 	int rc;
+ 	int i;
+ 
++	rc = get_default_section(scan, &default_section, &i);
++	if (rc)
++		return rc;
+ 	if (section == NULL) {
+-		rc = get_default_section(scan, &section, &i);
+-		if (rc)
+-			return rc;
++		section = default_section;
+ 		if (i) {
+ 			/* 'defaultmenu' was specified */
+ 			rc = get_menu_job(scan, section, job);
+ 			return rc;
+ 		}
+ 	}
++	else
++	{
++		char* name = NULL;
++
++		for (i = 0; (int) scan[i].id != 0; i++) {
++			if (scan[i].id == scan_id_section_heading) {
++				name = scan[i].content.section.name;
++			}
++			if (scan[i].id == scan_id_keyword_assignment &&
++			    scan[i].content.keyword.keyword == scan_keyword_target &&
++			    !strcmp(DEFAULTBOOT_SECTION, name))
++				default_target = misc_strdup(scan[i].content.keyword.value);
++		}
++	}
+ 	if (strcmp(section, DEFAULTBOOT_SECTION) == 0) {
+ 		error_reason("Special section '" DEFAULTBOOT_SECTION "' cannot "
+ 			     "be used as target section");
+@@ -1268,10 +1327,118 @@ get_section_job(struct scan_token* scan, char* section, struct job_data* job,
  }
  
  
@@ -204,6 +258,7 @@ index 2f69104..388e63a 100644
 +	int i, j, pos, numsec, size, defaultpos;
 +	char *name;
 +	char *target;
++	char *timeout;
 +	char *seclist[1024];
 +	char *defaultsection;
 +	char buf[1024];
@@ -213,6 +268,7 @@ index 2f69104..388e63a 100644
 +	numsec = 0;
 +	name = NULL;
 +	target = NULL;
++	timeout = NULL;
 +	for (i = 0; (int) scan[i].id != 0; i++) {
 +		if (scan[i].id == scan_id_section_heading) {
 +			name = scan[i].content.section.name;
@@ -229,6 +285,10 @@ index 2f69104..388e63a 100644
 +		    scan[i].content.keyword.keyword == scan_keyword_target &&
 +		    !strcmp(DEFAULTBOOT_SECTION, name))
 +			target = scan[i].content.keyword.value;
++
++		if (scan[i].id == scan_id_keyword_assignment &&
++		    scan[i].content.keyword.keyword == scan_keyword_timeout)
++			timeout = scan[i].content.keyword.value;
 +	}
 +	get_default_section(scan, &defaultsection, &j);
 +
@@ -252,7 +312,7 @@ index 2f69104..388e63a 100644
 +	}
 +
 +	memset(tmp, 0, size * sizeof(struct scan_token));
-+	memcpy(tmp, scan, i * sizeof(struct scan_token)); 
++	memcpy(tmp, scan, i * sizeof(struct scan_token));
 +	free(scan);
 +	scan = tmp;
 +
@@ -282,7 +342,10 @@ index 2f69104..388e63a 100644
 +	scan[i].id = scan_id_keyword_assignment;
 +	scan[i].line = i;
 +	scan[i].content.keyword.keyword = scan_keyword_timeout;
-+	scan[i++].content.keyword.value = misc_strdup("15");
++	if (timeout)
++		scan[i++].content.keyword.value = misc_strdup(timeout);
++	else
++		scan[i++].content.keyword.value = misc_strdup("15");
 +
 +	pos = i;
 +	for (i = 0; i<numsec; i++) {
@@ -303,7 +366,7 @@ index 2f69104..388e63a 100644
  	char* filename;
  	char* source;
  	int rc;
-@@ -1303,9 +1444,22 @@ get_job_from_config_file(struct command_line* cmdline, struct job_data* job)
+@@ -1303,9 +1470,22 @@ get_job_from_config_file(struct command_line* cmdline, struct job_data* job)
  		scan_free(scan);
  		return rc;
  	}
@@ -328,7 +391,7 @@ index 2f69104..388e63a 100644
  		rc = get_section_job(scan, cmdline->section, job,
  				cmdline->data[(int) scan_keyword_parameters]);
 diff --git a/zipl/src/scan.c b/zipl/src/scan.c
-index 9948092..7227a33 100644
+index 9948092..caca3cf 100644
 --- a/zipl/src/scan.c
 +++ b/zipl/src/scan.c
 @@ -33,9 +33,9 @@ enum scan_key_state scan_key_table[SCAN_SECTION_NUM][SCAN_KEYWORD_NUM] = {
@@ -336,7 +399,7 @@ index 9948092..7227a33 100644
   */
  /* defaultboot	*/
 -	{opt, inv, inv, inv, inv, inv, inv, inv, inv, inv, inv, opt, inv, inv},
-+	{opt, inv, inv, inv, inv, inv, inv, inv, req, inv, inv, opt, inv, inv},
++	{opt, inv, inv, inv, inv, inv, inv, inv, req, inv, opt, opt, inv, inv},
  /* ipl		*/
 -	{inv, inv, inv, req, opt, opt, opt, inv, req, inv, inv, inv, inv, inv},
 +	{inv, inv, inv, req, opt, opt, opt, inv, opt, inv, inv, inv, inv, inv},
@@ -344,7 +407,7 @@ index 9948092..7227a33 100644
  	{inv, inv, inv, inv, inv, inv, inv, req, req, inv, inv, inv, inv, inv},
  /* part dump	*/
 diff --git a/zipl/src/zipl.c b/zipl/src/zipl.c
-index e466e34..9dfb469 100644
+index f99177d..2a11404 100644
 --- a/zipl/src/zipl.c
 +++ b/zipl/src/zipl.c
 @@ -71,6 +71,7 @@ static const char* usage_text[] = {

@@ -7,8 +7,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.8.0
-Release:        5%{?dist}
+Version:        1.8.1
+Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -26,22 +26,28 @@ Source7:        zfcp.udev
 Source8:        dasd.udev
 # http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi-%{hbaapiver}.html
 Source9:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/lib-zfcp-hbaapi-%{hbaapiver}.tar.gz
-Patch1:         0001-s390-tools-1.5.0-su.patch
-Patch2:         0002-s390-tools-1.5.0-fdasd-raid.patch
-Patch3:         0003-s390-tools-1.5.0-fmtpercentage.patch
-Patch4:         0004-s390-tools-1.8.0-automenu.patch
-Patch5:         0005-s390-tools-1.5.3-lvm.patch
-Patch6:         0006-s390-tools-1.5.3-dumpconf-vmlinuz.patch
-Patch7:         0007-s390-tools-1.5.3-zipl-zfcpdump-2.patch
-Patch8:         0008-s390-tools-1.8.0-zipl-timeout.patch
-Patch9:         0009-s390-tools-1.8.0-zipl-target.patch
-Patch10:        0010-s390-tools-1.5.3-zipl-zfcpdump-man.patch
-Patch11:        0011-s390-tools-1.5.3-fdasd-raid.patch
-Patch12:        0012-s390-tools-1.8.0-initscript-fix.patch
-Patch13:        0013-s390-tools-1.8.0-cflags.patch
+
+Patch1:   0001-s390-tools-1.8.1-common-mak.patch
+Patch4:   0004-s390-tools-1.8.1-zipl-automenu.patch
+Patch5:   0005-s390-tools-1.8.1-fdasd-su.patch
+Patch6:   0006-s390-tools-1.8.1-fdasd-raid-lvm.patch
+Patch8:   0008-s390-tools-1.8.1-ziorep-fixes.patch
+Patch9:   0009-s390-tools-1.8.1-cflags.patch
+Patch10:  0010-s390-tools-1.8.1-defaultmenu.patch
+Patch11:  0011-s390-tools-1.8.1-execstack.patch
+Patch12:  0012-s390-tools-1.8.1-ziomon-fixes.patch
+Patch13:  0013-s390-tools-1.8.1-zipl-fix-unsupported-device.patch
+Patch14:  0014-s390-tools-1.8.1-zipl-kdump-man.patch
+Patch15:  0015-s390-tools-1.8.1-iucvterm-getlogin-to-getpwuid.patch
+Patch16:  0016-s390-tools-1.8.1-dumpconf-improve-error-checking.patch
+Patch17:  0017-s390-tools-1.8.1-cpuplugd-memplug.patch
+Patch18:  0018-s390-tools-1.8.1-ziomon-new-blkiomon.patch
+
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
+
 Patch200:       src_vipa-2.0.4-locations.patch
+
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
 Requires:       s390utils-cpuplugd = %{epoch}:%{version}-%{release}
@@ -63,44 +69,46 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %prep
 %setup -q -n s390-tools-%{version} -a 4 -a 6 -a 9
 
-# Fix to honor the silent flag for wrongly formated disks
-%patch1 -p1 -b .su
-
-# Enhancement to add raid partiton support to dasds
-%patch2 -p1 -b .fdasd-raid
-
-# Enhancement to add a percentage output bar to dasdfmt, needed for anaconda
-%patch3 -p1 -b .fmtpercentage
+# Use rpm PATH variables for installation and set correct zfcpdump path
+%patch1 -p1 -b .common-mak
 
 # Patch to maintain backwards compatibility with older zipl multiboot feature
-%patch4 -p1 -b .automenu
+%patch4 -p1 -b .zipl-automenu
 
-# Patch to fix installer LVM partitions that show up as "unknown" in fdasd (#250176)
-%patch5 -p1 -b .lvm
+# Fix to honor the silent flag for wrongly formated disks
+%patch5 -p1 -b .fdasd-su
 
-# Added zfcpdump kernel symlink to dumpconf init script (#430550)
-%patch6 -p1 -b .dumpconf-vmlinuz
+# Enhancement to add raid partiton support to dasds
+%patch6 -p1 -b .fdasd-raid-lvm
 
-# Updates for cleanup SCSI dumper code for upstream integration - tool (#253118)
-%patch7 -p1 -b .zipl-zfcpdump-2
+# Post 1.8.1 fixes for ziorep
+%patch8 -p1 -b .ziorep
 
-# Add support for timeout parameter in /etc/zipl.conf (#323651)
-%patch8 -p1 -b .zipl-timeout
+# Allow override of optimization level in CFLAGS
+%patch9 -p1 -b .cflags
 
-# Fix for zipl fail when section is specified and target is not repeated for all sections (#381201)
-%patch9 -p1 -b .zipl-target
+# Don't build automenu iff default menu exists (#486444)
+%patch10 -p1 -b .defaultmenu
 
-# Update documentation for zfcpdump (#437477)
-%patch10 -p1 -b .zipl-zfcpdump-man
+# Remove the execuatble stack flag from zipl
+%patch11 -p1 -b .execstack
 
-# fix the Linux Raid partition type is not retained when changed through fdasd (#445271)
-%patch11 -p1 -b .fdasd-raid
+# Post 1.8.1 fixes for ziomon
+%patch12 -p1 -b .ziomon
 
-# fix init scripts of cpuplugd, dumpconf and mon_statd
-%patch12 -p1 -b .initscripts-fix
+# Post 1.8.1 fix for zipl
+%patch13 -p1 -b .zipl-device
 
-# allow override of optimization level in CFLAGS
-%patch13 -p1 -b .cflags
+# Update zipl man page
+%patch14 -p1 -b .zipl-kdump-man
+
+# Last-minute fixes from IBM
+%patch15 -p1 -b iucvterm-getlogin-to-getpwuid
+%patch16 -p1 -b dumpconf-improve-error-checking
+%patch17 -p1 -b cpuplugd-memplug
+
+# Adapt ziomon to the new layout of the blkiomon_stat structure (#506966)
+%patch18 -p1 -b ziomon-new-blkiomon
 
 #
 # cmsfs
@@ -146,7 +154,7 @@ popd
 
 
 %build
-make OPT_FLAGS="$RPM_OPT_FLAGS"
+make OPT_FLAGS="$RPM_OPT_FLAGS" DISTRELEASE=%{release}
 
 pushd cmsfs-%{cmsfsver}
 ./configure
@@ -170,7 +178,8 @@ mkdir -p $RPM_BUILD_ROOT{%{_lib},%{_libdir},/sbin,/bin,/boot,%{_mandir}/man1,%{_
 make install \
         INSTROOT=$RPM_BUILD_ROOT \
         MANDIR=$RPM_BUILD_ROOT%{_mandir} \
-        LIBDIR=${RPM_BUILD_ROOT}/%{_lib}
+        LIBDIR=${RPM_BUILD_ROOT}/%{_lib} \
+        DISTRELEASE=%{release}
 
 %{__mkdir} -p ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
 %{__mkdir} -p ${RPM_BUILD_ROOT}%{_initddir}
@@ -195,11 +204,12 @@ install -m 755 etc/init.d/cpuplugd ${RPM_BUILD_ROOT}%{_initddir}/cpuplugd
 
 install -D -m 644 etc/udev/rules.d/57-osasnmpd.rules ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
 
-install -p -m 755 cmsfs-%{cmsfsver}/cmsfscat $RPM_BUILD_ROOT%{_sbindir}
-install -p -m 755 cmsfs-%{cmsfsver}/cmsfslst $RPM_BUILD_ROOT%{_sbindir}
-install -p -m 755 cmsfs-%{cmsfsver}/cmsfsvol $RPM_BUILD_ROOT%{_sbindir}
-install -p -m 755 cmsfs-%{cmsfsver}/cmsfscp  $RPM_BUILD_ROOT%{_sbindir}
-install -p -m 755 cmsfs-%{cmsfsver}/cmsfsck  $RPM_BUILD_ROOT%{_sbindir}
+# cmsfs tools must be available in /sbin
+install -p -m 755 cmsfs-%{cmsfsver}/cmsfscat $RPM_BUILD_ROOT/sbin
+install -p -m 755 cmsfs-%{cmsfsver}/cmsfslst $RPM_BUILD_ROOT/sbin
+install -p -m 755 cmsfs-%{cmsfsver}/cmsfsvol $RPM_BUILD_ROOT/sbin
+install -p -m 755 cmsfs-%{cmsfsver}/cmsfscp  $RPM_BUILD_ROOT/sbin
+install -p -m 755 cmsfs-%{cmsfsver}/cmsfsck  $RPM_BUILD_ROOT/sbin
 install -p -m 644 cmsfs-%{cmsfsver}/cmsfscat.8 $RPM_BUILD_ROOT%{_mandir}/man8
 install -p -m 644 cmsfs-%{cmsfsver}/cmsfslst.8 $RPM_BUILD_ROOT%{_mandir}/man8
 install -p -m 644 cmsfs-%{cmsfsver}/cmsfsvol.8 $RPM_BUILD_ROOT%{_mandir}/man8
@@ -208,7 +218,7 @@ install -p -m 644 cmsfs-%{cmsfsver}/cmsfsck.8  $RPM_BUILD_ROOT%{_mandir}/man8
 
 # src_vipa
 pushd src_vipa-%{vipaver}
-make install LIBDIR=%{_libdir} INSTROOT=$RPM_BUILD_ROOT
+make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=$RPM_BUILD_ROOT
 popd
 
 pushd lib-zfcp-hbaapi-%{hbaapiver}
@@ -220,6 +230,7 @@ popd
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
+
 
 %files
 %defattr(-,root,root,-)
@@ -394,8 +405,6 @@ fi
 /sbin/scsi_logging_level
 /sbin/zfcpdbf
 /sbin/qetharp
-/sbin/qetharp-2.4
-/sbin/qetharp-2.6
 /sbin/qethconf
 /sbin/tape390_display
 /sbin/tape390_crypt
@@ -456,7 +465,7 @@ fi
 /sbin/zfcpconf.sh
 
 # src_vipa
-%{_sbindir}/src_vipa.sh
+%{_bindir}/src_vipa.sh
 %{_libdir}/src_vipa.so
 %{_mandir}/man8/src_vipa.8.gz
 
@@ -477,8 +486,6 @@ ATM Ethernet LAN Emulation in QDIO mode.
 
 %files osasnmpd
 %defattr(-,root,root,-)
-%{_sbindir}/osasnmpd-2.4
-%{_sbindir}/osasnmpd-2.6
 %{_sbindir}/osasnmpd
 %config(noreplace) %{_sysconfdir}/udev/rules.d/57-osasnmpd.rules
 %{_mandir}/man8/osasnmpd.8*
@@ -567,7 +574,7 @@ fi
 License:        GPLv2
 Summary:        S390 ziomon tools
 Group:          Applications/System
-Requires:       perl lsscsi coreutils blktrace >= 1.0
+Requires:       perl lsscsi coreutils blktrace >= 1.0.1
 
 %description ziomon
 Tool set to collect data for zfcp performance analysis.
@@ -579,11 +586,68 @@ Tool set to collect data for zfcp performance analysis.
 /sbin/ziomon_mgr
 /sbin/ziomon_util
 /sbin/ziomon_zfcpdd
+/sbin/ziorep_config
+/sbin/ziorep_traffic
+/sbin/ziorep_utilization
 %{_mandir}/man8/ziomon.8*
 %{_mandir}/man8/ziomon_fcpconf.8*
 %{_mandir}/man8/ziomon_mgr.8*
 %{_mandir}/man8/ziomon_util.8*
 %{_mandir}/man8/ziomon_zfcpdd.8*
+%{_mandir}/man8/ziorep_config.8*
+%{_mandir}/man8/ziorep_traffic.8*
+%{_mandir}/man8/ziorep_utilization.8*
+
+#
+# *********************** s390-tools iucvterm package  *************************
+#
+%package iucvterm
+License:        GPLv2
+Summary:        z/VM IUCV terminal applications
+Group:          Applications/System
+BuildRequires:  gettext
+
+%description iucvterm
+z/VM IUCV terminal applications.
+
+%pre iucvterm
+# check for ts-shell group and create it
+getent group ts-shell > /dev/null || groupadd -r ts-shell
+
+%post iucvterm
+# /etc/shells is provided by "setup"
+grep -q '^/usr/bin/ts-shell$' /etc/shells \
+    || echo "/usr/bin/ts-shell" >> /etc/shells
+
+%postun iucvterm
+if [ $1 = 0 ]
+then
+    # remove ts-shell from /etc/shells on uninstall
+    grep -v '^/usr/bin/ts-shell$' /etc/shells > /etc/shells.ts-new
+    mv /etc/shells.ts-new /etc/shells
+    chmod 0644 /etc/shells
+fi
+
+%files iucvterm
+%defattr(-,root,root,-)
+%dir %{_sysconfdir}/iucvterm
+%config(noreplace) %attr(0640,root,ts-shell) %{_sysconfdir}/iucvterm/ts-audit-systems.conf
+%config(noreplace) %attr(0640,root,ts-shell) %{_sysconfdir}/iucvterm/ts-authorization.conf
+%config(noreplace) %attr(0640,root,ts-shell) %{_sysconfdir}/iucvterm/ts-shell.conf
+%config(noreplace) %attr(0640,root,ts-shell) %{_sysconfdir}/iucvterm/unrestricted.conf
+%{_bindir}/iucvconn
+%{_bindir}/iucvtty
+%{_bindir}/ts-shell
+%{_sbindir}/chiucvallow
+%{_sbindir}/lsiucvallow
+%dir %attr(2770,root,ts-shell) /var/log/ts-shell
+%doc iucvterm/doc/ts-shell
+%{_mandir}/man1/iucvconn.1*
+%{_mandir}/man1/iucvtty.1*
+%{_mandir}/man1/ts-shell.1*
+%{_mandir}/man7/af_iucv.7*
+%{_mandir}/man8/chiucvallow.8*
+%{_mandir}/man9/hvc_iucv.9*
 
 #
 # *********************** libzfcphbaapi package  ***********************
@@ -657,11 +721,11 @@ This package contains the CMS file system tools.
 
 %files cmsfs
 %defattr(-,root,root,-)
-%{_sbindir}/cmsfscat
-%{_sbindir}/cmsfsck
-%{_sbindir}/cmsfscp
-%{_sbindir}/cmsfslst
-%{_sbindir}/cmsfsvol
+/sbin/cmsfscat
+/sbin/cmsfsck
+/sbin/cmsfscp
+/sbin/cmsfslst
+/sbin/cmsfsvol
 %{_mandir}/man8/cmsfscat.8*
 %{_mandir}/man8/cmsfsck.8*
 %{_mandir}/man8/cmsfscp.8*
@@ -670,6 +734,17 @@ This package contains the CMS file system tools.
 
 
 %changelog
+* Mon Jun 29 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-1
+- update to 1.8.1
+- drop upstreamed patches
+- create iucvterm subpackage
+- update src_vipa locations patch
+- install cmsfs tools into /sbin
+- add post 1.8.1 fixes from IBM
+
+* Fri Apr 17 2009 Dan Horák <dan[at]danny.cz> 2:1.8.0-6
+- fix build with newer kernels
+
 * Wed Mar 25 2009 Dan Horák <dan[at]danny.cz> 2:1.8.0-5
 - reword the summaries a bit
 - add downloadable URLs for Sources

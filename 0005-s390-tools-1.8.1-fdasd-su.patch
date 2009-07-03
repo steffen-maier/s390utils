@@ -1,17 +1,17 @@
-From 118f2f03b639dd2ccfb518ceb82e89fcb1eaf024 Mon Sep 17 00:00:00 2001
-From: Dan Horak <dan@danny.cz>
-Date: Sat, 19 Jul 2008 16:30:04 +0200
-Subject: [PATCH] s390-tools-1.5.0-su
+From 0ac6c456898d8c09908a35add45d018eb8f76613 Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Thu, 23 Apr 2009 11:46:01 +0200
+Subject: [PATCH] s390-tools-1.8.1-fdasd-su
 
 ---
  fdasd/fdasd.c |   10 ++++++----
  1 files changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/fdasd/fdasd.c b/fdasd/fdasd.c
-index 5bec7cc..dce9ed3 100644
+index ef01c9b..b6802f9 100644
 --- a/fdasd/fdasd.c
 +++ b/fdasd/fdasd.c
-@@ -1851,10 +1851,12 @@ fdasd_get_geometry (fdasd_anchor_t *anc)
+@@ -2005,10 +2005,12 @@ fdasd_get_geometry (fdasd_anchor_t *anc)
  	if (anc->verbose) printf("disk type check     : ok\n");
  
          if (dasd_info.FBA_layout != 0) {
@@ -20,7 +20,7 @@ index 5bec7cc..dce9ed3 100644
 -			"disk layout!", options.device);
 -                fdasd_error(anc, wrong_disk_format, err_str);
 +                if(!anc->silent) {
-+                    snprintf(err_str, ERROR_STRING_SIZE, 
++                    snprintf(err_str, ERROR_STRING_SIZE,
 +			    "%s is not formatted with z/OS compatible "
 +			    "disk layout!", options.device);
 +                    fdasd_error(anc, wrong_disk_format, err_str);

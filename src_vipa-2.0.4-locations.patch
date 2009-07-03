@@ -42,3 +42,33 @@ index 669b6c6..d395fa8 100644
 -- 
 1.6.0.6
 
+From 5c21f29f4d9e82942a997775c111280b85d01bb8 Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 22 Apr 2009 12:53:55 +0200
+Subject: [PATCH] make the man page path and script path configurable
+
+---
+ Makefile |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index d395fa8..365472b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -23,9 +23,11 @@ VERSION=2.0.4
+ LIBDIR=/usr/lib
+ SRC_VIPA_PATH=$(INSTROOT)$(LIBDIR)
+ # the path to the starter script
+-SRC_VIPA_STARTER_PATH=$(INSTROOT)/usr/sbin
++SBINDIR=/usr/sbin
++SRC_VIPA_STARTER_PATH=$(INSTROOT)$(SBINDIR)
+ # path to man page
+-SRC_VIPA_MANPAGE_PATH=$(INSTROOT)/usr/share/man
++MANDIR=/usr/share/man
++SRC_VIPA_MANPAGE_PATH=$(INSTROOT)$(MANDIR)
+ 
+ all: src_vipa.so src_vipa.sh
+ 
+-- 
+1.6.0.6
+

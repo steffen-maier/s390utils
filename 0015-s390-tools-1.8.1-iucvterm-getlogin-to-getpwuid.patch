@@ -1,0 +1,70 @@
+From b76deacff693b951c2e5a01ed17e058379b9e00a Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Mon, 22 Jun 2009 12:47:02 +0200
+Subject: [PATCH] s390-tools-1.8.1-iucvterm-getlogin-to-getpwuid
+
+Description: iucvconn: Replace getlogin() with getpwuid(geteuid())
+Symptom:     The user name is not always logged to syslog.
+Problem:     The getlogin() function returns the name of the user that
+             is logged in. This user name is used to write syslog records.
+             getlogin() retrieves the user information from the utmp
+             database. However, the user information might not always be
+             available, for example, the screen program can remove utmp
+             records (logoff function).
+Solution:    The getpwuid() function is used to get the user name from the
+             passwd file (or any other NSS source, i.e. LDAP etc.).
+Problem-ID:  54225
+---
+ iucvterm/src/iucvconn.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/iucvterm/src/iucvconn.c b/iucvterm/src/iucvconn.c
+index 61f536e..da7d08a 100644
+--- a/iucvterm/src/iucvconn.c
++++ b/iucvterm/src/iucvconn.c
+@@ -7,6 +7,7 @@
+  * Author(s): Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+  */
+ #include <errno.h>
++#include <pwd.h>
+ #include <signal.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+@@ -237,6 +238,7 @@ int main(int argc, char *argv[])
+ 	struct sockaddr_iucv	addr;
+ 	struct termios		ios;
+ 	struct sigaction	sigact;
++	struct passwd		*passwd;
+ 	struct iucvtty_cfg	conf;
+ 
+ 
+@@ -266,6 +268,9 @@ int main(int argc, char *argv[])
+ 	/* syslog */
+ 	openlog(SYSLOG_IDENT, LOG_PID, LOG_AUTHPRIV);
+ 
++	/* get user information for syslog */
++	passwd = getpwuid(geteuid());
++
+ 	if (connect(server, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
+ 		switch (errno) {
+ 		case EAGAIN:
+@@ -286,12 +291,14 @@ int main(int argc, char *argv[])
+ 			break;
+ 		}
+ 		AUDIT("Connection to %s/%s failed for user %s (uid=%i)",
+-			conf.host, conf.service, getlogin(), geteuid());
++			conf.host, conf.service,
++			(passwd != NULL) ? passwd->pw_name : "n/a", geteuid());
+ 		rc = 2;
+ 		goto return_on_error;
+ 	}
+ 	AUDIT("Established connection to %s/%s for user %s (uid=%i)",
+-		conf.host, conf.service, getlogin(), geteuid());
++		conf.host, conf.service,
++		(passwd != NULL) ? passwd->pw_name : "n/a", geteuid());
+ 
+ 	/* send client params */
+ 	iucvtty_tx_termenv(server, DEFAULT_TERM);
+-- 
+1.6.0.6
+

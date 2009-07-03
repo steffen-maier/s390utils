@@ -1,0 +1,54 @@
+From 38dfbc2642350aba44df80b41c91ab78891ba818 Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Tue, 16 Jun 2009 11:10:47 +0200
+Subject: [PATCH] s390-tools-1.8.1-zipl-fix-unsupported-device
+
+Description: zipl: zipl does not exit for an unsupported device driver.
+Symptom:     zipl does not exit with an error when it is run against a
+             target device which is provided by an unsupported device driver
+             (e.g. device-mapper). The resulting IPL records might be
+             incorrect and filesystem corruption may occur.
+Problem:     The device driver name check does not cause an error when the
+             device driver name is unknown and the device is not a
+             partition.
+Solution:    Change the device driver name check to write an error message
+             and to exit when it finds an unknown device driver name.
+Problem-ID:  53660
+---
+ zipl/src/disk.c |   20 ++------------------
+ 1 files changed, 2 insertions(+), 18 deletions(-)
+
+diff --git a/zipl/src/disk.c b/zipl/src/disk.c
+index 3a48e44..f1b98a7 100644
+--- a/zipl/src/disk.c
++++ b/zipl/src/disk.c
+@@ -190,24 +190,8 @@ disk_get_info(const char* device, struct disk_info** info)
+ 		data->device = stats.st_rdev & ~SCSI_PARTN_MASK;
+ 	} else {
+ 		/* Driver name is unknown */
+-		if (data->devno == -1) {
+-			if (data->geo.start) {
+-				/* Writing to the parent device of this
+-				 * partition may not be safe so stop here. */
+-				error_reason("Unsupported device driver '%s'",
+-					     data->drv_name);
+-				goto out_close;
+-			}
+-			/* Assume that the first block can be overwritten
+-			 * even if we don't now the exact device type. */
+-			data->type = disk_type_scsi;
+-			data->partnum = 0;
+-			data->device = stats.st_rdev;
+-		} else {
+-			error_reason("Unsupported device driver '%s' "
+-				     "for disk type DASD", data->drv_name);
+-			goto out_close;
+-		}
++		error_reason("Unsupported device driver '%s'", data->drv_name);
++		goto out_close;
+ 	}
+ 
+ 	/* Convert device size to size in physical blocks */
+-- 
+1.6.0.6
+
