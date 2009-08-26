@@ -1,0 +1,32 @@
+From 8384b80dac573a65de6610ff8dae753a0e2d6deb Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Mon, 13 Jul 2009 10:29:52 +0200
+Subject: [PATCH] s390-tools-1.8.1-lsluns-disk-enc
+
+Description: lsluns: fix byte check for disk encryption check.
+Symptom:     Encrypted disks are never displayed as encrypted.
+Problem:     The check was performed on the wrong bit.
+Solution:    Perform the check on the correct bit.
+Problem-ID:  54517
+---
+ zconf/lsluns |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/zconf/lsluns b/zconf/lsluns
+index 08a11ba..164282e 100755
+--- a/zconf/lsluns
++++ b/zconf/lsluns
+@@ -216,8 +216,8 @@ sub show_attached_lun_info
+                                 (my $mod = substr($inq, 0x10, 0x10)) =~ s/\s*//g;
+                                 my $type = ord(substr($inq, 0x0, 0x1));
+                                 my $enc = ($mod =~ /2107/) ?
+-                                        ord(substr($inq, 0xa2, 0x80)) : 0;
+-                                $l .= "(X)" if ($enc & 0x8);
++                                        ord(substr($inq, 0xa2, 0x1)) : 0;
++                                $l .= "(X)" if ($enc & 0x80);
+                                 $txt[$type] = $type if (!defined($txt[$type]));
+                                 print("\t\tlun = $l\t$sg_dev\t$txt[$type]",
+                                       "\t$vend:$mod\n");
+-- 
+1.6.0.6
+

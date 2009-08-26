@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -42,6 +42,9 @@ Patch15:  0015-s390-tools-1.8.1-iucvterm-getlogin-to-getpwuid.patch
 Patch16:  0016-s390-tools-1.8.1-dumpconf-improve-error-checking.patch
 Patch17:  0017-s390-tools-1.8.1-cpuplugd-memplug.patch
 Patch18:  0018-s390-tools-1.8.1-ziomon-new-blkiomon.patch
+Patch19:  0019-s390-tools-1.8.1-lsluns-disk-enc.patch
+Patch20:  0020-s390-tools-1.8.1-cpuplugd-cmminit.patch
+Patch21:  0021-s390-tools-1.8.1-lszfcp-perf.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
@@ -103,12 +106,21 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %patch14 -p1 -b .zipl-kdump-man
 
 # Last-minute fixes from IBM
-%patch15 -p1 -b iucvterm-getlogin-to-getpwuid
-%patch16 -p1 -b dumpconf-improve-error-checking
-%patch17 -p1 -b cpuplugd-memplug
+%patch15 -p1 -b .iucvterm-getlogin-to-getpwuid
+%patch16 -p1 -b .dumpconf-improve-error-checking
+%patch17 -p1 -b .cpuplugd-memplug
 
 # Adapt ziomon to the new layout of the blkiomon_stat structure (#506966)
-%patch18 -p1 -b ziomon-new-blkiomon
+%patch18 -p1 -b .ziomon-new-blkiomon
+
+# Fix byte check for disk encryption check in lsluns (#510032)
+%patch19 -p1 -b .lsluns-disk-enc
+
+# Fix cmm configuration file value initialization parser in cpuplugd (#511379)
+%patch20 -p1 -b .cpuplugd-cmminit
+
+# Check only ZFCP devices in lszfcp (#518669)
+%patch21 -p1 -b .lszfcp-perf
 
 #
 # cmsfs
@@ -734,6 +746,11 @@ This package contains the CMS file system tools.
 
 
 %changelog
+* Wed Aug 26 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-2
+- Fix byte check for disk encryption check in lsluns (#510032)
+- Fix cmm configuration file value initialization parser in cpuplugd (#511379)
+- Check only ZFCP devices in lszfcp (#518669)
+
 * Mon Jun 29 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-1
 - update to 1.8.1
 - drop upstreamed patches

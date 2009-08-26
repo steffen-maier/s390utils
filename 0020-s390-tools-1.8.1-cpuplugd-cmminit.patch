@@ -1,0 +1,25 @@
+From af1d22ef04368fd201480959ad6647853d82a25e Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 26 Aug 2009 14:20:50 +0200
+Subject: [PATCH 20/21] s390-tools-1.8.1-cpuplugd-cmminit
+
+---
+ cpuplugd/config.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/cpuplugd/config.c b/cpuplugd/config.c
+index 93b31e5..c013a65 100644
+--- a/cpuplugd/config.c
++++ b/cpuplugd/config.c
+@@ -348,7 +348,7 @@ void check_config(struct config *cfg)
+ 					"configuration detected\n");
+ 		}
+ 	}
+-	if (cfg->cmm_max < 0 || cfg->cmm_min < -1
++	if (cfg->cmm_max < 0 || cfg->cmm_min < 0
+ 		|| cfg->cmm_inc < 0 || cfg->memplug == NULL || cfg->update < 0
+ 		|| cfg->memunplug == NULL) {
+ 		if (foreground == 1)
+-- 
+1.6.3.3
+
