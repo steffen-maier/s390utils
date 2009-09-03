@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -182,6 +182,7 @@ pushd lib-zfcp-hbaapi-%{hbaapiver}
 make EXTRA_CFLAGS="$RPM_OPT_FLAGS"
 popd
 
+
 %install
 rm -rf ${RPM_BUILD_ROOT}
 
@@ -193,10 +194,10 @@ make install \
         LIBDIR=${RPM_BUILD_ROOT}/%{_lib} \
         DISTRELEASE=%{release}
 
-%{__mkdir} -p ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-%{__mkdir} -p ${RPM_BUILD_ROOT}%{_initddir}
-%{__mkdir} -p ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
-%{__mkdir} -p ${RPM_BUILD_ROOT}/sbin
+mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
+mkdir -p ${RPM_BUILD_ROOT}%{_initddir}
+mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
+mkdir -p ${RPM_BUILD_ROOT}/sbin
 
 install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
 install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
@@ -205,16 +206,16 @@ install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT/sbin
 install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/56-zfcp.rules
 install -p -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/56-dasd.rules
 
-install -m 644 etc/sysconfig/dumpconf ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-install -m 755 etc/init.d/dumpconf ${RPM_BUILD_ROOT}%{_initddir}/dumpconf
+install -p -m 644 etc/sysconfig/dumpconf ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
+install -p -m 755 etc/init.d/dumpconf ${RPM_BUILD_ROOT}%{_initddir}/dumpconf
 
-install -m 644 etc/sysconfig/mon_statd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-install -m 755 etc/init.d/mon_statd ${RPM_BUILD_ROOT}%{_initddir}/mon_statd
+install -p -m 644 etc/sysconfig/mon_statd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
+install -p -m 755 etc/init.d/mon_statd ${RPM_BUILD_ROOT}%{_initddir}/mon_statd
 
-install -m 644 etc/sysconfig/cpuplugd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-install -m 755 etc/init.d/cpuplugd ${RPM_BUILD_ROOT}%{_initddir}/cpuplugd
+install -p -m 644 etc/sysconfig/cpuplugd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
+install -p -m 755 etc/init.d/cpuplugd ${RPM_BUILD_ROOT}%{_initddir}/cpuplugd
 
-install -D -m 644 etc/udev/rules.d/57-osasnmpd.rules ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
+install -Dp -m 644 etc/udev/rules.d/57-osasnmpd.rules ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
 
 # cmsfs tools must be available in /sbin
 install -p -m 755 cmsfs-%{cmsfsver}/cmsfscat $RPM_BUILD_ROOT/sbin
@@ -238,6 +239,10 @@ pushd lib-zfcp-hbaapi-%{hbaapiver}
 # keep only html docs
 rm -rf $RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-devel-%{hbaapiver}/latex
 popd
+
+# install usefull headers for devel subpackage
+mkdir -p $RPM_BUILD_ROOT%{_includedir}/%{name}
+install -p -m 644 include/vtoc.h $RPM_BUILD_ROOT%{_includedir}/%{name}
 
 
 %clean
@@ -744,8 +749,27 @@ This package contains the CMS file system tools.
 %{_mandir}/man8/cmsfslst.8*
 %{_mandir}/man8/cmsfsvol.8*
 
+#
+# *********************** devel package  ***********************
+#
+%package devel
+License:        GPLv2
+Summary:        Development files
+Group:          Development/Libraries
+
+%description devel
+User-space development files for the s390/s390x architecture.
+
+%files devel
+%defattr(-,root,root,-)
+%{_includedir}/%{name}
+
 
 %changelog
+* Thu Sep  3 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-3
+- create devel subpackage with some useful headers
+- preserving timestamps on installed files
+
 * Wed Aug 26 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-2
 - Fix byte check for disk encryption check in lsluns (#510032)
 - Fix cmm configuration file value initialization parser in cpuplugd (#511379)
@@ -1147,5 +1171,3 @@ This package contains the CMS file system tools.
 
 * Thu Aug 02 2001 Karsten Hopp <karsten@redhat.de>
 - initial build
-
-
