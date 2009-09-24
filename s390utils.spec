@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -45,6 +45,7 @@ Patch18:  0018-s390-tools-1.8.1-ziomon-new-blkiomon.patch
 Patch19:  0019-s390-tools-1.8.1-lsluns-disk-enc.patch
 Patch20:  0020-s390-tools-1.8.1-cpuplugd-cmminit.patch
 Patch21:  0021-s390-tools-1.8.1-lszfcp-perf.patch
+Patch22:  0022-fix-string-overflow-in-vtoc_volume_label_init.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
@@ -121,6 +122,9 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Check only ZFCP devices in lszfcp (#518669)
 %patch21 -p1 -b .lszfcp-perf
+
+# Fix string overflow in vtoc_volume_label_init (#525318)
+%patch22 -p1 -b .vtoc-label
 
 #
 # cmsfs
@@ -766,6 +770,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Sep 24 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-4
+- fixed string overflow in vtoc_volume_label_init (#525318)
+
 * Thu Sep  3 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-3
 - create devel subpackage with some useful headers
 - preserving timestamps on installed files
