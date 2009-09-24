@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -163,9 +163,7 @@ pushd lib-zfcp-hbaapi-%{hbaapiver}
 # lib-zfcp-hbaapi: fix perms
 chmod a-x *.h AUTHORS README ChangeLog LICENSE
 # update sg3_utils library name
-%if 0%{?fedora} >= 10
 sed -i 's/-lsgutils/-lsgutils2/g' Makefile.in
-%endif
 popd
 
 
@@ -770,6 +768,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Sep 24 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-5
+- drop support for Fedora < 10
+
 * Thu Sep 24 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-4
 - fixed string overflow in vtoc_volume_label_init (#525318)
 
