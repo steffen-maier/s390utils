@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.1
-Release:        5%{?dist}
+Release:        6%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -51,6 +51,8 @@ Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
 
 Patch200:       src_vipa-2.0.4-locations.patch
+
+Patch300:       lib-zfcp-hbaapi-2.0-sgutils.patch
 
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -145,6 +147,14 @@ pushd src_vipa-%{vipaver}
 %patch200 -p1 -b .locations
 popd
 
+#
+# lib-zfcp-hbaapi
+#
+pushd lib-zfcp-hbaapi-%{hbaapiver}
+# fix for newer sg3_utils and missing function declarations
+%patch300 -p1 -b .sgutils
+popd
+
 # remove --strip from install
 find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
 
@@ -162,8 +172,6 @@ popd
 pushd lib-zfcp-hbaapi-%{hbaapiver}
 # lib-zfcp-hbaapi: fix perms
 chmod a-x *.h AUTHORS README ChangeLog LICENSE
-# update sg3_utils library name
-sed -i 's/-lsgutils/-lsgutils2/g' Makefile.in
 popd
 
 
@@ -768,6 +776,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Sep 25 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-6
+- fix issues in lib-zfcp-hbaapi with a patch
+
 * Thu Sep 24 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-5
 - drop support for Fedora < 10
 
