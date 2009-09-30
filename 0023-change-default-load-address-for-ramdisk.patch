@@ -1,0 +1,27 @@
+From bfe74e60ab6529986a7c251042d17d57a3ccf675 Mon Sep 17 00:00:00 2001
+From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 30 Sep 2009 18:19:23 +0200
+Subject: [PATCH 23/25] change default load address for ramdisk
+
+The default load address for the initial ramdisk is changed from
+0x100000 to 0x200000 to allow larger kernels to be loaded.
+---
+ zipl/include/zipl.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/zipl/include/zipl.h b/zipl/include/zipl.h
+index 1f70e48..0f04072 100644
+--- a/zipl/include/zipl.h
++++ b/zipl/include/zipl.h
+@@ -21,7 +21,7 @@
+ #define ZIPL_STAGE3_ENTRY_ADDRESS	0xa028LL
+ #define DEFAULT_PARMFILE_ADDRESS	0x1000LL
+ #define DEFAULT_STAGE3_ADDRESS		0xa000LL
+-#define DEFAULT_IMAGE_ADDRESS		0x10000LL
++#define DEFAULT_IMAGE_ADDRESS		0x20000LL
+ #define DEFAULT_RAMDISK_ADDRESS 	0x800000LL
+ 
+ #define PSW_ADDRESS_MASK		0x000000007fffffffLL
+-- 
+1.6.3.3
+

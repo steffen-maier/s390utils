@@ -10,15 +10,13 @@
 #
 # manual setup:
 # modprobe zfcp
-# echo WWPN > /sys/bus/ccw/drivers/zfcp/0.0.4000/port_add
-# echo LUN  > /sys/bus/ccw/drivers/zfcp/0.0.4000/WWPN/unit_add
 # echo 1    > /sys/bus/ccw/drivers/zfcp/0.0.4000/online
+# echo LUN  > /sys/bus/ccw/drivers/zfcp/0.0.4000/WWPN/unit_add
 # 
 # Example:
 # modprobe zfcp
-# echo 0x5005076300c213e9 > /sys/bus/ccw/drivers/zfcp/0.0.4000/port_add
-# echo 0x5022000000000000 > /sys/bus/ccw/drivers/zfcp/0.0.4000/0x5005076300c213e9/unit_add
 # echo 1                  > /sys/bus/ccw/drivers/zfcp/0.0.4000/online
+# echo 0x5022000000000000 > /sys/bus/ccw/drivers/zfcp/0.0.4000/0x5005076300c213e9/unit_add
 
 CONFIG=/etc/zfcp.conf
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
@@ -39,8 +37,7 @@ if [ -f "$CONFIG" ]; then
       elif [ $numparams == 3 ]; then
          read DEVICE WWPN FCPLUN < <(echo $line)
       fi
-      [ ! -d /sys/bus/ccw/drivers/zfcp/${DEVICE/0x/}/$WWPN ] && echo $WWPN > /sys/bus/ccw/drivers/zfcp/${DEVICE/0x/}/port_add
-      [ ! -d /sys/bus/ccw/drivers/zfcp/${DEVICE/0x/}/$WWPN/$FCPLUN ] && echo $FCPLUN > /sys/bus/ccw/drivers/zfcp/${DEVICE/0x/}/$WWPN/unit_add
       echo 1 > /sys/bus/ccw/drivers/zfcp/${DEVICE/0x/}/online
+      [ ! -d /sys/bus/ccw/drivers/zfcp/${DEVICE/0x/}/$WWPN/$FCPLUN ] && echo $FCPLUN > /sys/bus/ccw/drivers/zfcp/${DEVICE/0x/}/$WWPN/unit_add
    done
 fi

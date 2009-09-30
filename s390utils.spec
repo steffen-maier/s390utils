@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.1
-Release:        6%{?dist}
+Release:        7%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -46,6 +46,9 @@ Patch19:  0019-s390-tools-1.8.1-lsluns-disk-enc.patch
 Patch20:  0020-s390-tools-1.8.1-cpuplugd-cmminit.patch
 Patch21:  0021-s390-tools-1.8.1-lszfcp-perf.patch
 Patch22:  0022-fix-string-overflow-in-vtoc_volume_label_init.patch
+Patch23:  0023-change-default-load-address-for-ramdisk.patch
+Patch24:  0024-s390-tools-1.8.1-cpuplugd-limits.patch
+Patch25:  0025-s390-tools-1.8.1-misc-bugfixes.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
@@ -127,6 +130,15 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Fix string overflow in vtoc_volume_label_init (#525318)
 %patch22 -p1 -b .vtoc-label
+
+# Change default load address for ramdisk (#526339)
+%patch23 -p1 -b .ramdisk-address
+
+# Fix cmm_pages allocation outside min and max range (#525495)
+%patch24 -p1 -b .ramdisk-address
+
+# Miscelaneous fixes for 1.8.1 (#525495)
+%patch25 -p1 -b .misc
 
 #
 # cmsfs
@@ -776,6 +788,11 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Sep 30 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-7
+- changed ramdisk load address (#526339)
+- updated zfcpconf.sh script to new sysfs interface (#526324)
+- added 1.8.1 fixes from IBM (#525495)
+
 * Fri Sep 25 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-6
 - fix issues in lib-zfcp-hbaapi with a patch
 
