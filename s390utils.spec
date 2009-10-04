@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.1
-Release:        7%{?dist}
+Release:        8%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -61,9 +61,8 @@ Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
 Requires:       s390utils-cpuplugd = %{epoch}:%{version}-%{release}
 Requires:       s390utils-mon_statd = %{epoch}:%{version}-%{release}
+Requires:       s390utils-iucvterm = %{epoch}:%{version}-%{release}
 Requires:       s390utils-ziomon = %{epoch}:%{version}-%{release}
-Requires:       s390utils-libzfcphbaapi = %{epoch}:%{version}-%{release}
-Requires:       s390utils-libzfcphbaapi-devel = %{epoch}:%{version}-%{release}
 Requires:       s390utils-cmsfs = %{epoch}:%{version}-%{release}
 
 
@@ -788,6 +787,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Oct  2 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-8
+- really changed ramdisk load address (#526339)
+- change the required and optional subpackages for the meta package
+
 * Wed Sep 30 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-7
 - changed ramdisk load address (#526339)
 - updated zfcpconf.sh script to new sysfs interface (#526324)
