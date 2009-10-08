@@ -1,7 +1,7 @@
-From 10886e2ec85474a8b4646b725a240d388dcdccee Mon Sep 17 00:00:00 2001
+From 1697d4f40be133c78cd09fb0af14af22e8c6219e Mon Sep 17 00:00:00 2001
 From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Sun, 4 Oct 2009 17:46:16 +0200
-Subject: [PATCH 23/25] change default load address for ramdisk
+Subject: [PATCH 9/9] change default load address for ramdisk
 
 The default load address for the initial ramdisk is changed from
 0x800000 to 0x2000000 to allow larger kernels to be loaded.

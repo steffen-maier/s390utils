@@ -1,7 +1,7 @@
-From 1648e0dab246190c170e82244c790ef8e9144e40 Mon Sep 17 00:00:00 2001
+From 2513c0f8096c681f962d77420dac731f7bb33e44 Mon Sep 17 00:00:00 2001
 From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Thu, 23 Apr 2009 11:45:36 +0200
-Subject: [PATCH] s390-tools-1.8.1-zipl-automenu
+Subject: [PATCH 2/9] s390-tools-1.8.1-zipl-automenu
 
 ---
  zipl/man/zipl.8 |    7 ++
@@ -29,7 +29,7 @@ index 8a83c01..6ebf240 100644
  1. Scenario: prepare disk for booting a Linux kernel image using the
  following parameters:
 diff --git a/zipl/src/job.c b/zipl/src/job.c
-index 2f69104..1b7bcb2 100644
+index c5c85d8..6a526e4 100644
 --- a/zipl/src/job.c
 +++ b/zipl/src/job.c
 @@ -43,6 +43,7 @@ static struct option options[] = {
@@ -407,10 +407,10 @@ index 9948092..caca3cf 100644
  	{inv, inv, inv, inv, inv, inv, inv, req, req, inv, inv, inv, inv, inv},
  /* part dump	*/
 diff --git a/zipl/src/zipl.c b/zipl/src/zipl.c
-index f99177d..2a11404 100644
+index 9cb764c..4d9fd36 100644
 --- a/zipl/src/zipl.c
 +++ b/zipl/src/zipl.c
-@@ -71,6 +71,7 @@ static const char* usage_text[] = {
+@@ -73,6 +73,7 @@ static const char* usage_text[] = {
  "-n, --noninteractive            Answer all confirmation questions with 'yes'",
  "-V, --verbose                   Provide more verbose output",
  "-a, --add-files                 Add all referenced files to bootmap file",
@@ -419,5 +419,5 @@ index f99177d..2a11404 100644
  };
  
 -- 
-1.6.0.6
+1.6.3.3
 

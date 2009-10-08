@@ -1,17 +1,17 @@
-From ce6dabd2c97ae9ff589232f7ff95c699a9755267 Mon Sep 17 00:00:00 2001
+From 80e1e88e108b774c7aa7c201326f1a92cf1b7e35 Mon Sep 17 00:00:00 2001
 From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 26 Aug 2009 14:21:14 +0200
-Subject: [PATCH 21/21] s390-tools-1.8.1-lszfcp-perf
+Subject: [PATCH 7/9] s390-tools-1.8.1-lszfcp-perf
 
 ---
  zconf/lszfcp |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/zconf/lszfcp b/zconf/lszfcp
-index e6fc94f..8ac66ea 100755
+index d0bf84f..a872d05 100755
 --- a/zconf/lszfcp
 +++ b/zconf/lszfcp
-@@ -231,7 +231,7 @@ show_devices()
+@@ -233,7 +233,7 @@ show_devices()
  	# Differentiate old and new sysfs layout
  	if $FC_CLASS; then
  		SCSI_DEVICE_LIST=`ls -d \

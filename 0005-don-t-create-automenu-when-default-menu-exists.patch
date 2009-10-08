@@ -1,14 +1,14 @@
-From 486526858271c8ea890e8728a1cf1cceeceb9b1a Mon Sep 17 00:00:00 2001
+From 1efcfe8d7ad20f7a3f584628375da60682b4579c Mon Sep 17 00:00:00 2001
 From: =?utf-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Thu, 23 Apr 2009 15:28:06 +0200
-Subject: [PATCH] don't create automenu when default menu exists
+Subject: [PATCH 5/9] don't create automenu when default menu exists
 
 ---
  zipl/src/job.c |   25 +++++++++++++++----------
  1 files changed, 15 insertions(+), 10 deletions(-)
 
 diff --git a/zipl/src/job.c b/zipl/src/job.c
-index 1b7bcb2..9fc6c2d 100644
+index 6a526e4..89c8c23 100644
 --- a/zipl/src/job.c
 +++ b/zipl/src/job.c
 @@ -1441,6 +1441,8 @@ get_job_from_config_file(struct command_line* cmdline, struct job_data* job)
@@ -55,5 +55,5 @@ index 1b7bcb2..9fc6c2d 100644
  	}
  	else {
 -- 
-1.6.0.6
+1.6.3.3
 

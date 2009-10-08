@@ -7,8 +7,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.8.1
-Release:        8%{?dist}
+Version:        1.8.2
+Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -27,28 +27,16 @@ Source8:        dasd.udev
 # http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi-%{hbaapiver}.html
 Source9:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/lib-zfcp-hbaapi-%{hbaapiver}.tar.gz
 
-Patch1:   0001-s390-tools-1.8.1-common-mak.patch
-Patch4:   0004-s390-tools-1.8.1-zipl-automenu.patch
-Patch5:   0005-s390-tools-1.8.1-fdasd-su.patch
-Patch6:   0006-s390-tools-1.8.1-fdasd-raid-lvm.patch
-Patch8:   0008-s390-tools-1.8.1-ziorep-fixes.patch
-Patch9:   0009-s390-tools-1.8.1-cflags.patch
-Patch10:  0010-s390-tools-1.8.1-defaultmenu.patch
-Patch11:  0011-s390-tools-1.8.1-execstack.patch
-Patch12:  0012-s390-tools-1.8.1-ziomon-fixes.patch
-Patch13:  0013-s390-tools-1.8.1-zipl-fix-unsupported-device.patch
-Patch14:  0014-s390-tools-1.8.1-zipl-kdump-man.patch
-Patch15:  0015-s390-tools-1.8.1-iucvterm-getlogin-to-getpwuid.patch
-Patch16:  0016-s390-tools-1.8.1-dumpconf-improve-error-checking.patch
-Patch17:  0017-s390-tools-1.8.1-cpuplugd-memplug.patch
-Patch18:  0018-s390-tools-1.8.1-ziomon-new-blkiomon.patch
-Patch19:  0019-s390-tools-1.8.1-lsluns-disk-enc.patch
-Patch20:  0020-s390-tools-1.8.1-cpuplugd-cmminit.patch
-Patch21:  0021-s390-tools-1.8.1-lszfcp-perf.patch
-Patch22:  0022-fix-string-overflow-in-vtoc_volume_label_init.patch
-Patch23:  0023-change-default-load-address-for-ramdisk.patch
-Patch24:  0024-s390-tools-1.8.1-cpuplugd-limits.patch
-Patch25:  0025-s390-tools-1.8.1-misc-bugfixes.patch
+Patch1:   0001-s390-tools-1.5.3-zipl-zfcpdump-2.patch
+Patch2:   0002-s390-tools-1.8.1-zipl-automenu.patch
+Patch3:   0003-s390-tools-1.8.1-fdasd-su.patch
+Patch4:   0004-s390-tools-1.8.1-fdasd-raid-lvm.patch
+Patch5:   0005-don-t-create-automenu-when-default-menu-exists.patch
+Patch6:   0006-s390-tools-1.8.1-zipl-kdump-man.patch
+Patch7:   0007-s390-tools-1.8.1-lszfcp-perf.patch
+Patch8:   0008-fix-string-overflow-in-vtoc_volume_label_init.patch
+Patch9:   0009-change-default-load-address-for-ramdisk.patch
+Patch10:  0010-improve-mon_statd-init-script.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
@@ -67,8 +55,8 @@ Requires:       s390utils-cmsfs = %{epoch}:%{version}-%{release}
 
 
 %description
-This is a meta package for installing all s390-tools sub packages.
-If you do not need all sub packages, it is recommended to install the
+This is a meta package for installing the default s390-tools sub packages.
+If you do not need all default sub packages, it is recommended to install the
 required sub packages separately.
 
 The s390utils packages contain a set of user space utilities that should to
@@ -81,63 +69,31 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %patch1 -p1 -b .common-mak
 
 # Patch to maintain backwards compatibility with older zipl multiboot feature
-%patch4 -p1 -b .zipl-automenu
+%patch2 -p1 -b .zipl-automenu
 
 # Fix to honor the silent flag for wrongly formated disks
-%patch5 -p1 -b .fdasd-su
+%patch3 -p1 -b .fdasd-su
 
 # Enhancement to add raid partiton support to dasds
-%patch6 -p1 -b .fdasd-raid-lvm
-
-# Post 1.8.1 fixes for ziorep
-%patch8 -p1 -b .ziorep
-
-# Allow override of optimization level in CFLAGS
-%patch9 -p1 -b .cflags
+%patch4 -p1 -b .fdasd-raid-lvm
 
 # Don't build automenu iff default menu exists (#486444)
-%patch10 -p1 -b .defaultmenu
-
-# Remove the execuatble stack flag from zipl
-%patch11 -p1 -b .execstack
-
-# Post 1.8.1 fixes for ziomon
-%patch12 -p1 -b .ziomon
-
-# Post 1.8.1 fix for zipl
-%patch13 -p1 -b .zipl-device
+%patch5 -p1 -b .defaultmenu
 
 # Update zipl man page
-%patch14 -p1 -b .zipl-kdump-man
-
-# Last-minute fixes from IBM
-%patch15 -p1 -b .iucvterm-getlogin-to-getpwuid
-%patch16 -p1 -b .dumpconf-improve-error-checking
-%patch17 -p1 -b .cpuplugd-memplug
-
-# Adapt ziomon to the new layout of the blkiomon_stat structure (#506966)
-%patch18 -p1 -b .ziomon-new-blkiomon
-
-# Fix byte check for disk encryption check in lsluns (#510032)
-%patch19 -p1 -b .lsluns-disk-enc
-
-# Fix cmm configuration file value initialization parser in cpuplugd (#511379)
-%patch20 -p1 -b .cpuplugd-cmminit
+%patch6 -p1 -b .zipl-kdump-man
 
 # Check only ZFCP devices in lszfcp (#518669)
-%patch21 -p1 -b .lszfcp-perf
+%patch7 -p1 -b .lszfcp-perf
 
 # Fix string overflow in vtoc_volume_label_init (#525318)
-%patch22 -p1 -b .vtoc-label
+%patch8 -p1 -b .vtoc-label
 
 # Change default load address for ramdisk (#526339)
-%patch23 -p1 -b .ramdisk-address
+%patch9 -p1 -b .ramdisk-address
 
-# Fix cmm_pages allocation outside min and max range (#525495)
-%patch24 -p1 -b .ramdisk-address
-
-# Miscelaneous fixes for 1.8.1 (#525495)
-%patch25 -p1 -b .misc
+# Improve mon_statd init script
+%patch10 -p1 -b .improve-mon_statd
 
 #
 # cmsfs
@@ -187,7 +143,7 @@ popd
 
 
 %build
-make OPT_FLAGS="$RPM_OPT_FLAGS" DISTRELEASE=%{release}
+make OPT_FLAGS="$RPM_OPT_FLAGS" DISTRELEASE=%{release} V=1
 
 pushd cmsfs-%{cmsfsver}
 ./configure
@@ -213,7 +169,8 @@ make install \
         INSTROOT=$RPM_BUILD_ROOT \
         MANDIR=$RPM_BUILD_ROOT%{_mandir} \
         LIBDIR=${RPM_BUILD_ROOT}/%{_lib} \
-        DISTRELEASE=%{release}
+        DISTRELEASE=%{release} \
+        V=1
 
 mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
 mkdir -p ${RPM_BUILD_ROOT}%{_initddir}
@@ -375,19 +332,23 @@ s390 base tools. This collection provides the following utilities:
    * zconf:
      Set of scripts to configure and list status information of Linux for
      zSeries IO devices.
-     - chccwdev: Modify generic attributes of channel attached devices.
-     - lscss:    List channel subsystem devices.
-     - lsdasd:   List channel attached direct access storage devices (DASD).
-     - lsqeth:   List all qeth-based network devices with their corresponding
-                 settings.
-     - lstape:   List tape devices, both channel and FCP attached.
-     - lszfcp:   Shows information contained in sysfs about zfcp adapters,
-                 ports and units that are online.
-     - lschp:    List information about available channel-paths.
-     - chchp:    Modify channel-path state.
-     - lsluns:   List available SCSI LUNs depending on adapter or port.
-     - lszcrypt: Show Information about zcrypt devices and configuration.
-     - chzcrypt: Modify zcrypt configuration.
+     - chccwdev:   Modify generic attributes of channel attached devices.
+     - lscss:      List channel subsystem devices.
+     - lsdasd:     List channel attached direct access storage devices (DASD).
+     - lsqeth:     List all qeth-based network devices with their corresponding
+                   settings.
+     - lstape:     List tape devices, both channel and FCP attached.
+     - lszfcp:     Shows information contained in sysfs about zfcp adapters,
+                   ports and units that are online.
+     - lschp:      List information about available channel-paths.
+     - chchp:      Modify channel-path state.
+     - lsluns:     List available SCSI LUNs depending on adapter or port.
+     - lszcrypt:   Show Information about zcrypt devices and configuration.
+     - chzcrypt:   Modify zcrypt configuration.
+     - znetconf:   List and configure network devices for System z network
+                   adapters.
+     - cio_ignore: Query and modify the contents of the CIO device driver
+                   blacklist.
 
    * dumpconf:
      Allows to configure the dump device used for system dump in case a kernel
@@ -423,7 +384,6 @@ fi
 %defattr(-,root,root,-)
 %doc README
 %doc LICENSE
-/sbin/vmur
 /sbin/zipl
 /sbin/dasdfmt
 /sbin/dasdinfo
@@ -432,6 +392,7 @@ fi
 /sbin/chccwdev
 /sbin/chchp
 /sbin/chzcrypt
+/sbin/cio_ignore
 /sbin/lschp
 /sbin/lscss
 /sbin/lsdasd
@@ -449,6 +410,7 @@ fi
 /sbin/tunedasd
 /sbin/vmcp
 /sbin/zgetdump
+/sbin/znetconf
 /sbin/dbginfo.sh
 %{_sbindir}/lsreipl
 %{_sbindir}/lsshut
@@ -456,10 +418,12 @@ fi
 %{_sbindir}/chshut
 %{_sbindir}/ip_watcher.pl
 %{_sbindir}/start_hsnc.sh
+%{_sbindir}/vmur
 %{_sbindir}/xcec-bridge
 %{_bindir}/vmconvert
 %{_initddir}/dumpconf
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
+/lib/s390-tools
 %{_mandir}/man1/zfcpdbf.1*
 %{_mandir}/man4/prandom.4*
 %{_mandir}/man5/zipl.conf.5*
@@ -468,6 +432,7 @@ fi
 %{_mandir}/man8/chreipl.8*
 %{_mandir}/man8/chshut.8*
 %{_mandir}/man8/chzcrypt.8*
+%{_mandir}/man8/cio_ignore.8*
 %{_mandir}/man8/dasdfmt.8*
 %{_mandir}/man8/dasdinfo.8*
 %{_mandir}/man8/dasdview.8*
@@ -492,6 +457,7 @@ fi
 %{_mandir}/man8/vmcp.8*
 %{_mandir}/man8/vmur.8*
 %{_mandir}/man8/zgetdump.8*
+%{_mandir}/man8/znetconf.8*
 %{_mandir}/man8/zipl.8*
 
 # Additional Redhat specific stuff
@@ -615,18 +581,18 @@ Group:          Applications/System
 Requires:       perl lsscsi coreutils blktrace >= 1.0.1
 
 %description ziomon
-Tool set to collect data for zfcp performance analysis.
+Tool set to collect data for zfcp performance analysis and report.
 
 %files ziomon
 %defattr(-,root,root,-)
-/sbin/ziomon
-/sbin/ziomon_fcpconf
-/sbin/ziomon_mgr
-/sbin/ziomon_util
-/sbin/ziomon_zfcpdd
-/sbin/ziorep_config
-/sbin/ziorep_traffic
-/sbin/ziorep_utilization
+%{_sbindir}/ziomon
+%{_sbindir}/ziomon_fcpconf
+%{_sbindir}/ziomon_mgr
+%{_sbindir}/ziomon_util
+%{_sbindir}/ziomon_zfcpdd
+%{_sbindir}/ziorep_config
+%{_sbindir}/ziorep_traffic
+%{_sbindir}/ziorep_utilization
 %{_mandir}/man8/ziomon.8*
 %{_mandir}/man8/ziomon_fcpconf.8*
 %{_mandir}/man8/ziomon_mgr.8*
@@ -646,7 +612,14 @@ Group:          Applications/System
 BuildRequires:  gettext
 
 %description iucvterm
-z/VM IUCV terminal applications.
+A set of applications to provide terminal access via the z/VM Inter-User
+Communication Vehicle (IUCV). The terminal access does not require an
+active TCP/IP connection between two Linux guest operating systems.
+
+- iucvconn:  Application to establish a terminal connection via z/VM IUCV.
+- iucvtty:   Application to provide terminal access via z/VM IUCV.
+- ts-shell:  Terminal server shell to authorize and control IUCV terminal
+             connections for individual Linux users.
 
 %pre iucvterm
 # check for ts-shell group and create it
@@ -787,6 +760,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Oct  8 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-1
+- added patch for improving mon_statd behaviour
+- rebased to 1.8.2
+
 * Fri Oct  2 2009 Dan Horák <dan[at]danny.cz> 2:1.8.1-8
 - really changed ramdisk load address (#526339)
 - change the required and optional subpackages for the meta package
