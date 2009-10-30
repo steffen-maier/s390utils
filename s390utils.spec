@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -23,7 +23,6 @@ Source5:        zfcpconf.sh
 # http://www.ibm.com/developerworks/linux/linux390/src_vipa-%{vipaver}.html
 Source6:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/src_vipa-%{vipaver}.tar.gz
 Source7:        zfcp.udev
-Source8:        dasd.udev
 # http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi-%{hbaapiver}.html
 Source9:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/lib-zfcp-hbaapi-%{hbaapiver}.tar.gz
 
@@ -37,6 +36,7 @@ Patch7:   0007-s390-tools-1.8.1-lszfcp-perf.patch
 Patch8:   0008-fix-string-overflow-in-vtoc_volume_label_init.patch
 Patch9:   0009-change-default-load-address-for-ramdisk.patch
 Patch10:  0010-improve-mon_statd-init-script.patch
+Patch11:  0011-update-readahead-value-for-better-performance.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
@@ -94,6 +94,9 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Improve mon_statd init script
 %patch10 -p1 -b .improve-mon_statd
+
+# Update readahead value for better performance
+%patch11 -p1 -b .readahead
 
 #
 # cmsfs
@@ -163,7 +166,7 @@ popd
 %install
 rm -rf ${RPM_BUILD_ROOT}
 
-mkdir -p $RPM_BUILD_ROOT{%{_lib},%{_libdir},/sbin,/bin,/boot,%{_mandir}/man1,%{_mandir}/man8,%{_sbindir},%{_bindir},%{_sysconfdir}/{profile.d,udev/rules.d,rc.d/init.d,sysconfig}}
+mkdir -p $RPM_BUILD_ROOT{%{_lib},%{_libdir},/sbin,/bin,/boot,%{_mandir}/man1,%{_mandir}/man8,%{_sbindir},%{_bindir},%{_sysconfdir}/{profile.d,udev/rules.d,sysconfig},%{_initddir}}
 
 make install \
         INSTROOT=$RPM_BUILD_ROOT \
@@ -172,17 +175,11 @@ make install \
         DISTRELEASE=%{release} \
         V=1
 
-mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-mkdir -p ${RPM_BUILD_ROOT}%{_initddir}
-mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
-mkdir -p ${RPM_BUILD_ROOT}/sbin
-
 install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
 install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT/sbin
 install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/56-zfcp.rules
-install -p -m 644 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/56-dasd.rules
 
 install -p -m 644 etc/sysconfig/dumpconf ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
 install -p -m 755 etc/init.d/dumpconf ${RPM_BUILD_ROOT}%{_initddir}/dumpconf
@@ -193,7 +190,7 @@ install -p -m 755 etc/init.d/mon_statd ${RPM_BUILD_ROOT}%{_initddir}/mon_statd
 install -p -m 644 etc/sysconfig/cpuplugd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
 install -p -m 755 etc/init.d/cpuplugd ${RPM_BUILD_ROOT}%{_initddir}/cpuplugd
 
-install -Dp -m 644 etc/udev/rules.d/57-osasnmpd.rules ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
+install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
 
 # cmsfs tools must be available in /sbin
 install -p -m 755 cmsfs-%{cmsfsver}/cmsfscat $RPM_BUILD_ROOT/sbin
@@ -464,8 +461,9 @@ fi
 /boot/tape0
 %{_sysconfdir}/profile.d/s390.csh
 %{_sysconfdir}/profile.d/s390.sh
-%config(noreplace) %{_sysconfdir}/udev/rules.d/56-dasd.rules
 %config(noreplace) %{_sysconfdir}/udev/rules.d/56-zfcp.rules
+%config(noreplace) %{_sysconfdir}/udev/rules.d/59-dasd.rules
+%config(noreplace) %{_sysconfdir}/udev/rules.d/60-readahead.rules
 /sbin/zfcpconf.sh
 
 # src_vipa
@@ -760,6 +758,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Oct 30 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-2
+- install dasd udev rules provided by the s390-tools
+- added patch for setting readahead value
+
 * Thu Oct  8 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-1
 - added patch for improving mon_statd behaviour
 - rebased to 1.8.2
