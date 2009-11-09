@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -25,6 +25,9 @@ Source6:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/h
 Source7:        zfcp.udev
 # http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi-%{hbaapiver}.html
 Source9:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/lib-zfcp-hbaapi-%{hbaapiver}.tar.gz
+# files for the Control Program Identification (Linux Call Home) feature (#463282)
+Source10:       cpi.initd
+Source11:       cpi.sysconfig
 
 Patch1:   0001-s390-tools-1.5.3-zipl-zfcpdump-2.patch
 Patch2:   0002-s390-tools-1.8.1-zipl-automenu.patch
@@ -44,6 +47,7 @@ Patch101:       cmsfs-1.1.8-kernel26.patch
 Patch200:       src_vipa-2.0.4-locations.patch
 
 Patch300:       lib-zfcp-hbaapi-2.0-sgutils.patch
+Patch301:       lib-zfcp-hbaapi-2.0-module.patch
 
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -123,6 +127,9 @@ popd
 pushd lib-zfcp-hbaapi-%{hbaapiver}
 # fix for newer sg3_utils and missing function declarations
 %patch300 -p1 -b .sgutils
+
+# build the library as a module
+%patch301 -p1 -b .module
 popd
 
 # remove --strip from install
@@ -158,7 +165,7 @@ make CC_FLAGS="$RPM_OPT_FLAGS -fPIC" LIBDIR=%{_libdir}
 popd
 
 pushd lib-zfcp-hbaapi-%{hbaapiver}
-%configure --disable-static --enable-vendor-lib=no
+%configure --disable-static
 make EXTRA_CFLAGS="$RPM_OPT_FLAGS"
 popd
 
@@ -209,15 +216,22 @@ pushd src_vipa-%{vipaver}
 make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=$RPM_BUILD_ROOT
 popd
 
+# lib-zfcp-hbaapi
 pushd lib-zfcp-hbaapi-%{hbaapiver}
-%makeinstall docdir=$RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-devel-%{hbaapiver}
-# keep only html docs
-rm -rf $RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-devel-%{hbaapiver}/latex
+%makeinstall docdir=$RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}
 popd
+# keep only html docs
+rm -rf $RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}/latex
+# remove unwanted files
+rm -f $RPM_BUILD_ROOT%{_libdir}/libzfcphbaapi.*
 
 # install usefull headers for devel subpackage
 mkdir -p $RPM_BUILD_ROOT%{_includedir}/%{name}
 install -p -m 644 include/vtoc.h $RPM_BUILD_ROOT%{_includedir}/%{name}
+
+# CPI
+install -p -m 644 %{SOURCE11} ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig/cpi
+install -p -m 755 %{SOURCE10} ${RPM_BUILD_ROOT}%{_initddir}/cpi
 
 
 %clean
@@ -362,18 +376,25 @@ s390 base tools. This collection provides the following utilities:
      - chshut:  Change actions which should be done in case of halt, poff,
                 reboot or panic.
 
+    * cpi:
+    Allows to set the system and sysplex names from the Linux guest to
+    the HMC/SE using the Control Program Identification feature.
+
 For more information refer to the following publications:
    * "Device Drivers, Features, and Commands" chapter "Useful Linux commands"
    * "Using the dump tools"
 
 %post base
 /sbin/chkconfig --add dumpconf
+/sbin/chkconfig --add cpi
 
 %preun base
 if [ $1 = 0 ]; then
         # not for updates
         /sbin/service dumpconf stop > /dev/null 2>&1
         /sbin/chkconfig --del dumpconf
+        /sbin/service cpi stop > /dev/null 2>&1
+        /sbin/chkconfig --del cpi
 fi
 :
 
@@ -420,6 +441,8 @@ fi
 %{_bindir}/vmconvert
 %{_initddir}/dumpconf
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
+%{_initddir}/cpi
+%config(noreplace) %{_sysconfdir}/sysconfig/cpi
 /lib/s390-tools
 %{_mandir}/man1/zfcpdbf.1*
 %{_mandir}/man4/prandom.4*
@@ -469,7 +492,7 @@ fi
 # src_vipa
 %{_bindir}/src_vipa.sh
 %{_libdir}/src_vipa.so
-%{_mandir}/man8/src_vipa.8.gz
+%{_mandir}/man8/src_vipa.8*
 
 #
 # *********************** s390-tools osasnmpd package  ***********************
@@ -669,15 +692,12 @@ URL:           http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi.html
 BuildRequires: automake autoconf
 BuildRequires: doxygen libsysfs-devel
 BuildRequires: sg3_utils-devel
+Requires:      libhbaapi
 
 
 %description libzfcphbaapi
 ZFCP HBA API Library is an implementation of FC-HBA (see www.t11.org ) for
 the zfcp device driver.
-
-%post libzfcphbaapi -p /sbin/ldconfig
-
-%postun libzfcphbaapi -p /sbin/ldconfig
 
 %files libzfcphbaapi
 %defattr (-,root,root,-)
@@ -686,34 +706,30 @@ the zfcp device driver.
 %doc lib-zfcp-hbaapi-%{hbaapiver}/ChangeLog
 %doc lib-zfcp-hbaapi-%{hbaapiver}/AUTHORS
 %doc lib-zfcp-hbaapi-%{hbaapiver}/LICENSE
-%{_libdir}/libzfcphbaapi.so.0*
+%{_libdir}/libzfcphbaapi-%{hbaapiver}.so
 %{_mandir}/man3/libzfcphbaapi.3*
 %{_mandir}/man3/SupportedHBAAPIs.3*
 %{_mandir}/man3/UnSupportedHBAAPIs.3*
-%{_mandir}/man3/hbaapi.h.3*
+%exclude %{_mandir}/man3/hbaapi.h.3*
 
 #
 # *********************** libzfcphbaapi-devel package  ***********************
 #
-%package libzfcphbaapi-devel
+%package libzfcphbaapi-docs
 License:  CPL
-Summary:  ZFCP HBA API Library -- Development
+Summary:  ZFCP HBA API Library -- Documentation
 Group:    Development/Libraries
 URL:      http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi.html
 Requires: %{name}-libzfcphbaapi = %{epoch}:%{version}-%{release}
 
-%description libzfcphbaapi-devel
-Headers, libraries and documentation for development to link against
-ZFCP HBA API Library.
+%description libzfcphbaapi-docs
+Documentation for the ZFCP HBA API Library.
 
 
-%files libzfcphbaapi-devel
+%files libzfcphbaapi-docs
 %defattr (-,root,root,-)
-%docdir %{_docdir}/lib-zfcp-hbaapi-devel-%{hbaapiver}
-%{_docdir}/lib-zfcp-hbaapi-devel-%{hbaapiver}/
-%{_includedir}/hbaapi.h
-%{_libdir}/libzfcphbaapi.so
-%exclude %{_libdir}/libzfcphbaapi.la
+%docdir %{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}
+%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}/
 
 #
 # *********************** cmsfs package  ***********************
@@ -758,6 +774,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Nov  9 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-3
+- added files for the CPI feature (#463282)
+- built lib-zfcp-hbaabi library as vendor lib, switched from -devel (no devel content now) to -docs subpackage (#532707)
+
 * Fri Oct 30 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-2
 - install dasd udev rules provided by the s390-tools
 - added patch for setting readahead value
