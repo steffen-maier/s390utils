@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -28,6 +28,9 @@ Source9:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/h
 # files for the Control Program Identification (Linux Call Home) feature (#463282)
 Source10:       cpi.initd
 Source11:       cpi.sysconfig
+# files for DASD initialization
+Source12:       dasd.udev
+Source13:       dasdconf.sh
 
 Patch1:   0001-s390-tools-1.5.3-zipl-zfcpdump-2.patch
 Patch2:   0002-s390-tools-1.8.1-zipl-automenu.patch
@@ -186,7 +189,11 @@ install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
 install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT/sbin
+install -p -m 755 %{SOURCE13} $RPM_BUILD_ROOT/sbin
 install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/56-zfcp.rules
+install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/56-dasd.rules
+
+touch $RPM_BUILD_ROOT%{_sysconfdir}/{zfcp.conf,dasd.conf}
 
 install -p -m 644 etc/sysconfig/dumpconf ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
 install -p -m 755 etc/init.d/dumpconf ${RPM_BUILD_ROOT}%{_initddir}/dumpconf
@@ -485,8 +492,12 @@ fi
 %{_sysconfdir}/profile.d/s390.csh
 %{_sysconfdir}/profile.d/s390.sh
 %config(noreplace) %{_sysconfdir}/udev/rules.d/56-zfcp.rules
+%config(noreplace) %{_sysconfdir}/udev/rules.d/56-dasd.rules
 %config(noreplace) %{_sysconfdir}/udev/rules.d/59-dasd.rules
 %config(noreplace) %{_sysconfdir}/udev/rules.d/60-readahead.rules
+%ghost %config(noreplace) %{_sysconfdir}/dasd.conf
+%ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
+/sbin/dasdconf.sh
 /sbin/zfcpconf.sh
 
 # src_vipa
@@ -693,6 +704,7 @@ BuildRequires: automake autoconf
 BuildRequires: doxygen libsysfs-devel
 BuildRequires: sg3_utils-devel
 Requires:      libhbaapi
+Obsoletes:     %{name}-libzfcphbaapi-devel < 2:1.8.2-4
 
 
 %description libzfcphbaapi
@@ -774,6 +786,11 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Nov 12 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-4
+- added udev rules and script for dasd initialization (#536966)
+- added ghosted zfcp and dasd config files, fixes their ownership on the system
+- fixed upgrade path for libzfcphbaapi-devel subpackage
+
 * Mon Nov  9 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-3
 - added files for the CPI feature (#463282)
 - built lib-zfcp-hbaabi library as vendor lib, switched from -devel (no devel content now) to -docs subpackage (#532707)
