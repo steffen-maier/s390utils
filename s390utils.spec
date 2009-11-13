@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        4%{?dist}
+Release:        5%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -43,6 +43,9 @@ Patch8:   0008-fix-string-overflow-in-vtoc_volume_label_init.patch
 Patch9:   0009-change-default-load-address-for-ramdisk.patch
 Patch10:  0010-improve-mon_statd-init-script.patch
 Patch11:  0011-update-readahead-value-for-better-performance.patch
+Patch12:  0012-fix-multipath-device-detection-in-ziomon.patch
+Patch13:  0013-zipl-handle-status-during-ipl.patch
+Patch14:  0014-dasdview-fdasd-fix-floating-point-error-for-unformat.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
@@ -104,6 +107,15 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Update readahead value for better performance
 %patch11 -p1 -b .readahead
+
+# Fix multipath device detection in ziomon (#533955)
+%patch12 -p1 -b .ziomon-multipath
+
+# Handle status during ipl in zipl (#537142)
+%patch13 -p1 -b .zipl-status
+
+# Fix floating point error for unformatted devices in fdasd and dasdview (#537144)
+%patch14 -p1 -b .dasd-zero-division
 
 #
 # cmsfs
@@ -786,6 +798,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Nov 13 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-5
+- added multiple fixes from IBM (#533955, #537142, #537144)
+
 * Thu Nov 12 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-4
 - added udev rules and script for dasd initialization (#536966)
 - added ghosted zfcp and dasd config files, fixes their ownership on the system
