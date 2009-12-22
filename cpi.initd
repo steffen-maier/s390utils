@@ -2,7 +2,7 @@
 #
 # Copyright 2009 Red Hat, Inc.
 # License: GPLv2
-# Author: Dan Horak <dhorak@redhat.com>
+# Author: Dan Horák <dhorak@redhat.com>
 #
 # cpi Set Control Program Identification on IBM zSeries
 #
@@ -33,6 +33,8 @@ prog="cpi"
 cpipath=/sys/firmware/cpi
 
 start() {
+    [ `id -u` -eq 0 ] || return 4
+    
     echo -n $"Starting $prog: "
 
     if [ -d $cpipath ]; then
