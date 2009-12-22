@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        5%{?dist}
+Release:        6%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -31,6 +31,7 @@ Source11:       cpi.sysconfig
 # files for DASD initialization
 Source12:       dasd.udev
 Source13:       dasdconf.sh
+Source14:       device_cio_free
 
 Patch1:   0001-s390-tools-1.5.3-zipl-zfcpdump-2.patch
 Patch2:   0002-s390-tools-1.8.1-zipl-automenu.patch
@@ -46,6 +47,9 @@ Patch11:  0011-update-readahead-value-for-better-performance.patch
 Patch12:  0012-fix-multipath-device-detection-in-ziomon.patch
 Patch13:  0013-zipl-handle-status-during-ipl.patch
 Patch14:  0014-dasdview-fdasd-fix-floating-point-error-for-unformat.patch
+Patch15:  0015-s390tools-1.8.2-zipl-dm.patch
+Patch16:  0016-s390tools-1.8.2-lsreipl-nss.patch
+Patch17:  0017-qualified-return-codes-and-further-error-handling-in.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
@@ -116,6 +120,15 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Fix floating point error for unformatted devices in fdasd and dasdview (#537144)
 %patch14 -p1 -b .dasd-zero-division
+
+# Add device-mapper support into zipl (#546280)
+%patch15 -p1 -b .zipl-dm
+
+# Add missing check and print NSS name in case an NSS has been IPLed (#546297)
+%patch16 -p1 -b .lsreipl-nss
+
+# Add qualified return codes and further error handling in znetconf (#548487)
+%patch17 -p1 -b .znetconf-returncodes
 
 #
 # cmsfs
@@ -190,6 +203,9 @@ rm -rf ${RPM_BUILD_ROOT}
 
 mkdir -p $RPM_BUILD_ROOT{%{_lib},%{_libdir},/sbin,/bin,/boot,%{_mandir}/man1,%{_mandir}/man8,%{_sbindir},%{_bindir},%{_sysconfdir}/{profile.d,udev/rules.d,sysconfig},%{_initddir}}
 
+# workaround an issue in the zipl-device-mapper patch
+rm -f zipl/src/zipl_helper.device-mapper.*
+
 make install \
         INSTROOT=$RPM_BUILD_ROOT \
         MANDIR=$RPM_BUILD_ROOT%{_mandir} \
@@ -251,6 +267,14 @@ install -p -m 644 include/vtoc.h $RPM_BUILD_ROOT%{_includedir}/%{name}
 # CPI
 install -p -m 644 %{SOURCE11} ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig/cpi
 install -p -m 755 %{SOURCE10} ${RPM_BUILD_ROOT}%{_initddir}/cpi
+
+# device_cio_free
+install -p -m 755 %{SOURCE14} ${RPM_BUILD_ROOT}/sbin
+pushd ${RPM_BUILD_ROOT}/sbin
+for lnk in dasd zfcp znet; do
+    ln -sf device_cio_free ${lnk}_cio_free
+done
+popd
 
 
 %clean
@@ -422,9 +446,11 @@ fi
 %doc README
 %doc LICENSE
 /sbin/zipl
+/sbin/dasd_cio_free
 /sbin/dasdfmt
 /sbin/dasdinfo
 /sbin/dasdview
+/sbin/device_cio_free
 /sbin/fdasd
 /sbin/chccwdev
 /sbin/chchp
@@ -446,7 +472,9 @@ fi
 /sbin/tape390_crypt
 /sbin/tunedasd
 /sbin/vmcp
+/sbin/zfcp_cio_free
 /sbin/zgetdump
+/sbin/znet_cio_free
 /sbin/znetconf
 /sbin/dbginfo.sh
 %{_sbindir}/lsreipl
@@ -798,6 +826,14 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Dec 22 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-6
+- fixed return value in cpi initscript (#541389)
+- updated zfcpconf.sh script from dracut
+- added device-mapper support into zipl (#546280)
+- added missing check and print NSS name in case an NSS has been IPLed (#546297)
+- added device_cio_free script and its symlinks
+- added qualified return codes and further error handling in znetconf (#548487)
+
 * Fri Nov 13 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-5
 - added multiple fixes from IBM (#533955, #537142, #537144)
 

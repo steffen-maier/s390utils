@@ -1,0 +1,203 @@
+#!/bin/sh
+#
+# Copyright 2009 Red Hat, Inc.
+# License: GPLv2
+# Author: Dan Horák <dhorak@redhat.com>
+#
+# unblock devices listed in various config files and wait until they are ready
+#
+# it uses dasd and zfcp config file
+# config file syntax:
+# deviceno   options
+# or
+# deviceno   WWPN   FCPLUN
+#
+# also processes the system ccw config file and network interface configurations
+#
+
+DASDCONFIG=/etc/dasd.conf
+ZFCPCONFIG=/etc/zfcp.conf
+ZNETCONFIG=/etc/ccw.conf
+BLACKLIST=/proc/cio_ignore
+VERBOSE=
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+ALL_DEVICES=
+
+usage()
+{
+    echo "$0 [-h|--help] [-V|--verbose]"
+    exit 1
+}
+
+# accepts single device, comma-separated lists and dash separated ranges and their combinations
+free_device()
+{
+    local DEV
+
+    [ -z "$1" ] && return
+
+    DEV=$(echo $1 | tr "A-Z" "a-z")
+    
+    [ $VERBOSE ] && echo "Freeing device(s) $DEV"
+    if [ echo "free $DEV" > $BLACKLIST 2> /dev/null ]; then
+	echo "Error: can't free device(s) $DEV"
+    else
+	if [ -z $ALL_DEVICES ]; then
+	    ALL_DEVICES=$DEV
+	else
+	    ALL_DEVICES="$ALL_DEVICES,$DEV"
+	fi
+    fi
+}
+
+# wait until a device appears on the ccw bus
+wait_on_device()
+{
+    local DEVICE_ONLINE DEV
+    
+    [ -z "$1" ] && return
+    
+    DEV=$1
+    DEVICE_ONLINE=/sys/bus/ccw/devices/$DEV/online
+    
+    [ $VERBOSE ] && echo "Waiting on device $DEV"
+    [ -f "$DEVICE_ONLINE" ] && return
+
+    for t in 1 2 3 4 5
+    do
+	sleep $t
+	[ -f "$DEVICE_ONLINE" ] && return
+    done
+    echo "Error: device $DEV still not ready"
+}
+
+# check how we were called
+case $(basename "$0") in
+    "dasd_cio_free")
+	CONFIG=$DASDCONFIG
+	MODE=dasd
+	;;
+    "zfcp_cio_free")
+	CONFIG=$ZFCPCONFIG
+	MODE=zfcp
+	;;
+    "znet_cio_free")
+	CONFIG=$ZNETCONFIG
+	MODE=znet
+	;;
+    *)
+	echo "Error: unknown alias '$CMD'."
+	echo "Supported aliases are dasd_cio_free, zfcp_cio_free and znet_cio_free."
+	exit 1
+	;;
+esac
+
+# process command line options
+if [ $# -gt 0 ]; then
+    case $1 in
+	-V|--verbose)
+	    VERBOSE=yes
+	    shift
+	    ;;
+	-h|--help)
+	    usage
+	    ;;
+	*)
+	    echo "Error: unknown option $1"
+	    usage
+	    ;;
+    esac
+fi
+
+if [ ! -f $BLACKLIST ]; then
+    echo "Error: $BLACKLIST kernel interface doesn't exist"
+    exit 2
+fi
+
+if [ $MODE = "dasd" -o $MODE = "zfcp" ]; then
+    # process the config file
+    if [ -f "$CONFIG" ]; then
+        while read line; do
+	    case $line in
+		\#*) ;;
+		*)
+		    [ -z "$line" ] && continue
+		    set $line
+		    free_device $1
+		    ;;
+	    esac
+	done < $CONFIG
+    fi
+fi
+
+if [ $MODE = "dasd" ]; then
+    # process the device list defined as option for the dasd module
+    DEVICES=$(modprobe --showconfig | grep "options[[:space:]]\+dasd_mod" | \
+	sed -e 's/.*[[:space:]]dasd=\([^[:space:]]*\).*/\1/' -e 's/([^)]*)//g' \
+	-e 's/nopav\|nofcx\|autodetect\|probeonly//g' -e 's/,,/,/g' -e 's/^,//' -e 's/,$//')
+
+    free_device $DEVICES
+fi
+
+if [ $MODE = "znet" ]; then
+    # process the config file
+    if [ -f "$CONFIG" ]; then
+        while read line; do
+	    case $line in
+		\#*) ;;
+		*)
+		    [ -z "$line" ] && continue
+		    # grep 2 or 3 channels from beginning of each line
+		    DEVICES=$(echo $line | egrep -i -o "^([0-9]\.[0-9]\.[a-f0-9]+,){1,2}([0-9]\.[0-9]\.[a-f0-9]+)")
+		    free_device $DEVICES
+		    ;;
+	    esac
+	done < $CONFIG
+    fi
+    # process channels from network interface configurations
+    for line in $(egrep -i -h "^[[:space:]]*SUBCHANNELS=['\"]?([0-9]\.[0-9]\.[a-f0-9]+,){1,2}([0-9]\.[0-9]\.[a-f0-9]+)['\"]?([[:space:]]+#|[[:space:]]*$)" /etc/sysconfig/network-scripts/ifcfg-* 2> /dev/null)
+    do
+	eval "$line"
+        free_device $SUBCHANNELS
+    done
+fi
+
+# wait until recently unblocked devices are ready
+# at this point we know the content of ALL_DEVICES is syntacticly correct
+IFS=","
+set $ALL_DEVICES
+while [ "$1" ]
+do
+    DEV="$1"
+    IFS="."
+
+    # get the lower bound for range or get the single device
+    LOWER=${DEV%%-*}
+    read -a L <<< "$LOWER"
+    if [ ${#L[@]} -eq 1 ]; then
+        L[2]=${L[0]}
+        L[0]=0
+        L[1]=0
+    fi
+
+    # get the upper bound for range or get the single device
+    UPPER=${DEV##*-}
+    read -a U <<< "$UPPER"
+    if [ ${#U[@]} -eq 1 ]; then
+        U[2]=${U[0]}
+        U[0]=0
+        U[1]=0
+    fi
+
+    # iterate thru all devices
+    for (( i=0x${L[0]}; i<=0x${U[0]}; i++ )); do
+    for (( j=0x${L[1]}; j<=0x${U[1]}; j++ )); do
+    for (( k=0x${L[2]}; k<=0x${U[2]}; k++ )); do
+	wait_on_device "$(printf %x.%x.%04x $i $j $k)"
+    done
+    done
+    done
+
+    # go to the next device
+    shift
+done
