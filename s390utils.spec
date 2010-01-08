@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        7%{?dist}
+Release:        8%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -826,6 +826,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Jan  8 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-8
+- updated device_cio_free script (#533494)
+
 * Fri Jan  8 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-7
 - updated device_cio_free script (#533494)
 

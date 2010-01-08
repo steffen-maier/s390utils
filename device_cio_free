@@ -22,10 +22,12 @@ BLACKLIST=/proc/cio_ignore
 VERBOSE=
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 ALL_DEVICES=
+WAITING_TIMEOUT=60	# maximum time to wait for all devices to appear
+WAITING_TOTAL=0		# actual time spent waiting for devices
 
 usage()
 {
-    echo "$0 [-h|--help] [-V|--verbose]"
+    echo "Usage: $CMD [-h|--help] [-V|--verbose]"
     exit 1
 }
 
@@ -53,22 +55,24 @@ free_device()
 # wait until a device appears on the ccw bus
 wait_on_device()
 {
-    local DEVICE_CCW DEVICE_ONLINE DEV
+    local DEVICE_ONLINE DEV
     
     [ -z "$1" ] && return
     
     DEV=$1
-    DEVICE_CCW=/sys/bus/ccw/devices/$DEV
-    DEVICE_ONLINE=$DEVICE_CCW/online
-
-#    [ -f $DEVICE_CCW ] || sleep 1
-#    [ -f $DEVICE_CCW ] || return
+    DEVICE_ONLINE=/sys/bus/ccw/devices/$DEV/online
 
     [ $VERBOSE ] && echo "Waiting on device $DEV"
     [ -f "$DEVICE_ONLINE" ] && return
 
     for t in 1 2 3 4 5
     do
+	if [ $WAITING_TOTAL -ge $WAITING_TIMEOUT ]; then
+	    [ $VERBOSE ] && echo "Waiting timeout of $WAITING_TIMEOUT seconds reached"
+	    break
+	fi
+	WAITING_TOTAL=$(($WAITING_TOTAL + $t))
+        [ $VERBOSE ] && echo "Waiting additional $t second(s) and $WAITING_TOTAL second(s) in total"
 	sleep $t
 	[ -f "$DEVICE_ONLINE" ] && return
     done
