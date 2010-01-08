@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        6%{?dist}
+Release:        7%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -826,12 +826,15 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Jan  8 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-7
+- updated device_cio_free script (#533494)
+
 * Tue Dec 22 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-6
 - fixed return value in cpi initscript (#541389)
 - updated zfcpconf.sh script from dracut
 - added device-mapper support into zipl (#546280)
 - added missing check and print NSS name in case an NSS has been IPLed (#546297)
-- added device_cio_free script and its symlinks
+- added device_cio_free script and its symlinks (#533494)
 - added qualified return codes and further error handling in znetconf (#548487)
 
 * Fri Nov 13 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-5

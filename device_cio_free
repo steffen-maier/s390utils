@@ -39,7 +39,7 @@ free_device()
     DEV=$(echo $1 | tr "A-Z" "a-z")
     
     [ $VERBOSE ] && echo "Freeing device(s) $DEV"
-    if [ echo "free $DEV" > $BLACKLIST 2> /dev/null ]; then
+    if ! echo "free $DEV" > $BLACKLIST 2> /dev/null ; then
 	echo "Error: can't free device(s) $DEV"
     else
 	if [ -z $ALL_DEVICES ]; then
@@ -53,13 +53,17 @@ free_device()
 # wait until a device appears on the ccw bus
 wait_on_device()
 {
-    local DEVICE_ONLINE DEV
+    local DEVICE_CCW DEVICE_ONLINE DEV
     
     [ -z "$1" ] && return
     
     DEV=$1
-    DEVICE_ONLINE=/sys/bus/ccw/devices/$DEV/online
-    
+    DEVICE_CCW=/sys/bus/ccw/devices/$DEV
+    DEVICE_ONLINE=$DEVICE_CCW/online
+
+#    [ -f $DEVICE_CCW ] || sleep 1
+#    [ -f $DEVICE_CCW ] || return
+
     [ $VERBOSE ] && echo "Waiting on device $DEV"
     [ -f "$DEVICE_ONLINE" ] && return
 
@@ -72,7 +76,8 @@ wait_on_device()
 }
 
 # check how we were called
-case $(basename "$0") in
+CMD=$(basename "$0")
+case $CMD in
     "dasd_cio_free")
 	CONFIG=$DASDCONFIG
 	MODE=dasd
@@ -148,14 +153,14 @@ if [ $MODE = "znet" ]; then
 		*)
 		    [ -z "$line" ] && continue
 		    # grep 2 or 3 channels from beginning of each line
-		    DEVICES=$(echo $line | egrep -i -o "^([0-9]\.[0-9]\.[a-f0-9]+,){1,2}([0-9]\.[0-9]\.[a-f0-9]+)")
+		    DEVICES=$(echo $line | grep -E -i -o "^([0-9]\.[0-9]\.[a-f0-9]+,){1,2}([0-9]\.[0-9]\.[a-f0-9]+)")
 		    free_device $DEVICES
 		    ;;
 	    esac
 	done < $CONFIG
     fi
     # process channels from network interface configurations
-    for line in $(egrep -i -h "^[[:space:]]*SUBCHANNELS=['\"]?([0-9]\.[0-9]\.[a-f0-9]+,){1,2}([0-9]\.[0-9]\.[a-f0-9]+)['\"]?([[:space:]]+#|[[:space:]]*$)" /etc/sysconfig/network-scripts/ifcfg-* 2> /dev/null)
+    for line in $(grep -E -i -h "^[[:space:]]*SUBCHANNELS=['\"]?([0-9]\.[0-9]\.[a-f0-9]+,){1,2}([0-9]\.[0-9]\.[a-f0-9]+)['\"]?([[:space:]]+#|[[:space:]]*$)" /etc/sysconfig/network-scripts/ifcfg-* 2> /dev/null)
     do
 	eval "$line"
         free_device $SUBCHANNELS
@@ -164,40 +169,53 @@ fi
 
 # wait until recently unblocked devices are ready
 # at this point we know the content of ALL_DEVICES is syntacticly correct
+OLD_IFS=$IFS
 IFS=","
 set $ALL_DEVICES
-while [ "$1" ]
+for DEV in $*
 do
-    DEV="$1"
     IFS="."
 
     # get the lower bound for range or get the single device
     LOWER=${DEV%%-*}
-    read -a L <<< "$LOWER"
-    if [ ${#L[@]} -eq 1 ]; then
-        L[2]=${L[0]}
-        L[0]=0
-        L[1]=0
+    set $LOWER
+    if [ $# -eq 1 ]; then
+        L0=0
+        L1=0
+        L2=$(printf "%d" "0x$1")
+    else
+        L0=$(printf "%d" "0x$1")
+        L1=$(printf "%d" "0x$2")
+        L2=$(printf "%d" "0x$3")
     fi
 
     # get the upper bound for range or get the single device
     UPPER=${DEV##*-}
-    read -a U <<< "$UPPER"
-    if [ ${#U[@]} -eq 1 ]; then
-        U[2]=${U[0]}
-        U[0]=0
-        U[1]=0
+    set $UPPER
+    if [ $# -eq 1 ]; then
+        U0=0
+        U1=0
+        U2=$(printf "%d" "0x$1")
+    else
+        U0=$(printf "%d" "0x$1")
+        U1=$(printf "%d" "0x$2")
+        U2=$(printf "%d" "0x$3")
     fi
 
-    # iterate thru all devices
-    for (( i=0x${L[0]}; i<=0x${U[0]}; i++ )); do
-    for (( j=0x${L[1]}; j<=0x${U[1]}; j++ )); do
-    for (( k=0x${L[2]}; k<=0x${U[2]}; k++ )); do
-	wait_on_device "$(printf %x.%x.%04x $i $j $k)"
-    done
-    done
-    done
+    IFS=$OLD_IFS
 
-    # go to the next device
-    shift
+    # iterate thru all devices
+    for i in $(seq $L0 $U0); do
+        [ $i -eq $L0 ] && LJ=$L1 || LJ=0
+        [ $i -eq $U0 ] && UJ=$U1 || UJ=3
+
+        for j in $(seq $LJ $UJ); do
+            [ $i -eq $L0 -a $j -eq $L1 ] && LK=$L2 || LK=0
+            [ $i -eq $U0 -a $j -eq $U1 ] && UK=$U2 || UK=65535
+
+            for k in $(seq $LK $UK); do
+                wait_on_device "$(printf %x.%x.%04x $i $j $k)"
+            done
+        done
+    done
 done
