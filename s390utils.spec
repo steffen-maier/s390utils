@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        8%{?dist}
+Release:        9%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -50,6 +50,7 @@ Patch14:  0014-dasdview-fdasd-fix-floating-point-error-for-unformat.patch
 Patch15:  0015-s390tools-1.8.2-zipl-dm.patch
 Patch16:  0016-s390tools-1.8.2-lsreipl-nss.patch
 Patch17:  0017-qualified-return-codes-and-further-error-handling-in.patch
+Patch18:  0018-fix-uppercase-conversion-in-lscss.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
@@ -129,6 +130,9 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Add qualified return codes and further error handling in znetconf (#548487)
 %patch17 -p1 -b .znetconf-returncodes
+
+# Fixed uppercase conversion in lscss (#554768)
+%patch18 -p1 -b .uppercase
 
 #
 # cmsfs
@@ -446,11 +450,9 @@ fi
 %doc README
 %doc LICENSE
 /sbin/zipl
-/sbin/dasd_cio_free
 /sbin/dasdfmt
 /sbin/dasdinfo
 /sbin/dasdview
-/sbin/device_cio_free
 /sbin/fdasd
 /sbin/chccwdev
 /sbin/chchp
@@ -472,9 +474,7 @@ fi
 /sbin/tape390_crypt
 /sbin/tunedasd
 /sbin/vmcp
-/sbin/zfcp_cio_free
 /sbin/zgetdump
-/sbin/znet_cio_free
 /sbin/znetconf
 /sbin/dbginfo.sh
 %{_sbindir}/lsreipl
@@ -488,8 +488,6 @@ fi
 %{_bindir}/vmconvert
 %{_initddir}/dumpconf
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
-%{_initddir}/cpi
-%config(noreplace) %{_sysconfdir}/sysconfig/cpi
 /lib/s390-tools
 %{_mandir}/man1/zfcpdbf.1*
 %{_mandir}/man4/prandom.4*
@@ -537,8 +535,14 @@ fi
 %config(noreplace) %{_sysconfdir}/udev/rules.d/60-readahead.rules
 %ghost %config(noreplace) %{_sysconfdir}/dasd.conf
 %ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
+%{_initddir}/cpi
+%config(noreplace) %{_sysconfdir}/sysconfig/cpi
 /sbin/dasdconf.sh
 /sbin/zfcpconf.sh
+/sbin/dasd_cio_free
+/sbin/device_cio_free
+/sbin/zfcp_cio_free
+/sbin/znet_cio_free
 
 # src_vipa
 %{_bindir}/src_vipa.sh
@@ -826,6 +830,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Jan 13 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-9
+- updated device_cio_free script (#533494)
+- fixed uppercase conversion in lscss (#554768)
+
 * Fri Jan  8 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-8
 - updated device_cio_free script (#533494)
 
