@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        9%{?dist}
+Release:        10%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -51,6 +51,10 @@ Patch15:  0015-s390tools-1.8.2-zipl-dm.patch
 Patch16:  0016-s390tools-1.8.2-lsreipl-nss.patch
 Patch17:  0017-qualified-return-codes-and-further-error-handling-in.patch
 Patch18:  0018-fix-uppercase-conversion-in-lscss.patch
+Patch19:  0019-ziorep-fix-return-codes.patch
+Patch20:  0020-lstape-fix-return-code.patch
+Patch21:  0021-cpuplugd-fix-reading-the-size-of-proc-sys-vm-cmm_pag.patch
+Patch22:  0022-lsqeth-support-new-attributes.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
@@ -133,6 +137,18 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Fixed uppercase conversion in lscss (#554768)
 %patch18 -p1 -b .uppercase
+
+# Fixed return codes in ziorep (#556849)
+%patch19 -p1 -b .ziorep-returncodes
+
+# Fixed return code in lstape (#556910)
+%patch20 -p1 -b .lstape-returncode
+
+# Fixed reading the size of /proc/sys/vm/cmm_pages in cpuplugd (#556911)
+%patch21 -p1 -b .cpuplugd-fscanf
+
+# Support new attributes in lsqeth (#556915)
+%patch22 -p1 -b .lsqeth-new-attrs
 
 #
 # cmsfs
@@ -830,6 +846,12 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Jan 20 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-10
+- fixed return codes in ziorep (#556849)
+- fixed return code in lstape (#556910)
+- fixed reading the size of /proc/sys/vm/cmm_pages in cpuplugd (#556911)
+- support new attributes in lsqeth (#556915)
+
 * Wed Jan 13 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-9
 - updated device_cio_free script (#533494)
 - fixed uppercase conversion in lscss (#554768)
