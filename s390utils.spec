@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        10%{?dist}
+Release:        10%{?dist}.1
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -55,6 +55,8 @@ Patch19:  0019-ziorep-fix-return-codes.patch
 Patch20:  0020-lstape-fix-return-code.patch
 Patch21:  0021-cpuplugd-fix-reading-the-size-of-proc-sys-vm-cmm_pag.patch
 Patch22:  0022-lsqeth-support-new-attributes.patch
+
+Patch1000:  1000-ziomon-linker.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
@@ -149,6 +151,9 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Support new attributes in lsqeth (#556915)
 %patch22 -p1 -b .lsqeth-new-attrs
+
+# Fix linking with --no-add-needed
+%patch1000 -p1 -b .linker
 
 #
 # cmsfs
@@ -846,6 +851,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Jun 10 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-10.1
+- fix linking with --no-add-needed
+
 * Wed Jan 20 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-10
 - fixed return codes in ziorep (#556849)
 - fixed return code in lstape (#556910)
