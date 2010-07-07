@@ -8,7 +8,7 @@
 #
 # chkconfig:   12345 80 20
 # description: Set Control Program Identification on IBM zSeries \
-#              that's reported from Linux guest to a LPAR or z/VM
+#              that's reported on a Linux LPAR
 
 ### BEGIN INIT INFO
 # Provides: cpi
@@ -20,7 +20,7 @@
 # Default-Stop: 0 6
 # Short-Description: Set control program identification on IBM zSeries
 # Description: Set Control Program Identification on IBM zSeries \
-#              that's reported from Linux guest to a LPAR or z/VM
+#              that's reported on a Linux LPAR
 ### END INIT INFO
 
 # Source function library.

@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        10%{?dist}.1
+Release:        28%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -32,6 +32,11 @@ Source11:       cpi.sysconfig
 Source12:       dasd.udev
 Source13:       dasdconf.sh
 Source14:       device_cio_free
+Source15:       device_cio_free.conf
+Source16:       ccw_init
+Source17:       ccw.udev
+Source18:       cpuplugd.initd
+Source19:       mon_statd.initd
 
 Patch1:   0001-s390-tools-1.5.3-zipl-zfcpdump-2.patch
 Patch2:   0002-s390-tools-1.8.1-zipl-automenu.patch
@@ -55,6 +60,25 @@ Patch19:  0019-ziorep-fix-return-codes.patch
 Patch20:  0020-lstape-fix-return-code.patch
 Patch21:  0021-cpuplugd-fix-reading-the-size-of-proc-sys-vm-cmm_pag.patch
 Patch22:  0022-lsqeth-support-new-attributes.patch
+Patch23:  0023-znetconf-use-hex-index-for-chpidtype-table.patch
+Patch24:  0024-zipl-handle-SSCH-status.patch
+Patch25:  0025-vmconvert-shows-garbage-in-progress-bar.patch
+Patch26:  0026-zipl-zfcp-dump-partition-error.patch
+Patch27:  0027-zfcpdump-disable-memory-cgroups.patch
+Patch28:  0028-fix-df-usage-in-ziomon.patch
+Patch29:  0029-ziomon-remove-check-for-ziorep_config-availability.patch
+Patch30:  0030-ziomon-fix-multipathing.patch
+Patch31:  0031-mismatch-between-man-and-h-in-chshut.patch
+Patch32:  0032-lsdasd-update-man-page.patch
+Patch33:  0033-reinitialize-array-in-lsqeth.patch
+Patch34:  0034-check-the-length-of-the-parameters-line.patch
+Patch35:  0035-ziorep-follow-symlink.patch
+Patch36:  0036-ts-shell-do-not-restrict-group-names-to-be-alphanume.patch
+Patch37:  0037-znetconf-unknown-driver-for-qeth.patch
+Patch38:  0038-cpuplugd-fix-stack-overflow.patch
+Patch39:  0039-cpuplugd-fix-cmm-limits-checks.patch
+Patch40:  0040-cpuplugd-set-cpu_min-to-1-by-default.patch
+Patch41:  0041-fix-dates-option-on-zfcpdbf.patch
 
 Patch1000:  1000-ziomon-linker.patch
 
@@ -152,6 +176,63 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # Support new attributes in lsqeth (#556915)
 %patch22 -p1 -b .lsqeth-new-attrs
 
+# Use hex index for chpidtype table in znetconf (#561056)
+%patch23 -p1 -b .znetconf-hex-chpidtype
+
+# Handle status during IPL SSCH (#559250)
+%patch24 -p1 -b .zipl-handle-ssch-status
+
+# Don't show garbage in vmconvert's progress bar (#567681)
+%patch25 -p1 -b .vmconvert-progress-bar
+
+# Fix zfcp dump partition error (#572313)
+%patch26 -p1 -b .zfcp-dump-partition
+
+# Don't use memory cgroups in zfcpdump kernel (#575183)
+%patch27 -p1 -b .zfcpdump-cgroups
+
+# Fix df usage in ziomon (#575833)
+%patch28 -p1 -b .ziomon-df
+
+# Remove check for ziorep_config availability (#576579)
+%patch29 -p1 -b .ziorep_config
+
+# Fix multipathing in ziomon (#577318)
+%patch30 -p1 -b .ziomon-multipath-2
+
+# Fixed mismatch between man and -h in chshut (#563625)
+%patch31 -p1 -b .man-mismatch
+
+# Update lsdasd man page (#587044)
+%patch32 -p1 -b .lsdasd-man
+
+# Reinitialize array in lsqeth (#587599)
+%patch33 -p1 -b .lsqeth-reinit-array
+
+# Check the length of the parameters line (#594031)
+%patch34 -p1 -b .zipl-max-parmline
+
+# Follow symlinks in ziorep (#598574)
+%patch35 -p1 -b .ziorep-follow-symlinks
+
+# Do not restrict group names to be alphanumeric in ts-shell (#598641)
+%patch36 -p1 -b .ts-shell-groups
+
+# znetconf --drive|-d option returning 'unknown driver' for qeth (#601846)
+%patch37 -p1 -b .znetconf-driver-option
+
+# Fix stack overwrite in cpuplugd (#601847)
+%patch38 -p1 -b .cpuplugd-stack-overwrite
+
+# Fix cmm_min/max limit checks in cpuplugd (#606366)
+%patch39 -p1 -b .cpuplugd-cmm-limits
+
+# Set cpu_min to 1 by default in cpuplugd (#606416)
+%patch40 -p1 -b .cpuplugd-cpu_min
+
+# Fix --dates option in zfcpdbf (#609092)
+%patch41 -p1 -b .zfcpdbf-dates
+
 # Fix linking with --no-add-needed
 %patch1000 -p1 -b .linker
 
@@ -206,11 +287,11 @@ popd
 
 
 %build
-make OPT_FLAGS="$RPM_OPT_FLAGS" DISTRELEASE=%{release} V=1
+make OPT_FLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing" DISTRELEASE=%{release} V=1
 
 pushd cmsfs-%{cmsfsver}
 ./configure
-make CC="gcc $RPM_OPT_FLAGS"
+make CC="gcc $RPM_OPT_FLAGS -fno-strict-aliasing"
 popd
 
 pushd src_vipa-%{vipaver}
@@ -219,7 +300,7 @@ popd
 
 pushd lib-zfcp-hbaapi-%{hbaapiver}
 %configure --disable-static
-make EXTRA_CFLAGS="$RPM_OPT_FLAGS"
+make EXTRA_CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
 popd
 
 
@@ -252,10 +333,10 @@ install -p -m 644 etc/sysconfig/dumpconf ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconf
 install -p -m 755 etc/init.d/dumpconf ${RPM_BUILD_ROOT}%{_initddir}/dumpconf
 
 install -p -m 644 etc/sysconfig/mon_statd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-install -p -m 755 etc/init.d/mon_statd ${RPM_BUILD_ROOT}%{_initddir}/mon_statd
+install -p -m 755 %{SOURCE19} ${RPM_BUILD_ROOT}%{_initddir}/mon_statd
 
 install -p -m 644 etc/sysconfig/cpuplugd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-install -p -m 755 etc/init.d/cpuplugd ${RPM_BUILD_ROOT}%{_initddir}/cpuplugd
+install -p -m 755 %{SOURCE18} ${RPM_BUILD_ROOT}%{_initddir}/cpuplugd
 
 install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
 
@@ -300,6 +381,13 @@ for lnk in dasd zfcp znet; do
     ln -sf device_cio_free ${lnk}_cio_free
 done
 popd
+mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/init
+install -p -m 644 %{SOURCE15} ${RPM_BUILD_ROOT}%{_sysconfdir}/init
+
+# ccw
+mkdir -p ${RPM_BUILD_ROOT}/lib/udev/rules.d
+install -p -m 755 %{SOURCE16} ${RPM_BUILD_ROOT}/lib/udev/ccw_init
+install -p -m 644 %{SOURCE17} ${RPM_BUILD_ROOT}/lib/udev/rules.d/81-ccw.rules
 
 
 %clean
@@ -320,6 +408,7 @@ Summary:        S390 base tools
 Group:          System Environment/Base
 Requires:       perl gawk sed coreutils
 Requires:       sysfsutils
+Requires:       sg3_utils
 Requires(pre):   chkconfig
 Requires(preun): chkconfig
 Requires(preun): initscripts
@@ -564,6 +653,9 @@ fi
 /sbin/device_cio_free
 /sbin/zfcp_cio_free
 /sbin/znet_cio_free
+%{_sysconfdir}/init/device_cio_free.conf
+/lib/udev/ccw_init
+/lib/udev/rules.d/81-ccw.rules
 
 # src_vipa
 %{_bindir}/src_vipa.sh
@@ -598,7 +690,7 @@ ATM Ethernet LAN Emulation in QDIO mode.
 License:         GPLv2
 Summary:         Monitoring daemons for Linux in z/VM
 Group:           System Environment/Daemons
-Requires:        redhat-lsb coreutils
+Requires:        coreutils
 Requires(pre):   chkconfig
 Requires(preun): chkconfig
 Requires(preun): initscripts
@@ -639,7 +731,7 @@ fi
 License:         GPLv2+
 Summary:         Daemon that manages CPU and memory resources
 Group:           System Environment/Daemons
-Requires:        redhat-lsb coreutils
+Requires:        coreutils
 Requires(pre):   chkconfig
 Requires(preun): chkconfig
 Requires(preun): initscripts
@@ -851,8 +943,87 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
-* Thu Jun 10 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-10.1
+* Wed Jul  7 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-28
 - fix linking with --no-add-needed
+
+* Tue Jun 29 2010 Dan Horák <dhorak@redhat.com> 2:1.8.2-27
+- make znet_cio_free work also when no interface config files exists (#609073)
+- fix --dates option in zfcpdbf (#609092)
+
+* Mon Jun 28 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-26
+- follow symlinks in ziorep (#598574)
+- do not restrict group names to be alphanumeric in ts-shell (#598641)
+- znetconf --drive|-d option returning 'unknown driver' for qeth (#601846)
+- fix stack overwrite in cpuplugd (#601847)
+- fix cmm_min/max limit checks in cpuplugd (#606366)
+- set cpu_min to 1 by default in cpuplugd (#606416)
+- build with -fno-strict-aliasing (#599396)
+- remove reference to z/VM from the cpi initscript (#601753)
+- fix return values for the mon_statd initscript (#606805)
+- ignore backup and similar config files in device_cio_free (#533494)
+
+* Fri May 28 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-25
+- fixed device_cio_free command line handling (#595569)
+
+* Thu May 20 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-24
+- added a check for the length of the parameters line (#594031)
+
+* Wed May 19 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-23
+- make ccw_init compatible with posix shell (#546615)
+
+* Wed May  5 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-22
+- scripts can't depend on stuff from /usr (#587364)
+
+* Mon May  3 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-21
+- updated patch for the "reinitialize array in lsqeth" issue (#587757)
+
+* Fri Apr 30 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-20
+- updated lsdasd man page (#587044)
+- reinitialize array in lsqeth (#587599)
+
+* Wed Apr 28 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-19
+- fixed mismatch between man and -h in chshut (#563625)
+- use the merged ccw_init script (#533494, #561814)
+
+* Thu Apr 22 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-18
+- lsluns utility from the base subpackage requires sg3_utils
+
+* Wed Apr 21 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-17
+- updated device_cio_free script (#576015)
+
+* Wed Mar 31 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-16
+- updated device_cio_free upstart config file (#578260)
+- fix multipathing in ziomon (#577318)
+
+* Mon Mar 29 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-15
+- remove check for ziorep_config availability (#576579)
+- install upstart event file into /etc/init (#561339)
+- device_cio_free updates
+    - don't use basename/dirname
+    - correctly parse /etc/ccw.conf (#533494)
+
+* Mon Mar 22 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-14
+- don't use memory cgroups in zfcpdump kernel (#575183)
+- fix df usage in ziomon (#575833)
+
+* Thu Mar 11 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-13
+- dropped dependency on redhat-lsb (#542702)
+
+* Wed Mar 10 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-12
+- run device_cio_free on startup (#561339)
+- use hex index for chpidtype table in znetconf (#561056)
+- handle status during IPL SSCH (#559250)
+- don't show garbage in vmconvert's progress bar (#567681)
+- don't print enviroment when there are no devices to wait for (#570763)
+- fix zfcp dump partition error (#572313)
+- switched to new initscripts for cpuplugd and fsstatd/procd (#524218, #524477)
+
+* Tue Feb 16 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-11
+- moved ccw udev stuff from initscripts to s390utils
+- updated ccw_init with delay loops and layer2 handling (#561926)
+
+* Fri Jan 22 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-10.1
+- really update zfcpconf.sh script from dracut
 
 * Wed Jan 20 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-10
 - fixed return codes in ziorep (#556849)
@@ -869,6 +1040,9 @@ User-space development files for the s390/s390x architecture.
 
 * Fri Jan  8 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-7
 - updated device_cio_free script (#533494)
+
+* Tue Dec 22 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-6.1
+- fixed return value in cpi initscript (#541389)
 
 * Tue Dec 22 2009 Dan Horák <dan[at]danny.cz> 2:1.8.2-6
 - fixed return value in cpi initscript (#541389)

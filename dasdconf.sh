@@ -14,7 +14,7 @@
 CHANNEL=${DEVPATH##*/}
 
 CONFIG=/etc/dasd.conf
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
+PATH=/sbin:/bin
 export PATH
 
 warn() {
@@ -27,7 +27,7 @@ if [ -f "$CONFIG" ]; then
 	#warn "No dasd-eckd or dasd-eckd loaded"
         exit 0
     fi
-    tr "A-Z" "a-z" < $CONFIG | while read line; do
+    sed 'y/ABCDEF/abcdef/' < $CONFIG | while read line; do
         case $line in
             \#*) ;;
             *)
