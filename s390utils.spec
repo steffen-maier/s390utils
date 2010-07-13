@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        28%{?dist}
+Release:        29%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -79,6 +79,8 @@ Patch38:  0038-cpuplugd-fix-stack-overflow.patch
 Patch39:  0039-cpuplugd-fix-cmm-limits-checks.patch
 Patch40:  0040-cpuplugd-set-cpu_min-to-1-by-default.patch
 Patch41:  0041-fix-dates-option-on-zfcpdbf.patch
+Patch42:  0042-lsluns-uninitialized-value-on-adapter-offline.patch
+Patch43:  0043-zfcpdbf-Fix-Use-of-uninitialized-value-and-output-is.patch
 
 Patch1000:  1000-ziomon-linker.patch
 
@@ -232,6 +234,12 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Fix --dates option in zfcpdbf (#609092)
 %patch41 -p1 -b .zfcpdbf-dates
+
+# lsluns: uninitialized value on adapter offline (#611795)
+%patch42 -p1 -b .lsluns-adapter-offline
+
+# zfcpdbf: Fix 'Use of uninitialized value' and output issues (#612622)
+%patch43 -p1 -b .zfcpdbf-uninitialized-value
 
 # Fix linking with --no-add-needed
 %patch1000 -p1 -b .linker
@@ -943,6 +951,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Jul 13 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-29
+- lsluns: uninitialized value on adapter offline (#611795)
+- zfcpdbf: Fix 'Use of uninitialized value' and output issues (#612622)
+
 * Wed Jul  7 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-28
 - fix linking with --no-add-needed
 
