@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        29%{?dist}
+Release:        30%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -951,6 +951,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.8.2-30
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
 * Tue Jul 13 2010 Dan Horák <dan[at]danny.cz> 2:1.8.2-29
 - lsluns: uninitialized value on adapter offline (#611795)
 - zfcpdbf: Fix 'Use of uninitialized value' and output issues (#612622)
