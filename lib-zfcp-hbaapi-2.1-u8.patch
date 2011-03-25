@@ -1,0 +1,13 @@
+diff -up lib-zfcp-hbaapi-2.1/vlib_sg_io.c.u8 lib-zfcp-hbaapi-2.1/vlib_sg_io.c
+--- lib-zfcp-hbaapi-2.1/vlib_sg_io.c.u8	2011-01-14 11:57:51.000000000 +0100
++++ lib-zfcp-hbaapi-2.1/vlib_sg_io.c	2011-01-14 11:58:05.000000000 +0100
+@@ -24,6 +24,9 @@
+ #include <sys/types.h>
+ #include <sys/ioctl.h>
+ #include <sys/time.h>
++
++typedef __u8 u8;
++
+ #include <scsi/scsi.h>
+ #include <scsi/sg.h>
+ 

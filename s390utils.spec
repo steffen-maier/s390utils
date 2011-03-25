@@ -1,6 +1,6 @@
 %define cmsfsver 1.1.8c
 %define vipaver 2.0.4
-%define hbaapiver 2.0
+%define hbaapiver 2.1
 
 %{!?_initddir: %define _initddir %{_initrddir}}
 
@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        30%{?dist}
+Release:        31%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -81,16 +81,41 @@ Patch40:  0040-cpuplugd-set-cpu_min-to-1-by-default.patch
 Patch41:  0041-fix-dates-option-on-zfcpdbf.patch
 Patch42:  0042-lsluns-uninitialized-value-on-adapter-offline.patch
 Patch43:  0043-zfcpdbf-Fix-Use-of-uninitialized-value-and-output-is.patch
+Patch44:  0044-xcec-bridge-fix-multicast-forwarding.patch
+Patch45:  0045-ziomon-wrong-return-codes.patch
+Patch46:  0046-qethconf-process-devices-with-non-zero-subchannel.patch
+Patch47:  0047-wait-for-completion-of-any-pending-actions-affecting.patch
+Patch48:  0048-add-infrastructure-code-for-new-features.patch
+Patch49:  0049-hyptop-Show-hypervisor-performance-data-on-System-z.patch
+Patch50:  0050-cmsfs-fuse-support-for-CMS-EDF-filesystems-via-fuse.patch
+Patch51:  0051-lsmem-chmem-Tools-to-manage-memory-hotplug.patch
+Patch52:  0052-dumpconf-Prevent-re-IPL-loop-for-dump-on-panic.patch
+Patch53:  0053-ttyrun-run-a-program-if-a-terminal-device-is-availab.patch
+Patch54:  0054-zgetdump-zipl-Add-ELF-dump-support-needed-for-makedu.patch
+Patch55:  0055-znetconf-support-for-OSA-CHPID-types-OSX-and-OSM.patch
+Patch56:  0056-iucvtty-do-not-specify-z-VM-user-ID-as-argument-to-l.patch
+Patch57:  0057-tunedasd-add-new-option-Q-query_reserve.patch
+Patch58:  0058-fdasd-dasdfmt-fix-format-7-label.patch
+Patch59:  0059-cpuplugd-cmm_pages-not-set-and-restored-correctly.patch
+Patch60:  0060-lsluns-Fix-LUN-reporting-for-SAN-volume-controller-S.patch
+Patch61:  0061-lsluns-Accept-uppercase-and-lowercase-hex-digits.patch
+Patch62:  0062-dumpconf-Add-DELAY_MINUTES-description-to-man-page.patch
+Patch63:  0063-cmsfs-fuse-fix-read-and-write-errors-in-text-mode.patch
+Patch64:  0064-switch-to-using-udevadm-settle.patch
+Patch65:  0065-hyptop-Fix-man-page-typo-for-current-weight.patch
+Patch66:  0066-fdasd-buffer-overflow-when-writing-to-read-only-devi.patch
 
 Patch1000:  1000-ziomon-linker.patch
 
 Patch100:       cmsfs-1.1.8-warnings.patch
 Patch101:       cmsfs-1.1.8-kernel26.patch
+Patch102:       cmsfs-1.1.8-use-detected-filesystem-block-size-on-FBA-devices.patch
 
 Patch200:       src_vipa-2.0.4-locations.patch
 
-Patch300:       lib-zfcp-hbaapi-2.0-sgutils.patch
-Patch301:       lib-zfcp-hbaapi-2.0-module.patch
+Patch301:       lib-zfcp-hbaapi-2.1-module.patch
+Patch302:       lib-zfcp-hbaapi-2.1-u8.patch
+Patch303:       lib-zfcp-hbaapi-2.1-vendorlib.patch
 
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -241,6 +266,75 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # zfcpdbf: Fix 'Use of uninitialized value' and output issues (#612622)
 %patch43 -p1 -b .zfcpdbf-uninitialized-value
 
+# xcec-bridge: fix multicast forwarding (#619504)
+%patch44 -p1 -b .xcec-bridge-multicast
+
+# ziomon: wrong return codes (#623250)
+%patch45 -p1 -b .ziomon-return-codes
+
+# qethconf: process devices with non-zero subchannel (#627692)
+%patch46 -p1 -b .qetgconf-nonzero-subchannel
+
+# wait for completion of any pending actions affecting device (#631527)
+%patch47 -p1 -b .cio_settle
+
+# add infrastructure code for new features (#631541)
+%patch48 -p1 -b .feature-infrastructure
+
+# hyptop: Show hypervisor performance data on System z (#631541)
+%patch49 -p1 -b .hyptop
+
+# cmsfs-fuse: support for CMS EDF filesystems via fuse (#631546)
+%patch50 -p1 -b .cmsfs-fuse
+
+# lsmem/chmem: Tools to manage memory hotplug (#631561)
+%patch51 -p1 -b .lsmem-chmem
+
+# dumpconf: Prevent re-IPL loop for dump on panic (#633411)
+%patch52 -p1 -b .dumpconf-reipl
+
+# ttyrun: run a program if a terminal device is available (#633420)
+%patch53 -p1 -b .ttyrun
+
+# zgetdump/zipl: Add ELF dump support (needed for makedumpfile) (#633437)
+%patch54 -p1 -b .elf-dump
+
+# znetconf: support for OSA CHPID types OSX and OSM (#633534)
+%patch55 -p1 -b .znetconf-osx-osm
+
+# iucvtty: do not specify z/VM user ID as argument to login -h (#636204)
+%patch56 -p1 -b .iucvtty-login
+
+# tunedasd: add new option -Q / --query_reserve (#644935)
+%patch57 -p1 -b .tunedasd-q
+
+# fdasd/dasdfmt: fix format 7 label (#649787)
+%patch58 -p1 -b .vtoc-format-7
+
+# cpuplugd: cmm_pages not set and restored correctly (#658517)
+%patch59 -p1 -b .cpuplugd-cmm_pages
+
+# lsluns: Fix LUN reporting for SAN volume controller (SVC) (#659828)
+%patch60 -p1 -b .lsluns-svc
+
+# lsluns: Accept uppercase and lowercase hex digits (#660361)
+%patch61 -p1 -b .lsluns-ignore-case
+
+# dumpconf: Add DELAY_MINUTES description to man page (#676706)
+%patch62 -p1 -b .dumpconf-update-man
+
+# cmsfs-fuse: fix read and write errors in text mode (#680465)
+%patch63 -p1 -b .cmsfs-fuse-text-mode-errors
+
+# mon_statd: switch to using udevadm settle (#688140)
+%patch64 -p1 -b .mon_statd-udevadm-settle
+
+# hyptop: Fix man page typo for "current weight" (#684244)
+%patch65 -p1 -b .hyptop-man-page-typo
+
+# fdasd: buffer overflow when writing to read-only device (#688340)
+%patch66 -p1 -b .fdasd-buffer-overflow
+
 # Fix linking with --no-add-needed
 %patch1000 -p1 -b .linker
 
@@ -253,6 +347,9 @@ pushd cmsfs-%{cmsfsver}
 
 # build on kernel-2.6, too
 %patch101 -p1 -b .cmsfs26
+
+# use detected filesystem block size (#651012)
+%patch102 -p1 -b .use-detected-block-size
 popd
 
 #
@@ -267,11 +364,14 @@ popd
 # lib-zfcp-hbaapi
 #
 pushd lib-zfcp-hbaapi-%{hbaapiver}
-# fix for newer sg3_utils and missing function declarations
-%patch300 -p1 -b .sgutils
-
 # build the library as a module
 %patch301 -p1 -b .module
+
+# kernel headers need u8 type
+%patch302 -p1 -b .u8
+
+# fix linking of the tools when using vendor library mode
+%patch303 -p1 -b .vendorlib
 popd
 
 # remove --strip from install
@@ -306,10 +406,13 @@ pushd src_vipa-%{vipaver}
 make CC_FLAGS="$RPM_OPT_FLAGS -fPIC" LIBDIR=%{_libdir}
 popd
 
+%ifarch s390x
 pushd lib-zfcp-hbaapi-%{hbaapiver}
-%configure --disable-static
+export CPPFLAGS=-I/usr/src/kernels/$(rpm -q --qf="%{VERSION}-%{RELEASE}.%{ARCH}" kernel-devel)/include
+%configure --disable-static --enable-vendor-lib
 make EXTRA_CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
 popd
+%endif
 
 
 %install
@@ -365,6 +468,7 @@ pushd src_vipa-%{vipaver}
 make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=$RPM_BUILD_ROOT
 popd
 
+%ifarch s390x
 # lib-zfcp-hbaapi
 pushd lib-zfcp-hbaapi-%{hbaapiver}
 %makeinstall docdir=$RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}
@@ -373,6 +477,7 @@ popd
 rm -rf $RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}/latex
 # remove unwanted files
 rm -f $RPM_BUILD_ROOT%{_libdir}/libzfcphbaapi.*
+%endif
 
 # install usefull headers for devel subpackage
 mkdir -p $RPM_BUILD_ROOT%{_includedir}/%{name}
@@ -420,6 +525,7 @@ Requires:       sg3_utils
 Requires(pre):   chkconfig
 Requires(preun): chkconfig
 Requires(preun): initscripts
+BuildRequires:  ncurses-devel
 
 
 %description base
@@ -525,6 +631,8 @@ s390 base tools. This collection provides the following utilities:
                    adapters.
      - cio_ignore: Query and modify the contents of the CIO device driver
                    blacklist.
+     - lsmem:      Display the online status of the available memory.
+     - chmem:      Set hotplug memory online or offline.
 
    * dumpconf:
      Allows to configure the dump device used for system dump in case a kernel
@@ -590,19 +698,23 @@ fi
 /sbin/qethconf
 /sbin/tape390_display
 /sbin/tape390_crypt
+/sbin/ttyrun
 /sbin/tunedasd
 /sbin/vmcp
 /sbin/zgetdump
 /sbin/znetconf
 /sbin/dbginfo.sh
+%{_sbindir}/lsmem
 %{_sbindir}/lsreipl
 %{_sbindir}/lsshut
+%{_sbindir}/chmem
 %{_sbindir}/chreipl
 %{_sbindir}/chshut
 %{_sbindir}/ip_watcher.pl
 %{_sbindir}/start_hsnc.sh
 %{_sbindir}/vmur
 %{_sbindir}/xcec-bridge
+%{_sbindir}/hyptop
 %{_bindir}/vmconvert
 %{_initddir}/dumpconf
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
@@ -612,6 +724,7 @@ fi
 %{_mandir}/man5/zipl.conf.5*
 %{_mandir}/man8/chccwdev.8*
 %{_mandir}/man8/chchp.8*
+%{_mandir}/man8/chmem.8*
 %{_mandir}/man8/chreipl.8*
 %{_mandir}/man8/chshut.8*
 %{_mandir}/man8/chzcrypt.8*
@@ -621,9 +734,11 @@ fi
 %{_mandir}/man8/dasdview.8*
 %{_mandir}/man8/dumpconf.8*
 %{_mandir}/man8/fdasd.8*
+%{_mandir}/man8/hyptop.8*
 %{_mandir}/man8/lschp.8*
 %{_mandir}/man8/lscss.8*
 %{_mandir}/man8/lsdasd.8*
+%{_mandir}/man8/lsmem.8*
 %{_mandir}/man8/lsluns.8*
 %{_mandir}/man8/lsqeth.8*
 %{_mandir}/man8/lsreipl.8*
@@ -635,6 +750,7 @@ fi
 %{_mandir}/man8/qethconf.8*
 %{_mandir}/man8/tape390_crypt.8*
 %{_mandir}/man8/tape390_display.8*
+%{_mandir}/man8/ttyrun.8*
 %{_mandir}/man8/tunedasd.8*
 %{_mandir}/man8/vmconvert.8*
 %{_mandir}/man8/vmcp.8*
@@ -806,6 +922,7 @@ Tool set to collect data for zfcp performance analysis and report.
 License:        GPLv2
 Summary:        z/VM IUCV terminal applications
 Group:          Applications/System
+Requires(pre):  shadow-utils
 BuildRequires:  gettext
 
 %description iucvterm
@@ -860,6 +977,7 @@ fi
 #
 # *********************** libzfcphbaapi package  ***********************
 #
+%ifarch s390x
 %package libzfcphbaapi
 License:       CPL
 Summary:       ZFCP HBA API Library -- HBA API for the zfcp device driver
@@ -868,6 +986,8 @@ URL:           http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi.html
 BuildRequires: automake autoconf
 BuildRequires: doxygen libsysfs-devel
 BuildRequires: sg3_utils-devel
+BuildRequires: kernel-devel
+BuildRequires: libhbaapi-devel
 Requires:      libhbaapi
 Obsoletes:     %{name}-libzfcphbaapi-devel < 2:1.8.2-4
 
@@ -883,10 +1003,14 @@ the zfcp device driver.
 %doc lib-zfcp-hbaapi-%{hbaapiver}/ChangeLog
 %doc lib-zfcp-hbaapi-%{hbaapiver}/AUTHORS
 %doc lib-zfcp-hbaapi-%{hbaapiver}/LICENSE
+%{_bindir}/zfcp_ping
+%{_bindir}/zfcp_show
 %{_libdir}/libzfcphbaapi-%{hbaapiver}.so
 %{_mandir}/man3/libzfcphbaapi.3*
 %{_mandir}/man3/SupportedHBAAPIs.3*
 %{_mandir}/man3/UnSupportedHBAAPIs.3*
+%{_mandir}/man8/zfcp_ping.8*
+%{_mandir}/man8/zfcp_show.8*
 %exclude %{_mandir}/man3/hbaapi.h.3*
 
 #
@@ -907,6 +1031,8 @@ Documentation for the ZFCP HBA API Library.
 %defattr (-,root,root,-)
 %docdir %{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}
 %{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}/
+
+%endif
 
 #
 # *********************** cmsfs package  ***********************
@@ -935,6 +1061,26 @@ This package contains the CMS file system tools.
 %{_mandir}/man8/cmsfsvol.8*
 
 #
+# *********************** cmsfs-fuse package  ***********************
+#
+%package cmsfs-fuse
+License:        GPLv2
+Summary:        CMS file system based on FUSE
+Group:          System Environment/Base
+BuildRequires:  fuse-devel
+Requires:       fuse
+
+%description cmsfs-fuse
+This package contains the CMS file system based on FUSE.
+
+%files cmsfs-fuse
+%defattr(-,root,root,-)
+%dir %{_sysconfdir}/cmsfs-fuse
+%config(noreplace) %{_sysconfdir}/cmsfs-fuse/filetypes.conf
+%{_bindir}/cmsfs-fuse
+%{_mandir}/man1/cmsfs-fuse.1*
+
+#
 # *********************** devel package  ***********************
 #
 %package devel
@@ -951,6 +1097,40 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Mar 18 2011 Dan Horák <dhorak@redhat.com> 2:1.8.2-31
+- mon_statd: switch to using udevadm settle (#688140)
+- hyptop: Fix man page typo for "current weight" (#684244)
+- fdasd: buffer overflow when writing to read-only device (#688340)
+- cmsfs-fuse: fix read and write errors in text mode (#680465)
+- cmsfs-fuse needs fuse (#631546)
+- dumpconf: Add DELAY_MINUTES description to man page (#676706)
+- iucvterm scriptlet need shadow-utils (#677247)
+- use lower-case in udev rules (#597360)
+- add support for the 1731/02 OSM/OSX network device (#636849)
+- xcec-bridge: fix multicast forwarding (#619504)
+- ziomon: wrong return codes (#623250)
+- qethconf: process devices with non-zero subchannel (#627692)
+- wait for completion of any pending actions affecting device (#631527)
+- add infrastructure code for new features (#631541)
+- hyptop: Show hypervisor performance data on System z (#631541)
+- cmsfs-fuse: support for CMS EDF filesystems via fuse (#631546)
+- lsmem/chmem: Tools to manage memory hotplug (#631561)
+- dumpconf: Prevent re-IPL loop for dump on panic (#633411)
+- ttyrun: run a program if a terminal device is available (#633420)
+- zgetdump/zipl: Add ELF dump support (needed for makedumpfile) (#633437)
+- znetconf: support for OSA CHPID types OSX and OSM (#633534)
+- iucvtty: do not specify z/VM user ID as argument to login -h (#636204)
+- tunedasd: add new option -Q / --query_reserve (#644935)
+- fdasd/dasdfmt: fix format 7 label (#649787)
+- cpuplugd: cmm_pages not set and restored correctly (#658517)
+- lsluns: Fix LUN reporting for SAN volume controller (SVC) (#659828)
+- lsluns: Accept uppercase and lowercase hex digits (#660361)
+- cmsfs: use detected filesystem block size (#651012)
+- device_cio_free: use the /proc/cio_settle interface when waiting for devices
+- libzfcphbaapi library needs kernel-devel during build and thus is limited to s390x
+- libzfcphbaapi library rebased to 2.1 (#633414)
+- new zfcp tools added (#633409)
+
 * Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.8.2-30
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 

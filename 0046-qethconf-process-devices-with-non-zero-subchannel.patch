@@ -1,0 +1,30 @@
+From 037964c1dd79a637e66b51544b69243a2f4216ea Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Tue, 25 Jan 2011 11:00:09 +0100
+Subject: [PATCH 46/46] qethconf: process devices with non-zero subchannel
+
+Description: qethconf: process devices with subchannel set != 0
+Symptom:     qethconf ipa list does not show devices with subchannel
+		set != 0.
+Problem:     The code matches only for subchannel set 0.
+Solution:    Extend code to match for other subchannel IDs.
+---
+ qethconf/qethconf |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/qethconf/qethconf b/qethconf/qethconf
+index 10dc902..9d9de1e 100644
+--- a/qethconf/qethconf
++++ b/qethconf/qethconf
+@@ -205,7 +205,7 @@ function __list_entries
+   fi
+   for j in ${cmd_type}
+ 	do
+-	  device_list="`cat $sys_file/0.0.*/if_name`"
++	  device_list="`cat $sys_file/*.*.*/if_name`"
+ 	  for i in ${device_list} 
+ 		  do
+ 			__layer2_enabled "$i" "list"
+-- 
+1.7.3.4
+

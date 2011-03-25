@@ -1,0 +1,102 @@
+From 68c07ef0b9d9731c040880e0db3570f48a85f9b8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Fri, 28 Jan 2011 13:06:00 +0100
+Subject: [PATCH 47/61] wait for completion of any pending actions affecting device
+
+Delay I/O operations until all pending requests against the common I/O layer
+have been completed. The kernel now provides /proc/cio_settle file and a write
+there will be blocked until all requests are completed.
+---
+ zconf/chccwdev   |    5 +++++
+ zconf/chchp      |    5 +++++
+ zconf/cio_ignore |    9 +++++++++
+ 3 files changed, 19 insertions(+), 0 deletions(-)
+
+diff --git a/zconf/chccwdev b/zconf/chccwdev
+index d2a697b..03985a1 100755
+--- a/zconf/chccwdev
++++ b/zconf/chccwdev
+@@ -28,6 +28,7 @@
+ #==============================================================================
+ CMD=$(basename $0)
+ MAX_RETRIES=5
++CIO_SETTLE="/proc/cio_settle"
+ 
+ if [ "$(cat /proc/filesystems|grep sysfs)" = "" ]; then
+ 	echo "ERROR: $CMD requires sysfs support!" >&2
+@@ -160,6 +161,10 @@ while [ $# -gt 0 ]; do
+ 	shift
+ done
+ 
++if [ -w $CIO_SETTLE ] ; then
++	echo 1 > $CIO_SETTLE
++fi
++
+ #
+ # Parse the BUSIDLIST and expand the ranges and short IDs.
+ #
+diff --git a/zconf/chchp b/zconf/chchp
+index 520ce3f..4a62579 100755
+--- a/zconf/chchp
++++ b/zconf/chchp
+@@ -30,6 +30,7 @@ VERSION="%S390_TOOLS_VERSION%"
+ TOOLNAME=${0##*/}
+ MAX_CHPID_CSS=255
+ MAX_CHPID_ID=255
++CIO_SETTLE="/proc/cio_settle"
+ 
+ # Print help text
+ function print_help()
+@@ -408,3 +409,7 @@ for CHPID in $CHPID_LIST ; do
+ 	get_chpid_id TO_ID $CHPID_TO
+ 	loop_chpids $FROM_CSS $FROM_ID $TO_CSS $TO_ID perform_command
+ done
++
++if [ -w $CIO_SETTLE ] ; then
++	echo 1 > $CIO_SETTLE
++fi
+diff --git a/zconf/cio_ignore b/zconf/cio_ignore
+index 71dccb1..476c481 100755
+--- a/zconf/cio_ignore
++++ b/zconf/cio_ignore
+@@ -8,6 +8,8 @@
+ 
+ VERSION="%S390_TOOLS_VERSION%"
+ BLACKLIST="/proc/cio_ignore"
++CIO_SETTLE="/proc/cio_settle"
++WAIT_FOR_CIO=0
+ SYSINFO="/proc/sysinfo"
+ CONSDRV="/sys/bus/ccw/drivers/3215"
+ MAXCSSID=0
+@@ -706,9 +708,11 @@ while [ $# -gt 0 ] ; do
+ 	-r|--remove)
+ 		shift
+ 		remove_device $1
++		WAIT_FOR_CIO=1
+ 		;;
+ 	-R|--remove-all)
+ 		remove_all_devices
++		WAIT_FOR_CIO=1
+ 		;;
+ 	-l|--list)
+ 		list_blacklisted 1
+@@ -724,6 +728,7 @@ while [ $# -gt 0 ] ; do
+ 		;;
+ 	-p|--purge)
+ 		purge
++		WAIT_FOR_CIO=1
+ 		;;
+ 	*)
+ 		warn "invalid option '$1'"
+@@ -734,4 +739,8 @@ while [ $# -gt 0 ] ; do
+ 	shift
+ done
+ 
++if [ \( -w $CIO_SETTLE \) -a $WAIT_FOR_CIO = 1 ] ; then
++	echo 1 > $CIO_SETTLE
++fi
++
+ exit 0
+-- 
+1.7.3.5
+

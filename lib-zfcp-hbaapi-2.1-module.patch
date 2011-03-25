@@ -1,0 +1,26 @@
+diff -up lib-zfcp-hbaapi-2.1/Makefile.am.module lib-zfcp-hbaapi-2.1/Makefile.am
+--- lib-zfcp-hbaapi-2.1/Makefile.am.module	2010-07-21 09:55:20.000000000 +0200
++++ lib-zfcp-hbaapi-2.1/Makefile.am	2011-01-14 10:42:06.000000000 +0100
+@@ -69,6 +69,10 @@ libzfcphbaapi_la_LDFLAGS = \
+ 	-lpthread -Wl,-init,_initvlib,-fini,_finivlib \
+ 	-export-symbols $(SYMFILE)
+ 
++if VENDORLIB
++libzfcphbaapi_la_LDFLAGS += -module -avoid-version -release $(VERSION)
++endif
++
+ bin_PROGRAMS = zfcp_ping zfcp_show
+ 
+ zfcp_ping_SOURCES = fc_tools/zfcp_ping.c
+diff -up lib-zfcp-hbaapi-2.1/Makefile.in.module lib-zfcp-hbaapi-2.1/Makefile.in
+--- lib-zfcp-hbaapi-2.1/Makefile.in.module	2010-09-17 13:17:17.000000000 +0200
++++ lib-zfcp-hbaapi-2.1/Makefile.in	2011-01-14 10:42:44.000000000 +0100
+@@ -279,6 +279,8 @@ libzfcphbaapi_la_LDFLAGS = \
+ 	-lpthread -Wl,-init,_initvlib,-fini,_finivlib \
+ 	-export-symbols $(SYMFILE)
+ 
++@VENDORLIB_TRUE@libzfcphbaapi_la_LDFLAGS += -module -avoid-version -release $(VERSION)
++
+ zfcp_ping_SOURCES = fc_tools/zfcp_ping.c
+ zfcp_ping_LDADD = -lzfcphbaapi
+ zfcp_show_SOURCES = fc_tools/zfcp_show.c

@@ -1,0 +1,30 @@
+From 983f8cd4337de2ca5377ed64121c55d27367beca Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Fri, 18 Mar 2011 16:37:15 +0100
+Subject: [PATCH 65/66] hyptop: Fix man page typo for "current weight"
+
+Description: hyptop: Fix man page typo for "current weight"
+Symptom:     The hyptop man page says that the 't' character is used for
+             "current weight" under z/VM.
+Problem:     The correct character for "current weight" is 'r'.
+Solution:    Document the correct character 'r' for "current weight".
+---
+ hyptop/hyptop.8 |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/hyptop/hyptop.8 b/hyptop/hyptop.8
+index 99a729c..325613b 100644
+--- a/hyptop/hyptop.8
++++ b/hyptop/hyptop.8
+@@ -127,7 +127,7 @@ The following fields are available under z/VM:
+   'u' - Used memory
+   'a' - Maximum memory
+   'n' - Minimum weight
+-  't' - Current weight
++  'r' - Current weight
+   'x' - Maximum weight
+ 
+   In "sys" window:
+-- 
+1.7.4
+

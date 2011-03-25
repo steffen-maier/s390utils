@@ -1,0 +1,53 @@
+From 7ff057ee33e5e452c09308249b36fa5da051b238 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Tue, 25 Jan 2011 10:57:40 +0100
+Subject: [PATCH 45/46] ziomon: wrong return codes
+
+Description: ziomon: ziomon tools return 1 when using option -h, --help and -v,
+		when return code must be 0. ziomon return 0 when using no command line
+		parameter, return code must be 1 here.
+Symptom:     Confusing error code. Some automated test cases maybe fail.
+Problem:     1 as been introduced as rc for parse_parms besides error codes,
+		but is not distinguished from them when parse_params is called.
+Solution:    In function parse_parms substitute "exit 1" by "exit 0"
+		in case the option -h, --help or -v was handled by the program.
+		Substitute "exit 0" by "exit 1" in case the case with no
+		commandline parametes was handled by the program.
+---
+ ziomon/ziomon |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/ziomon/ziomon b/ziomon/ziomon
+index b4c6e36..9af2f4e 100755
+--- a/ziomon/ziomon
++++ b/ziomon/ziomon
+@@ -124,7 +124,7 @@ function parse_params() {
+ 
+    if [ $# -eq 0 ]; then
+       print_usage;
+-      exit 0;
++      exit 1;
+    fi
+ 
+    let i=0;
+@@ -132,7 +132,7 @@ function parse_params() {
+         case $1 in
+             --help|-h)
+                 print_usage;
+-                exit 1;;
++                exit 0;;
+             --verbose|-V)
+                 (( WRP_DEBUG++ ));;
+             --duration|-d)
+@@ -152,7 +152,7 @@ function parse_params() {
+                 [ $? -ne 0 ] && ((error++));;
+             --version|-v)
+                 print_version;
+-                exit 1;;
++                exit 0;;
+             -*)
+                 echo "$WRP_TOOLNAME: Invalid option -- $1";
+                 echo "Try '$WRP_TOOLNAME --help' for more information.";
+-- 
+1.7.3.4
+

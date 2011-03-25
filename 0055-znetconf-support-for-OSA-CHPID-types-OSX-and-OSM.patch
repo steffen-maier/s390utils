@@ -1,0 +1,91 @@
+From 7700e2333725199a42d929ceb7af803c609df196 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Fri, 28 Jan 2011 14:22:16 +0100
+Subject: [PATCH 55/61] znetconf: support for OSA CHPID types OSX and OSM
+
+Summary:     znetconf: support for OSA CHPID types OSX and OSM
+Description: New feature to enable znetconf to support the
+             new OSA CHPID types OSX and OSM.
+---
+ zconf/lsznet.raw       |   12 ++++++++++++
+ zconf/znetcontrolunits |    6 +++++-
+ 2 files changed, 17 insertions(+), 1 deletions(-)
+
+diff --git a/zconf/lsznet.raw b/zconf/lsznet.raw
+index 9821ba3..a9f1247 100755
+--- a/zconf/lsznet.raw
++++ b/zconf/lsznet.raw
+@@ -41,6 +41,8 @@ readonly -a CU_CARDTYPE=(
+     "LCS OSA"
+     "LCS CLAW"
+     "OSN"
++    "OSX"
++    "OSM"
+ )
+ 
+ readonly -a CU_DEVNAME=(
+@@ -53,6 +55,8 @@ readonly -a CU_DEVNAME=(
+     eth
+     eth
+     osn
++    eth
++    eth
+ )
+ 
+ readonly -a CU_GROUPCHANNELS=(
+@@ -65,6 +69,8 @@ readonly -a CU_GROUPCHANNELS=(
+     2
+     2
+     3
++    3
++    3
+ )
+ 
+ readonly -a CHPIDTYPES=(
+@@ -72,6 +78,8 @@ readonly -a CHPIDTYPES=(
+     [0x11]=OSD
+     [0x15]=OSN
+     [0x24]=IQD
++    [0x30]=OSM
++    [0x31]=OSX
+ )
+ 
+ # whitelist of network devices for TCP/IP stack, e.g. for Linux installers
+@@ -83,6 +91,10 @@ readonly -a CU_TCPIP=(
+     3088/1e
+     3088/01
+     3088/60
++    3088/61
++    1731/06
++    1731/02
++    1731/02
+ )
+ 
+ readonly PREFIXFORMAT=[[:xdigit:]]*
+diff --git a/zconf/znetcontrolunits b/zconf/znetcontrolunits
+index e54e34b..7ee65f7 100644
+--- a/zconf/znetcontrolunits
++++ b/zconf/znetcontrolunits
+@@ -23,6 +23,8 @@ readonly -a CU=(
+     3088/60
+     3088/61
+     1731/06
++    1731/02
++    1731/02
+ )
+ 
+ readonly -a CU_DEVDRV=(
+@@ -33,7 +35,9 @@ readonly -a CU_DEVDRV=(
+     ctcm
+     lcs
+     lcs
+-    lcs
++    claw
++    qeth
++    qeth
+     qeth
+ )
+ 
+-- 
+1.7.3.5
+

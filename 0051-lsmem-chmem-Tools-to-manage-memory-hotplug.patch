@@ -1,0 +1,729 @@
+From 411a47d37b69a0763d1d7b1e3e132cfab67815cd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Fri, 28 Jan 2011 14:15:39 +0100
+Subject: [PATCH 51/61] lsmem/chmem: Tools to manage memory hotplug
+
+Summary:     lsmem/chmem: Tools to manage memory hotplug.
+Description: With lsmem, you can display the online status of all available
+             memory. With chmem, you can set memory online or offline.
+---
+ README         |    2 +
+ zconf/Makefile |   17 +++-
+ zconf/chmem    |  325 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ zconf/chmem.8  |   71 ++++++++++++
+ zconf/lsmem    |  158 +++++++++++++++++++++++++++
+ zconf/lsmem.8  |   69 ++++++++++++
+ 6 files changed, 639 insertions(+), 3 deletions(-)
+ create mode 100644 zconf/chmem
+ create mode 100644 zconf/chmem.8
+ create mode 100644 zconf/lsmem
+ create mode 100644 zconf/lsmem.8
+
+diff --git a/README b/README
+index 4335b43..dbb1475 100644
+--- a/README
++++ b/README
+@@ -112,6 +112,8 @@ s390-tools (1.8.2)
+                    adapters.
+      - cio_ignore: Query and modify the contents of the CIO device driver
+                    blacklist.
++     - lsmem:      Display the online status of the available memory.
++     - chmem:      Set hotplug memory online or offline.
+ 
+    * dumpconf:
+      Allows to configure the dump device used for system dump in case a kernel
+diff --git a/zconf/Makefile b/zconf/Makefile
+index 9fe8b42..10f2b87 100644
+--- a/zconf/Makefile
++++ b/zconf/Makefile
+@@ -5,14 +5,16 @@ include ../common.mak
+ 
+ SCRIPTS	= lsdasd lstape lscss chccwdev lsqeth lszfcp lschp chchp lszcrypt \
+ 	  chzcrypt lsluns cio_ignore znetconf
++USRSBIN_SCRIPTS = lsmem chmem
+ MANPAGES= lsdasd.8 lstape.8 lscss.8 chccwdev.8 lsqeth.8 lszfcp.8 lschp.8 \
+-	  chchp.8 lszcrypt.8 chzcrypt.8 lsluns.8 cio_ignore.8 znetconf.8
++	  chchp.8 lszcrypt.8 chzcrypt.8 lsluns.8 cio_ignore.8 znetconf.8 \
++	  chmem.8 lsmem.8
+ 
+ all:
+ 
+ clean:
+ 
+-install:	install-scripts install-manpages
++install:	install-scripts install-manpages install-usrsbin-scripts
+ 	$(INSTALL) -g $(GROUP) -o $(OWNER) -m 755 lsznet.raw $(TOOLS_LIBDIR)
+ 	$(INSTALL) -g $(GROUP) -o $(OWNER) -m 755 znetcontrolunits \
+ 		$(TOOLS_LIBDIR)
+@@ -26,6 +28,15 @@ install-scripts:	$(SCRIPTS)
+ 		chmod 755 $(BINDIR)/$$i; \
+ 	done
+ 
++install-usrsbin-scripts:	$(USRSBIN_SCRIPTS)
++	@for i in $^; do \
++		cat $$i | \
++		sed -e 's+%S390_TOOLS_VERSION%+$(S390_TOOLS_RELEASE)+' \
++		>$(USRSBINDIR)/$$i; \
++		chown $(OWNER).$(GROUP) $(USRSBINDIR)/$$i; \
++		chmod 755 $(USRSBINDIR)/$$i; \
++	done
++
+ install-manpages:	$(MANPAGES)
+ 	@if [ ! -d $(MANDIR) ]; then \
+ 		mkdir -p $(MANDIR)/man8; \
+@@ -38,4 +49,4 @@ install-manpages:	$(MANPAGES)
+ 		install -o $(OWNER) -g $(GROUP) -m 644 $$i $(MANDIR)/man8; \
+ 	done
+ 
+-.PHONY: all install clean install-scripts install-manpages
++.PHONY: all install clean install-scripts install-manpages install-usrsbin-scripts
+diff --git a/zconf/chmem b/zconf/chmem
+new file mode 100644
+index 0000000..bdc25a4
+--- /dev/null
++++ b/zconf/chmem
+@@ -0,0 +1,325 @@
++#!/usr/bin/perl
++###############################################################################
++# chmem - script to show memory hotplug status.
++#
++# Copyright IBM Corp. 2010
++# Author(s): Gerald Schaefer <gerald.schaefer@de.ibm.com>
++###############################################################################
++
++use strict;
++use warnings;
++use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
++use File::Basename;
++
++my $script_name = fileparse($0);
++my $online = 0;
++my $offline = 0;
++my $memdir = "/sys/devices/system/memory";
++my $block_size = 0;
++my $total_blocks = 0;
++my $devices = {};
++my $dev_size;
++my $blocks_per_dev = 0;
++my $devs_per_block = 0;
++my $ret = 0;
++
++sub chmem_usage()
++{
++	print <<HERE;
++Usage: $script_name [OPTIONS] SIZE|RANGE
++
++The $script_name command sets a particular size or range of memory online
++or offline.
++
++Specify SIZE as <size>[m|M|g|G]. With m or M, <size> specifies the memory
++size in MB (1024 x 1024 bytes). With g or G, <size> specifies the memory size
++in GB (1024 x 1024 x 1024 bytes). The default unit is MB.
++
++Specify RANGE in the form 0x<start>-0x<end> as shown in the output of the
++lsmem command. <start> is the hexadecimal address of the first byte and <end>
++is the hexadecimal address of the last byte in the memory range.
++
++SIZE and RANGE must be aligned to the Linux memory block size, as shown in
++the output of the lsmem command.
++
++OPTIONS
++    -e, --enable
++        Set the given RANGE or SIZE of memory online.
++
++    -d, --disable
++        Set the given RANGE or SIZE of memory offline.
++
++    -h, --help
++        Print a short help text, then exit.
++
++    -v, --version
++        Print the version number, then exit.
++HERE
++}
++
++sub chmem_version()
++{
++	print "$script_name: version %S390_TOOLS_VERSION%\n";
++	print "Copyright IBM Corp. 2010\n";
++}
++
++sub chmem_get_dev_size()
++{
++	my $i = 0;
++	my $device = 0;
++	my $old_device = 0;
++
++	while (-d "$memdir/memory$i") {
++		$device = `cat $memdir/memory$i/phys_device`;
++		chomp($device);
++		if ($device > $old_device) {
++			$dev_size = int($dev_size / ($device - $old_device));
++			last;
++		}
++		$dev_size += $block_size;
++		$i++;
++	}
++}
++
++sub chmem_online($)
++{
++	my $block = shift;
++
++	qx(echo online > $memdir/memory$block/state 2>/dev/null);
++	return $? >> 8;
++}
++
++sub chmem_offline($)
++{
++	my $block = shift;
++
++	qx(echo offline > $memdir/memory$block/state 2>/dev/null);
++	return $? >> 8;;
++}
++
++sub chmem_read_attr($$$)
++# parameters: state, device, block
++{
++	my @attributes = qw(state phys_device);
++	foreach (0..1) {
++		$_[$_] = `cat $memdir/memory$_[2]/$attributes[$_]`;
++		chomp($_[$_]);
++	}
++}
++
++sub chmem_read_devices()
++{
++	my $i = 0;
++	my $device = 0;
++	my $old_device = 0;
++	my $blocks = 0;
++	my $state;
++
++	while (-d "$memdir/memory$i") {
++		chmem_read_attr($state, $device, $i);
++		if ($device != $old_device) {
++			$devices->{$old_device}->{'id'} = $old_device;
++			$devices->{$old_device}->{'blocks'} = $blocks;
++			$old_device = $device;
++			$blocks = 0;
++		}
++		if ($state eq "online") {
++			$blocks++;
++		}
++		$i++;
++	}
++	$devices->{$old_device}->{'blocks'} = $blocks;
++	$devices->{$old_device}->{'id'} = $old_device;
++}
++
++sub chmem_dev_action($$)
++{
++	my ($dev_id, $blocks) = @_;
++	my ($start_block, $end_block, $tmp_block, $max_blocks);
++	my $state;
++	my $i = 0;
++	my $count = 0;
++
++	if ($blocks_per_dev > 0) {
++		$start_block = $dev_id * $blocks_per_dev;
++		$end_block = $start_block + $blocks_per_dev - 1;
++		$max_blocks = $blocks_per_dev;
++	} else {
++		$start_block = int($dev_id / $devs_per_block);
++		$end_block = $start_block;
++		$max_blocks = 1;
++	}
++	if ($blocks > $max_blocks) {
++		$blocks = $max_blocks;
++	}
++	while ($count < $blocks && $i < $max_blocks) {
++		$tmp_block = $online ? $start_block + $i : $end_block - $i;
++		$state = `cat $memdir/memory$tmp_block/state`;
++		chomp($state);
++		if ($offline && $state eq "online") {
++			$count++ unless chmem_offline($tmp_block);
++		}
++		if ($online && $state eq "offline") {
++			$count++ unless chmem_online($tmp_block);
++		}
++		$i++;
++	}
++	return $count;
++}
++
++sub chmem_size($)
++{
++	my $size = shift;
++	my ($blocks, $dev_blocks, $dev_id);
++
++	$blocks = int($size / $block_size);
++	if ($online) {
++		foreach my $device (sort {$b->{'blocks'} <=> $a->{'blocks'} ||
++					  $a->{'id'} <=> $b->{'id'}}
++				    values %{$devices}) {
++			$dev_blocks = $device->{'blocks'};
++			$dev_id = $device->{'id'};
++			if ($dev_blocks < $blocks_per_dev || $dev_blocks == 0) {
++				$blocks -= chmem_dev_action($dev_id, $blocks);
++				if ($blocks == 0) {
++					last;
++				}
++			}
++		}
++		if ($blocks > 0) {
++			printf(STDERR "chmem: Could only set %lu MB of memory ".
++			       "online.\n", $size - $blocks * $block_size);
++			$ret = 1;
++		}
++	} else {
++		foreach my $device (sort {$a->{'blocks'} <=> $b->{'blocks'} ||
++					  $b->{'id'} <=> $a->{'id'}}
++				    values %{$devices}) {
++			$dev_blocks = $device->{'blocks'};
++			$dev_id = $device->{'id'};
++			if ($dev_blocks > 0) {
++				$blocks -= chmem_dev_action($dev_id, $blocks);
++				if ($blocks == 0) {
++					last;
++				}
++			}
++		}
++		if ($blocks > 0) {
++			printf(STDERR "chmem: Could only set %lu MB of memory ".
++			       "offline.\n", $size - $blocks * $block_size);
++			$ret = 1;
++		}
++	}
++}
++
++sub chmem_range($$)
++{
++	my ($start, $end) = @_;
++	my $block = 0;
++	my $state;
++
++	while ($start < $end && $block < $total_blocks - 1) {
++		$block = int($start / ($block_size << 20));
++		$state = `cat $memdir/memory$block/state`;
++		chomp($state);
++		if ($online && $state eq "offline") {
++			if (chmem_online($block)) {
++				printf(STDERR "chmem: Could not set ".
++				       "0x%016x-0x%016x online\n", $start,
++				       $start + ($block_size << 20) - 1);
++				$ret = 1;
++			}
++		}
++		if ($offline && $state eq "online") {
++			if (chmem_offline($block)) {
++				printf(STDERR "chmem: Could not set ".
++				       "0x%016x-0x%016x offline\n", $start,
++				       $start + ($block_size << 20) - 1);
++				$ret = 1;
++			}
++		}
++		$start += $block_size << 20;
++	}
++}
++
++sub chmem_check()
++{
++	unless (-d $memdir) {
++		die "chmem: No memory hotplug interface in sysfs ($memdir).\n";
++	}
++	$block_size = `cat $memdir/block_size_bytes`;
++	chomp($block_size);
++	if ($block_size =~ /(?:0x)?([[:xdigit:]]+)/) {
++		$block_size = unpack("Q", pack("H16",
++				     substr("0" x 16 . $1, -16)));
++		$block_size = $block_size >> 20;
++	} else {
++		die "chmem: Unknown block size format in sysfs.\n";
++	}
++	if ($online == 0 && $offline == 0) {
++		die "chmem: Please specify one of the options -e or -d.\n";
++	}
++	if ($online == 1 && $offline == 1) {
++		die "chmem: You cannot specify both options -e and -d.\n";
++	}
++
++	while (-d "$memdir/memory$total_blocks") {
++		$total_blocks++;
++	}
++	chmem_get_dev_size();
++	if ($dev_size >= $block_size) {
++		$blocks_per_dev = int($dev_size / $block_size);
++	} else {
++		$devs_per_block = int($block_size / $dev_size);
++	}
++}
++
++sub chmem_action()
++{
++	my ($start, $end, $size, $unit);
++
++	if (!defined($ARGV[0])) {
++		die "chmem: Missing size or range.\n";
++	}
++	if ($ARGV[0] =~ /^0x([[:xdigit:]]+)-0x([[:xdigit:]]+)$/) {
++		$start = unpack("Q", pack("H16", substr("0" x 16 . $1, -16)));
++		$end = unpack("Q", pack("H16", substr("0" x 16 . $2, -16)));
++		if ($start % ($block_size << 20) ||
++		    ($end + 1) % ($block_size << 20)) {
++			die "chmem: Start address and (end address + 1) must ".
++			    "be aligned to memory block size ($block_size MB).\n";
++		}
++		chmem_range($start, $end);
++	} else {
++		if ($ARGV[0] =~ m/^(\d+)([mg]?)$/i) {
++			$size = $1;
++			$unit = $2 || "";
++			if ($unit =~ /g/i) {
++				$size = $size << 10;
++			}
++			if ($size % $block_size) {
++				die "chmem: Size must be aligned to memory ".
++				    "block size ($block_size MB).\n";
++			}
++			chmem_size($size);
++		} else {
++			printf(STDERR "chmem: Invalid size or range: %s\n",
++			       $ARGV[0]);
++			exit 1;
++		}
++	}
++}
++
++
++# Main
++unless (GetOptions('v|version' => sub {chmem_version(); exit 0;},
++		  'h|help'    => sub {chmem_usage(); exit 0;},
++		  'e|enable'  => \$online,
++		  'd|disable' => \$offline)) {
++	die "Try '$script_name --help' for more information.\n";
++};
++
++chmem_read_devices();
++chmem_check();
++chmem_action();
++exit $ret;
+diff --git a/zconf/chmem.8 b/zconf/chmem.8
+new file mode 100644
+index 0000000..34bea3c
+--- /dev/null
++++ b/zconf/chmem.8
+@@ -0,0 +1,71 @@
++.TH CHMEM 8 "Apr 2010" "s390-tools"
++.
++.
++.SH NAME
++chmem \- set memory online or offline.
++.
++.SH SYNOPSIS
++.B chmem
++.RB OPTIONS
++.RB [SIZE|RANGE]
++.
++.
++.SH DESCRIPTION
++The chmem command sets a particular size or range of memory online or offline.
++.
++.IP "\(hy" 2
++Specify SIZE as <size>[m|M|g|G]. With m or M, <size> specifies the memory
++size in MB (1024 x 1024 bytes). With g or G, <size> specifies the memory size
++in GB (1024 x 1024 x 1024 bytes). The default unit is MB.
++.
++.IP "\(hy" 2
++Specify RANGE in the form 0x<start>-0x<end> as shown in the output of the
++lsmem command. <start> is the hexadecimal address of the first byte and <end>
++is the hexadecimal address of the last byte in the memory range.
++.
++.PP
++SIZE and RANGE must be aligned to the Linux memory block size, as shown in
++the output of the lsmem command.
++
++Setting memory online can fail if the hypervisor does not have enough memory
++left, for example because memory was overcommitted. Setting memory offline can
++fail if Linux cannot free the memory. If only part of the requested memory can
++be set online or offline, a message tells you how much memory was set online
++or offline instead of the requested amount.
++.
++.
++.SH OPTIONS
++.TP
++.BR \-h ", " \-\-help
++Print a short help text, then exit.
++.
++.TP
++.BR \-v ", " \-\-version
++Print the version number, then exit.
++.
++.TP
++.BR \-e ", " \-\-enable
++Set the given RANGE or SIZE of memory online.
++.
++.TP
++.BR \-d ", " \-\-disable
++Set the given RANGE or SIZE of memory offline.
++.
++.
++.SH EXAMPLES
++.TP
++.B chmem --enable 1024
++This command requests 1024 MB of memory to be set online.
++.
++.TP
++.B chmem -e 2g
++This command requests 2 GB of memory to be set online.
++.
++.TP
++.B chmem --disable 0x00000000e4000000-0x00000000f3ffffff
++This command requests the memory range starting with 0x00000000e4000000
++and ending with 0x00000000f3ffffff to be set offline.
++.
++.
++.SH SEE ALSO
++.BR lsmem (8)
+diff --git a/zconf/lsmem b/zconf/lsmem
+new file mode 100644
+index 0000000..e6ed1fa
+--- /dev/null
++++ b/zconf/lsmem
+@@ -0,0 +1,158 @@
++#!/usr/bin/perl
++###############################################################################
++# lsmem - script to show memory hotplug status.
++#
++# Copyright IBM Corp. 2010
++# Author(s): Gerald Schaefer <gerald.schaefer@de.ibm.com>
++###############################################################################
++
++use strict;
++use warnings;
++use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
++use File::Basename;
++
++my $script_name = fileparse($0);
++my $memdir = "/sys/devices/system/memory";
++my $block_size = 0;
++my $list_all = 0;
++my $dev_size = 0;
++
++
++sub lsmem_read_attr($$$$)
++# parameters: state, rem, device, block_nr
++{
++	my @attributes = qw(state removable phys_device);
++	foreach (0..2) {
++		$_[$_] = `cat $memdir/memory$_[3]/$attributes[$_]`;
++		chomp($_[$_]);
++	}
++}
++
++sub lsmem_get_dev_size()
++{
++	my $i = 0;
++	my ($device, $old_device) = (0, 0);
++
++	while (-d "$memdir/memory$i") {
++		$device = `cat $memdir/memory$i/phys_device`;
++		chomp($device);
++		if ($device > $old_device) {
++			$dev_size = int($dev_size / ($device - $old_device));
++			last;
++		}
++		$dev_size += $block_size;
++		$i++;
++	}
++}
++
++sub lsmem_list()
++{
++	my $i = 0;
++	my ($start, $end, $size) = (0, 0, 0);
++	my ($state, $old_state) = (0, 0);
++	my ($rem, $old_rem) = (0, 0);
++	my ($device, $old_device) = (0, 0);
++	my ($mem_online, $mem_offline) = (0, 0);
++	my ($last_block, $end_dev) = (0, 0);
++
++	if (-d "$memdir/memory0") {
++		lsmem_read_attr($old_state, $old_rem, $old_device, 0);
++	} else {
++		die "lsmem: No memory hotplug interface in sysfs ($memdir).\n";
++	}
++
++	$block_size = `cat $memdir/block_size_bytes`;
++	chomp($block_size);
++	if ($block_size =~ /(?:0x)?([[:xdigit:]]+)/) {
++		$block_size = unpack("Q", pack("H16",
++				     substr("0" x 16 . $1, -16)));
++		$block_size = $block_size >> 20;
++	} else {
++		die "lsmem: Unknown block size format in sysfs.\n";
++	}
++	lsmem_get_dev_size();
++
++	print <<HERE;
++Address Range                          Size (MB)  State    Removable  Device
++===============================================================================
++HERE
++	while (-d "$memdir/memory$i") {
++		$i++;
++		if (-d "$memdir/memory$i") {
++			lsmem_read_attr($state, $rem, $device, $i);
++		} else {
++			$last_block = 1;
++		}
++		if ($state ne $old_state || $rem != $old_rem || $list_all ||
++		    $last_block) {
++			$end = $i * ($block_size << 20) - 1;
++			$size = ($end - $start + 1) >> 20;
++			if ($old_state eq "going-offline") {
++				$old_state = "on->off";
++			}
++			printf("0x%016x-0x%016x %10lu  %-7s ", $start, $end,
++				$size, $old_state);
++			if ($old_state eq "online") {
++				printf(" %-9s  ", $old_rem ? "yes" : "no");
++				$mem_online += $size;
++			} else {
++				printf(" %-9s  ", "-");
++				$mem_offline += $size;
++			}
++			$end_dev = ($end / $dev_size) >> 20;
++			if ($old_device == $end_dev) {
++				printf("%d\n", $old_device);
++			} else {
++				printf("%d-%d\n", $old_device, $end_dev);
++			}
++			$old_state = $state;
++			$old_rem = $rem;
++			$old_device = $device;
++			$start = $end + 1;
++		}
++	}
++	printf("\n");
++	printf("Memory device size  : %lu MB\n", $dev_size);
++	printf("Memory block size   : %lu MB\n", $block_size);
++	printf("Total online memory : %lu MB\n", $mem_online);
++	printf("Total offline memory: %lu MB\n", $mem_offline);
++}
++
++sub lsmem_usage()
++{
++	print <<HERE;
++Usage: $script_name [OPTIONS]
++
++The $script_name command lists the ranges of available memory with their online
++status. The listed memory blocks correspond to the memory block representation
++in sysfs. The command also shows the memory block size, the device size, and
++the amount of memory in online and offline state.
++
++OPTIONS
++    -a, --all
++       List each individual memory block, instead of combining memory blocks
++       with similar attributes.
++
++    -h, --help
++       Print a short help text, then exit.
++
++    -v, --version
++       Print the version number, then exit.
++HERE
++}
++
++sub lsmem_version()
++{
++	print "$script_name: version %S390_TOOLS_VERSION%\n";
++	print "Copyright IBM Corp. 2010\n";
++}
++
++
++# Main
++unless (GetOptions('v|version' => sub {lsmem_version(); exit 0;},
++		   'h|help'    => sub {lsmem_usage(); exit 0;},
++		   'a|all'     => \$list_all)) {
++	die "Try '$script_name --help' for more information.\n";
++};
++
++lsmem_list();
+diff --git a/zconf/lsmem.8 b/zconf/lsmem.8
+new file mode 100644
+index 0000000..ed052ea
+--- /dev/null
++++ b/zconf/lsmem.8
+@@ -0,0 +1,69 @@
++.TH LSMEM 8 "Apr 2010" s390\-tools
++.
++.
++.SH NAME
++lsmem \- list the ranges of available memory with their online status.
++.
++.
++.SH SYNOPSIS
++.B lsmem
++.RB [OPTIONS]
++.
++.
++.SH DESCRIPTION
++The lsmem command lists the ranges of available memory with their online
++status. The listed memory blocks correspond to the memory block representation
++in sysfs. The command also shows the memory block size, the device size, and
++the amount of memory in online and offline state.
++.
++.SS "Column description"
++.
++.TP 4
++Address Range
++Start and end address of the memory range.
++.
++.TP 4
++Size
++Size of the memory range in MB (1024 x 1024 bytes).
++.
++.TP 4
++State
++Indication of the online status of the memory range. State on->off means
++that the address range is in transition from online to offline.
++.
++.TP 4
++Removable
++"yes" if the memory range can be set offline, "no" if it cannot be set offline.
++A dash ("\-") means that the range is already offline.
++.
++.TP 4
++Device
++Device number or numbers that correspond to the memory range.
++
++Each device represents a memory unit for the hypervisor in control of the
++memory. The hypervisor cannot reuse a memory unit unless the corresponding
++memory range is completely offline. For best memory utilization, each device
++should either be completely online or completely offline.
++
++The chmem command with the size parameter automatically chooses the best suited
++device or devices when setting memory online or offline. The device size depends
++on the hypervisor and on the amount of total online and offline memory.
++.
++.
++.SH OPTIONS
++.TP
++.BR \-a ", " \-\-all
++List each individual memory block, instead of combining memory blocks with
++similar attributes.
++.
++.TP
++.BR \-h ", " \-\-help
++Print a short help text, then exit.
++.
++.TP
++.BR \-v ", " \-\-version
++Print the version number, then exit.
++.
++.
++.SH SEE ALSO
++.BR chmem (8)
+-- 
+1.7.3.5
+

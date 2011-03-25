@@ -1,0 +1,41 @@
+From 30321208dbccbd634c5e91b594372d150df07a03 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Tue, 25 Jan 2011 10:38:42 +0100
+Subject: [PATCH 44/46] xcec-bridge: fix multicast forwarding
+
+Description: xcec-bridge: fix multicast forwarding
+Symptom:     Forwarding of multicast traffic does not work.
+Problem:     xcec-bridge was developed for the broken packet socket
+		support of the qeth layer 3 driver. The code assumes
+		there are no link level heades for incoming packets.
+Solution:    New qeth layer 3 driver has full packet socket support
+		so xcec-bridge has to account link level header.
+---
+ ip_watcher/xcec-bridge.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/ip_watcher/xcec-bridge.c b/ip_watcher/xcec-bridge.c
+index d6dd112..7f551d2 100644
+--- a/ip_watcher/xcec-bridge.c
++++ b/ip_watcher/xcec-bridge.c
+@@ -549,12 +549,13 @@ void process_packet(struct int_sock *i_s)
+ 		if (s_ll.sll_pkttype==PACKET_BROADCAST) {
+ 			s_in.sin_addr.s_addr=INADDR_BROADCAST;
+ 		} else {
+-			memcpy(&s_in.sin_addr,&buffer[16],4);
++			memcpy(&s_in.sin_addr, &buffer[16 + ETH_HLEN], 4);
+ 		}
+ 
+-		retval=sendto(i_s_item->o_fd,buffer,buffer_len,0,
+-			      (struct sockaddr *)&s_in,
+-			      sizeof(struct sockaddr_in));
++		retval=sendto(i_s_item->o_fd, buffer + ETH_HLEN,
++				buffer_len - ETH_HLEN, 0,
++				(struct sockaddr *)&s_in,
++				sizeof(struct sockaddr_in));
+ 		if (retval==-1) {
+ 			if ( (errno==EMSGSIZE) && (!i_s_item->mtu_warning) ) {
+ 				syslog(LOG_WARNING,"MTU of %s too small " \
+-- 
+1.7.3.4
+
