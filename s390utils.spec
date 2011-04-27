@@ -515,10 +515,10 @@ for lnk in dasd zfcp znet; do
 done
 popd
 mkdir -p ${RPM_BUILD_ROOT}/lib/systemd/system
-mkdir -p ${RPM_BUILD_ROOT}/etc/systemd/system/sysinit.target.wants
+mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/systemd/system/sysinit.target.wants
 install -p -m 644 %{SOURCE15} ${RPM_BUILD_ROOT}/lib/systemd/system
-pushd ${RPM_BUILD_ROOT}/etc/systemd/system/sysinit.target.wants
-ln -sf /lib/systemd/system/%{SOURCE15} %{SOURCE15}
+pushd ${RPM_BUILD_ROOT}%{_sysconfdir}/systemd/system/sysinit.target.wants
+ln -sf /lib/systemd/system/device_cio_free.service device_cio_free.service
 popd
 
 # ccw
@@ -801,7 +801,8 @@ fi
 /sbin/device_cio_free
 /sbin/zfcp_cio_free
 /sbin/znet_cio_free
-%{_sysconfdir}/init/device_cio_free.conf
+/lib/systemd/system/device_cio_free.service
+%{_sysconfdir}/systemd/system/sysinit.target.wants/device_cio_free.service
 /lib/udev/ccw_init
 /lib/udev/rules.d/81-ccw.rules
 
