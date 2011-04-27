@@ -1,0 +1,81 @@
+From 7ec17ba524709c44561ed6016ba2940473bfa48f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Tue, 29 Mar 2011 10:51:45 +0200
+Subject: [PATCH 70/70] hyptop: Prevent interactive mode on s390 line mode terminals
+
+Description: hyptop: Prevent interactive mode on s390 line mode terminals
+Symptom:     Unreadable output, when hyptop is started on line mode terminals.
+Problem:     Check for line mode terminal is missing.
+Solution:    To prevent hyptop starting in interactive mode on line mode
+             terminals, the TERM variable is checked. If TERM is unset or
+             set to "dumb" interactive mode is not allowed.
+---
+ hyptop/hyptop.8 |    8 ++++++++
+ hyptop/hyptop.c |   21 ++++++++++++++++++++-
+ 2 files changed, 28 insertions(+), 1 deletions(-)
+
+diff --git a/hyptop/hyptop.8 b/hyptop/hyptop.8
+index 325613b..19c9d7c 100644
+--- a/hyptop/hyptop.8
++++ b/hyptop/hyptop.8
+@@ -211,3 +211,11 @@ for CPU time calculation, enter:
+ .br
+ 
+   # hyptop -t ifl,cp
++
++.SH ENVIRONMENT
++.TP
++.B TERM
++The TERM environment variable specifies your terminal type. To run
++\fBhyptop\fP in interactive mode the TERM environment variable has
++to be set. The interactive mode is not available for terminals that
++have TERM=dumb (e.g. line mode terminals).
+diff --git a/hyptop/hyptop.c b/hyptop/hyptop.c
+index c42e8b0..c558a21 100644
+--- a/hyptop/hyptop.c
++++ b/hyptop/hyptop.c
+@@ -199,6 +199,23 @@ static int l_initscr(void)
+ }
+ 
+ /*
++ * Check if terminal is able to run hyptop in curses mode
++ */
++static void l_term_check(void)
++{
++	char *term_str = getenv("TERM");
++
++	if (!term_str)
++		ERR_EXIT("Please set TERM environment variable or "
++			 "try \"--batch_mode\"\n");
++
++ 	/* S390 line mode terminals normally have TERM=dumb */
++	if (strcmp(term_str, "dumb") == 0)
++		ERR_EXIT("Terminal of type \"dumb\" is not supported,"
++			" try \"--batch_mode\"\n");
++}
++
++/*
+  * Init curses
+  */
+ static void l_term_init(void)
+@@ -206,6 +223,8 @@ static void l_term_init(void)
+ 	if (g.o.batch_mode_specified)
+ 		return;
+ 
++	l_term_check();
++
+ 	if (l_initscr() == ERR)
+ 		goto fail;
+ 	if (noecho() == ERR)
+@@ -221,7 +240,7 @@ static void l_term_init(void)
+ 	l_sig_handler_init();
+ 	return;
+ fail:
+-	ERR_EXIT("Could not initialize curses, try \"--batchmode\"\n");
++	ERR_EXIT("Could not initialize curses, try \"--batch_mode\"\n");
+ }
+ 
+ /*
+-- 
+1.7.4
+

@@ -1,0 +1,297 @@
+From f6494a1210439d591a1319498026ffcdd91a2ebf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Tue, 29 Mar 2011 10:49:25 +0200
+Subject: [PATCH 67/70] cmsfs-fuse: Delete old file if renaming to an existing file
+
+Description: cmsfs-fuse: Delete old file if renaming to an existing file.
+Symptom:     Stale old file if renaming a file to an existing file.
+Problem:     In case rename is used to overwrite an existing file the old
+             file entry was not deleted resulting in a duplicated file.
+Solution:    If the target of a rename operation exists delete the target
+             file before the rename operation.
+---
+ cmsfs-fuse/cmsfs-fuse.c |  248 ++++++++++++++++++++++++-----------------------
+ 1 files changed, 128 insertions(+), 120 deletions(-)
+
+diff --git a/cmsfs-fuse/cmsfs-fuse.c b/cmsfs-fuse/cmsfs-fuse.c
+index fd87774..9f1aa1a 100644
+--- a/cmsfs-fuse/cmsfs-fuse.c
++++ b/cmsfs-fuse/cmsfs-fuse.c
+@@ -2638,14 +2638,132 @@ static int cmsfs_utimens(const char *path, const struct timespec ts[2])
+ 	return 0;
+ }
+ 
++/*
++ * Get the address of the last directory entry.
++ */
++off_t find_last_fdir_entry(off_t addr, int level)
++{
++	struct fst_entry fst;
++	int left, rc;
++	off_t ptr;
++
++	if (level > 0) {
++		level--;
++		left = PTRS_PER_BLOCK;
++		while (left--) {
++			ptr = get_fixed_pointer(addr + left * PTR_SIZE);
++			BUG(ptr < 0);
++			if (ptr)
++				return find_last_fdir_entry(ptr, level);
++		}
++		DIE("Directory entry not found\n");
++		return 0;
++	}
++
++	left = cmsfs.blksize / sizeof(struct fst_entry);
++	while (left--) {
++		rc = _read(&fst, sizeof(fst),
++			   addr + left * sizeof(struct fst_entry));
++		BUG(rc < 0);
++		if (is_file((unsigned long long *) fst.name,
++			    (unsigned long long *) fst.type))
++			return addr + left * sizeof(struct fst_entry);
++	}
++	DIE("Directory entry not found\n");
++}
++
++static int delete_file(const char *path)
++{
++	off_t fst_kill, fst_last;
++	struct walk_file walk;
++	struct file *f_moved;
++	char file[MAX_FNAME];
++	struct fst_entry fst;
++	struct file *f;
++	int rc = 0, i;
++
++	if (cmsfs.readonly)
++		return -EROFS;
++
++	fst_kill = lookup_file(path + 1, &fst, SHOW_UNLINKED);
++	if (!fst_kill)
++		return -ENOENT;
++	f = create_file_object(&fst, &rc);
++	if (f == NULL)
++		return rc;
++
++	/* delete all data blocks */
++	for (i = 0; i < f->fst->nr_blocks; i++)
++		free_block(f->blist[i].disk_addr);
++
++	if (f->fst->fop) {
++		rc = f->fops->delete_pointers(f, f->fst->levels, ABS(f->fst->fop));
++		if (rc < 0)
++			goto error;
++	}
++
++	if (cmsfs.dir_levels)
++		fst_last = find_last_fdir_entry(get_fop(cmsfs.fdir), cmsfs.dir_levels);
++	else
++		fst_last = find_last_fdir_entry(cmsfs.fdir, cmsfs.dir_levels);
++
++	/* remove unlinked file from fcache */
++	strncpy(file, path + 1, MAX_FNAME);
++	str_toupper(file);
++	invalidate_htab_entry(file);
++
++	if (fst_last == fst_kill)
++		goto skip_copy;
++
++	/* copy last entry over unlinked entry */
++	rc = _read(&fst, sizeof(struct fst_entry), fst_last);
++	BUG(rc < 0);
++	rc = _write(&fst, sizeof(struct fst_entry), fst_kill);
++	BUG(rc < 0);
++
++	/* update moved fcache entry */
++	memset(file, 0, sizeof(file));
++	decode_edf_name(file, fst.name, fst.type);
++	update_htab_entry(fst_kill, file);
++	/* update cached address of moved FST */
++	f_moved = file_open(file);
++	if (f_moved != NULL)
++		f->fst_addr = fst_kill;
++
++skip_copy:
++	/* delete last entry */
++	rc = _zero(fst_last, sizeof(struct fst_entry));
++	BUG(rc < 0);
++
++	/* if the deleted entry was the first of a block, free the block */
++	if (fst_last % cmsfs.blksize == 0) {
++		cache_dblocks(&walk);
++		/* delete the last block from dlist */
++		walk.dlist_used--;
++		free_block(fst_last);
++		purge_dblock_ptrs(cmsfs.dir_levels, get_fop(cmsfs.fdir));
++		rewrite_dblock_ptrs(&walk);
++		free_dblocks(&walk);
++	}
++
++	destroy_file_object(f);
++	decrease_file_count();
++	update_block_count();
++	return 0;
++
++error:
++	destroy_file_object(f);
++	return rc;
++}
++
+ static int cmsfs_rename(const char *path, const char *new_path)
+ {
++	struct fst_entry fst, fst_new;
++	off_t fst_addr, fst_addr_new;
+ 	char uc_old_name[MAX_FNAME];
+ 	char fname[8], ftype[8];
+-	struct fst_entry fst;
+ 	char *uc_new_name;
+ 	struct file *f;
+-	off_t fst_addr;
+ 	int rc;
+ 
+ 	if (cmsfs.readonly)
+@@ -2655,6 +2773,14 @@ static int cmsfs_rename(const char *path, const char *new_path)
+ 	if (!fst_addr)
+ 		return -ENOENT;
+ 
++	/* if new file already exists it must be overwritten so delete it */
++	fst_addr_new = lookup_file(new_path + 1, &fst_new, HIDE_UNLINKED);
++	if (fst_addr_new) {
++		delete_file(new_path);
++		/* fst_addr may have changed due to copy-up */
++		fst_addr = lookup_file(path + 1, &fst, HIDE_UNLINKED);
++	}
++
+ 	rc = edf_name_valid(new_path + 1);
+ 	if (rc)
+ 		return rc;
+@@ -4042,124 +4168,6 @@ static int cmsfs_write(const char *path, const char *buf, size_t size,
+ 	return rc;
+ }
+ 
+-/*
+- * Get the address of the last directory entry.
+- */
+-off_t find_last_fdir_entry(off_t addr, int level)
+-{
+-	struct fst_entry fst;
+-	int left, rc;
+-	off_t ptr;
+-
+-	if (level > 0) {
+-		level--;
+-		left = PTRS_PER_BLOCK;
+-		while (left--) {
+-			ptr = get_fixed_pointer(addr + left * PTR_SIZE);
+-			BUG(ptr < 0);
+-			if (ptr)
+-				return find_last_fdir_entry(ptr, level);
+-		}
+-		DIE("Directory entry not found\n");
+-		return 0;
+-	}
+-
+-	left = cmsfs.blksize / sizeof(struct fst_entry);
+-	while (left--) {
+-		rc = _read(&fst, sizeof(fst),
+-			   addr + left * sizeof(struct fst_entry));
+-		BUG(rc < 0);
+-		if (is_file((unsigned long long *) fst.name,
+-			    (unsigned long long *) fst.type))
+-			return addr + left * sizeof(struct fst_entry);
+-	}
+-	DIE("Directory entry not found\n");
+-}
+-
+-static int delete_file(const char *path)
+-{
+-	off_t fst_kill, fst_last;
+-	struct walk_file walk;
+-	struct file *f_moved;
+-	char file[MAX_FNAME];
+-	struct fst_entry fst;
+-	struct file *f;
+-	int rc = 0, i;
+-
+-	if (cmsfs.readonly)
+-		return -EROFS;
+-
+-	fst_kill = lookup_file(path + 1, &fst, SHOW_UNLINKED);
+-	if (!fst_kill)
+-		return -ENOENT;
+-	f = create_file_object(&fst, &rc);
+-	if (f == NULL)
+-		return rc;
+-
+-	/* delete all data blocks */
+-	for (i = 0; i < f->fst->nr_blocks; i++)
+-		free_block(f->blist[i].disk_addr);
+-
+-	if (f->fst->fop) {
+-		rc = f->fops->delete_pointers(f, f->fst->levels, ABS(f->fst->fop));
+-		if (rc < 0)
+-			goto error;
+-	}
+-
+-	if (cmsfs.dir_levels)
+-		fst_last = find_last_fdir_entry(get_fop(cmsfs.fdir), cmsfs.dir_levels);
+-	else
+-		fst_last = find_last_fdir_entry(cmsfs.fdir, cmsfs.dir_levels);
+-
+-	/* remove unlinked file from fcache */
+-	strncpy(file, path + 1, MAX_FNAME);
+-	str_toupper(file);
+-	invalidate_htab_entry(file);
+-
+-	if (fst_last == fst_kill)
+-		goto skip_copy;
+-
+-	/* copy last entry over unlinked entry */
+-	rc = _read(&fst, sizeof(struct fst_entry), fst_last);
+-	BUG(rc < 0);
+-	rc = _write(&fst, sizeof(struct fst_entry), fst_kill);
+-	BUG(rc < 0);
+-
+-	/* update moved fcache entry */
+-	memset(file, 0, sizeof(file));
+-	decode_edf_name(file, fst.name, fst.type);
+-	update_htab_entry(fst_kill, file);
+-	/* update cached address of moved FST */
+-	f_moved = file_open(file);
+-	if (f_moved != NULL)
+-		f->fst_addr = fst_kill;
+-
+-skip_copy:
+-	/* delete last entry */
+-	rc = _zero(fst_last, sizeof(struct fst_entry));
+-	BUG(rc < 0);
+-
+-	/* if the deleted entry was the first of a block, free the block */
+-	if (fst_last % cmsfs.blksize == 0) {
+-		cache_dblocks(&walk);
+-		/* delete the last block from dlist */
+-		walk.dlist_used--;
+-		free_block(fst_last);
+-		purge_dblock_ptrs(cmsfs.dir_levels, get_fop(cmsfs.fdir));
+-		rewrite_dblock_ptrs(&walk);
+-		free_dblocks(&walk);
+-	}
+-
+-	destroy_file_object(f);
+-	decrease_file_count();
+-	update_block_count();
+-	return 0;
+-
+-error:
+-	destroy_file_object(f);
+-	return rc;
+-}
+-
+ static int cmsfs_unlink(const char *path)
+ {
+ 	struct fst_entry fst;
+-- 
+1.7.4
+

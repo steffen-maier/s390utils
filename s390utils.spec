@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.8.2
-Release:        31%{?dist}
+Release:        32%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -32,7 +32,7 @@ Source11:       cpi.sysconfig
 Source12:       dasd.udev
 Source13:       dasdconf.sh
 Source14:       device_cio_free
-Source15:       device_cio_free.conf
+Source15:       device_cio_free.service
 Source16:       ccw_init
 Source17:       ccw.udev
 Source18:       cpuplugd.initd
@@ -104,6 +104,11 @@ Patch63:  0063-cmsfs-fuse-fix-read-and-write-errors-in-text-mode.patch
 Patch64:  0064-switch-to-using-udevadm-settle.patch
 Patch65:  0065-hyptop-Fix-man-page-typo-for-current-weight.patch
 Patch66:  0066-fdasd-buffer-overflow-when-writing-to-read-only-devi.patch
+Patch67:  0067-cmsfs-fuse-Delete-old-file-if-renaming-to-an-existin.patch
+Patch68:  0068-cmsfs-fuse-Enlarge-fsname-string.patch
+Patch69:  0069-cmsfs-fuse-Unable-to-use-cmsfs-fuse-if-HOME-is-not-s.patch
+Patch70:  0070-hyptop-Prevent-interactive-mode-on-s390-line-mode-te.patch
+Patch71:  0071-cpuplugd-Fix-incorrect-multiplication-in-rules-evalu.patch
 
 Patch1000:  1000-ziomon-linker.patch
 
@@ -335,6 +340,21 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # fdasd: buffer overflow when writing to read-only device (#688340)
 %patch66 -p1 -b .fdasd-buffer-overflow
 
+# cmsfs-fuse: Delete old file if renaming to an existing file.
+%patch67 -p1 -b .cmsfs-fuse-rename-existing
+
+# cmsfs-fuse: Enlarge fsname string
+%patch68 -p1 -b .cmsfs-fuse-fsname-length
+
+# cmsfs-fuse: Unable to use cmsfs-fuse if $HOME is not set
+%patch69 -p1 -b .cmsfs-fuse-config-nohome
+
+# hyptop: Prevent interactive mode on s390 line mode terminals
+%patch70 -p1 -b .hytop-line-mode
+
+# cpuplugd: Fix incorrect multiplication in rules evaluation (#693365)
+%patch71 -p1 -b .cpuplugd-multiplication
+
 # Fix linking with --no-add-needed
 %patch1000 -p1 -b .linker
 
@@ -494,8 +514,12 @@ for lnk in dasd zfcp znet; do
     ln -sf device_cio_free ${lnk}_cio_free
 done
 popd
-mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/init
-install -p -m 644 %{SOURCE15} ${RPM_BUILD_ROOT}%{_sysconfdir}/init
+mkdir -p ${RPM_BUILD_ROOT}/lib/systemd/system
+mkdir -p ${RPM_BUILD_ROOT}/etc/systemd/system/sysinit.target.wants
+install -p -m 644 %{SOURCE15} ${RPM_BUILD_ROOT}/lib/systemd/system
+pushd ${RPM_BUILD_ROOT}/etc/systemd/system/sysinit.target.wants
+ln -sf /lib/systemd/system/%{SOURCE15} %{SOURCE15}
+popd
 
 # ccw
 mkdir -p ${RPM_BUILD_ROOT}/lib/udev/rules.d
@@ -1097,6 +1121,16 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Apr 27 2011 Dan Horák <dan[at]danny.cz> 2:1.8.2-32
+- updated ccw udev rules
+- converted cio_free_device from an upstart job to systemd unit (jstodola)
+- mon_statd: switch to using udevadm settle (#688140)
+- cpuplugd: Fix incorrect multiplication in rules evaluation (#693365)
+- cmsfs-fuse: Delete old file if renaming to an existing file (#690505)
+- cmsfs-fuse: Enlarge fsname string (#690506)
+- cmsfs-fuse: Unable to use cmsfs-fuse if $HOME is not set (#690514)
+- hyptop: Prevent interactive mode on s390 line mode terminals (#690810)
+
 * Fri Mar 18 2011 Dan Horák <dhorak@redhat.com> 2:1.8.2-31
 - mon_statd: switch to using udevadm settle (#688140)
 - hyptop: Fix man page typo for "current weight" (#684244)

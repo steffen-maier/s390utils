@@ -1,0 +1,62 @@
+From 3a7a5e5eaec3aff2e078a91b76f09eb4ae7f8778 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Tue, 29 Mar 2011 10:50:37 +0200
+Subject: [PATCH 69/70] cmsfs-fuse: Unable to use cmsfs-fuse if $HOME is not set
+
+Description: cmsfs-fuse: Unable to use cmsfs-fuse if $HOME is not set.
+Symptom:     Segmentation fault while starting cmsfs-fuse.
+Problem:     Missing malloc if $HOME environment variable is not set.
+Solution:    Allocate the string buffer before the $HOME query.
+---
+ cmsfs-fuse/config.c |   22 ++++++++++++----------
+ 1 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/cmsfs-fuse/config.c b/cmsfs-fuse/config.c
+index 9f9de45..f89e444 100644
+--- a/cmsfs-fuse/config.c
++++ b/cmsfs-fuse/config.c
+@@ -26,21 +26,20 @@ char *conffile;
+ 
+ int open_conf_file(FILE **fh)
+ {
+-	const char *home_env = getenv("HOME");
+-
+-	if (home_env == NULL)
+-		goto no_home;
++	const char *home_env;
+ 
+ 	conffile = malloc(4096);
+ 	if (conffile == NULL)
+ 		DIE_PERROR("malloc failed");
++
++	home_env = getenv("HOME");
++	if (home_env == NULL)
++		goto no_home;
++
+ 	sprintf(conffile, "%s/.cmsfs-fuse/filetypes.conf", home_env);
+ 	*fh = fopen(conffile, "r");
+-	if (*fh == NULL)
+-		goto no_home;
+-out:
+-	DEBUG("using config file: %s\n", conffile);
+-	return 0;
++	if (*fh != NULL)
++		goto out;
+ 
+ no_home:
+ 	sprintf(conffile, "%s/%s", TOOLS_SYSCONFDIR,
+@@ -50,7 +49,10 @@ no_home:
+ 		free(conffile);
+ 		return -ENOENT;
+ 	}
+-	goto out;
++out:
++	DEBUG("using config file: %s\n", conffile);
++	free(conffile);
++	return 0;
+ }
+ 
+ void add_filetype(char *name, struct list *head)
+-- 
+1.7.4
+
