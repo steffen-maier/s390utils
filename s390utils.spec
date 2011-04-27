@@ -426,7 +426,7 @@ pushd src_vipa-%{vipaver}
 make CC_FLAGS="$RPM_OPT_FLAGS -fPIC" LIBDIR=%{_libdir}
 popd
 
-%ifarch s390x
+%ifarch Xs390x
 pushd lib-zfcp-hbaapi-%{hbaapiver}
 export CPPFLAGS=-I/usr/src/kernels/$(rpm -q --qf="%{VERSION}-%{RELEASE}.%{ARCH}" kernel-devel)/include
 %configure --disable-static --enable-vendor-lib
@@ -488,7 +488,7 @@ pushd src_vipa-%{vipaver}
 make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=$RPM_BUILD_ROOT
 popd
 
-%ifarch s390x
+%ifarch Xs390x
 # lib-zfcp-hbaapi
 pushd lib-zfcp-hbaapi-%{hbaapiver}
 %makeinstall docdir=$RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}
@@ -1002,7 +1002,7 @@ fi
 #
 # *********************** libzfcphbaapi package  ***********************
 #
-%ifarch s390x
+%ifarch Xs390x
 %package libzfcphbaapi
 License:       CPL
 Summary:       ZFCP HBA API Library -- HBA API for the zfcp device driver
