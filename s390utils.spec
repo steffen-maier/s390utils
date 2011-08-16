@@ -7,8 +7,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.8.2
-Release:        32%{?dist}
+Version:        1.14.0
+Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -38,77 +38,7 @@ Source17:       ccw.udev
 Source18:       cpuplugd.initd
 Source19:       mon_statd.initd
 
-Patch1:   0001-s390-tools-1.5.3-zipl-zfcpdump-2.patch
-Patch2:   0002-s390-tools-1.8.1-zipl-automenu.patch
-Patch3:   0003-s390-tools-1.8.1-fdasd-su.patch
-Patch4:   0004-s390-tools-1.8.1-fdasd-raid-lvm.patch
-Patch5:   0005-don-t-create-automenu-when-default-menu-exists.patch
-Patch6:   0006-s390-tools-1.8.1-zipl-kdump-man.patch
-Patch7:   0007-s390-tools-1.8.1-lszfcp-perf.patch
-Patch8:   0008-fix-string-overflow-in-vtoc_volume_label_init.patch
-Patch9:   0009-change-default-load-address-for-ramdisk.patch
-Patch10:  0010-improve-mon_statd-init-script.patch
-Patch11:  0011-update-readahead-value-for-better-performance.patch
-Patch12:  0012-fix-multipath-device-detection-in-ziomon.patch
-Patch13:  0013-zipl-handle-status-during-ipl.patch
-Patch14:  0014-dasdview-fdasd-fix-floating-point-error-for-unformat.patch
-Patch15:  0015-s390tools-1.8.2-zipl-dm.patch
-Patch16:  0016-s390tools-1.8.2-lsreipl-nss.patch
-Patch17:  0017-qualified-return-codes-and-further-error-handling-in.patch
-Patch18:  0018-fix-uppercase-conversion-in-lscss.patch
-Patch19:  0019-ziorep-fix-return-codes.patch
-Patch20:  0020-lstape-fix-return-code.patch
-Patch21:  0021-cpuplugd-fix-reading-the-size-of-proc-sys-vm-cmm_pag.patch
-Patch22:  0022-lsqeth-support-new-attributes.patch
-Patch23:  0023-znetconf-use-hex-index-for-chpidtype-table.patch
-Patch24:  0024-zipl-handle-SSCH-status.patch
-Patch25:  0025-vmconvert-shows-garbage-in-progress-bar.patch
-Patch26:  0026-zipl-zfcp-dump-partition-error.patch
-Patch27:  0027-zfcpdump-disable-memory-cgroups.patch
-Patch28:  0028-fix-df-usage-in-ziomon.patch
-Patch29:  0029-ziomon-remove-check-for-ziorep_config-availability.patch
-Patch30:  0030-ziomon-fix-multipathing.patch
-Patch31:  0031-mismatch-between-man-and-h-in-chshut.patch
-Patch32:  0032-lsdasd-update-man-page.patch
-Patch33:  0033-reinitialize-array-in-lsqeth.patch
-Patch34:  0034-check-the-length-of-the-parameters-line.patch
-Patch35:  0035-ziorep-follow-symlink.patch
-Patch36:  0036-ts-shell-do-not-restrict-group-names-to-be-alphanume.patch
-Patch37:  0037-znetconf-unknown-driver-for-qeth.patch
-Patch38:  0038-cpuplugd-fix-stack-overflow.patch
-Patch39:  0039-cpuplugd-fix-cmm-limits-checks.patch
-Patch40:  0040-cpuplugd-set-cpu_min-to-1-by-default.patch
-Patch41:  0041-fix-dates-option-on-zfcpdbf.patch
-Patch42:  0042-lsluns-uninitialized-value-on-adapter-offline.patch
-Patch43:  0043-zfcpdbf-Fix-Use-of-uninitialized-value-and-output-is.patch
-Patch44:  0044-xcec-bridge-fix-multicast-forwarding.patch
-Patch45:  0045-ziomon-wrong-return-codes.patch
-Patch46:  0046-qethconf-process-devices-with-non-zero-subchannel.patch
-Patch47:  0047-wait-for-completion-of-any-pending-actions-affecting.patch
-Patch48:  0048-add-infrastructure-code-for-new-features.patch
-Patch49:  0049-hyptop-Show-hypervisor-performance-data-on-System-z.patch
-Patch50:  0050-cmsfs-fuse-support-for-CMS-EDF-filesystems-via-fuse.patch
-Patch51:  0051-lsmem-chmem-Tools-to-manage-memory-hotplug.patch
-Patch52:  0052-dumpconf-Prevent-re-IPL-loop-for-dump-on-panic.patch
-Patch53:  0053-ttyrun-run-a-program-if-a-terminal-device-is-availab.patch
-Patch54:  0054-zgetdump-zipl-Add-ELF-dump-support-needed-for-makedu.patch
-Patch55:  0055-znetconf-support-for-OSA-CHPID-types-OSX-and-OSM.patch
-Patch56:  0056-iucvtty-do-not-specify-z-VM-user-ID-as-argument-to-l.patch
-Patch57:  0057-tunedasd-add-new-option-Q-query_reserve.patch
-Patch58:  0058-fdasd-dasdfmt-fix-format-7-label.patch
-Patch59:  0059-cpuplugd-cmm_pages-not-set-and-restored-correctly.patch
-Patch60:  0060-lsluns-Fix-LUN-reporting-for-SAN-volume-controller-S.patch
-Patch61:  0061-lsluns-Accept-uppercase-and-lowercase-hex-digits.patch
-Patch62:  0062-dumpconf-Add-DELAY_MINUTES-description-to-man-page.patch
-Patch63:  0063-cmsfs-fuse-fix-read-and-write-errors-in-text-mode.patch
-Patch64:  0064-switch-to-using-udevadm-settle.patch
-Patch65:  0065-hyptop-Fix-man-page-typo-for-current-weight.patch
-Patch66:  0066-fdasd-buffer-overflow-when-writing-to-read-only-devi.patch
-Patch67:  0067-cmsfs-fuse-Delete-old-file-if-renaming-to-an-existin.patch
-Patch68:  0068-cmsfs-fuse-Enlarge-fsname-string.patch
-Patch69:  0069-cmsfs-fuse-Unable-to-use-cmsfs-fuse-if-HOME-is-not-s.patch
-Patch70:  0070-hyptop-Prevent-interactive-mode-on-s390-line-mode-te.patch
-Patch71:  0071-cpuplugd-Fix-incorrect-multiplication-in-rules-evalu.patch
+Patch1:         s390-tools-1.14.0-fedora.patch
 
 Patch1000:  1000-ziomon-linker.patch
 
@@ -121,6 +51,7 @@ Patch200:       src_vipa-2.0.4-locations.patch
 Patch301:       lib-zfcp-hbaapi-2.1-module.patch
 Patch302:       lib-zfcp-hbaapi-2.1-u8.patch
 Patch303:       lib-zfcp-hbaapi-2.1-vendorlib.patch
+Patch304:       lib-zfcp-hbaapi-2.1-HBA_FreeLibrary.patch
 
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -142,221 +73,12 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %prep
 %setup -q -n s390-tools-%{version} -a 4 -a 6 -a 9
 
-# Use rpm PATH variables for installation and set correct zfcpdump path
-%patch1 -p1 -b .common-mak
+# Fedora/RHEL changes
+%patch1 -p1 -b .fedora
 
-# Patch to maintain backwards compatibility with older zipl multiboot feature
-%patch2 -p1 -b .zipl-automenu
-
-# Fix to honor the silent flag for wrongly formated disks
-%patch3 -p1 -b .fdasd-su
-
-# Enhancement to add raid partiton support to dasds
-%patch4 -p1 -b .fdasd-raid-lvm
-
-# Don't build automenu iff default menu exists (#486444)
-%patch5 -p1 -b .defaultmenu
-
-# Update zipl man page
-%patch6 -p1 -b .zipl-kdump-man
-
-# Check only ZFCP devices in lszfcp (#518669)
-%patch7 -p1 -b .lszfcp-perf
-
-# Fix string overflow in vtoc_volume_label_init (#525318)
-%patch8 -p1 -b .vtoc-label
-
-# Change default load address for ramdisk (#526339)
-%patch9 -p1 -b .ramdisk-address
-
-# Improve mon_statd init script
-%patch10 -p1 -b .improve-mon_statd
-
-# Update readahead value for better performance
-%patch11 -p1 -b .readahead
-
-# Fix multipath device detection in ziomon (#533955)
-%patch12 -p1 -b .ziomon-multipath
-
-# Handle status during ipl in zipl (#537142)
-%patch13 -p1 -b .zipl-status
-
-# Fix floating point error for unformatted devices in fdasd and dasdview (#537144)
-%patch14 -p1 -b .dasd-zero-division
-
-# Add device-mapper support into zipl (#546280)
-%patch15 -p1 -b .zipl-dm
-
-# Add missing check and print NSS name in case an NSS has been IPLed (#546297)
-%patch16 -p1 -b .lsreipl-nss
-
-# Add qualified return codes and further error handling in znetconf (#548487)
-%patch17 -p1 -b .znetconf-returncodes
-
-# Fixed uppercase conversion in lscss (#554768)
-%patch18 -p1 -b .uppercase
-
-# Fixed return codes in ziorep (#556849)
-%patch19 -p1 -b .ziorep-returncodes
-
-# Fixed return code in lstape (#556910)
-%patch20 -p1 -b .lstape-returncode
-
-# Fixed reading the size of /proc/sys/vm/cmm_pages in cpuplugd (#556911)
-%patch21 -p1 -b .cpuplugd-fscanf
-
-# Support new attributes in lsqeth (#556915)
-%patch22 -p1 -b .lsqeth-new-attrs
-
-# Use hex index for chpidtype table in znetconf (#561056)
-%patch23 -p1 -b .znetconf-hex-chpidtype
-
-# Handle status during IPL SSCH (#559250)
-%patch24 -p1 -b .zipl-handle-ssch-status
-
-# Don't show garbage in vmconvert's progress bar (#567681)
-%patch25 -p1 -b .vmconvert-progress-bar
-
-# Fix zfcp dump partition error (#572313)
-%patch26 -p1 -b .zfcp-dump-partition
-
-# Don't use memory cgroups in zfcpdump kernel (#575183)
-%patch27 -p1 -b .zfcpdump-cgroups
-
-# Fix df usage in ziomon (#575833)
-%patch28 -p1 -b .ziomon-df
-
-# Remove check for ziorep_config availability (#576579)
-%patch29 -p1 -b .ziorep_config
-
-# Fix multipathing in ziomon (#577318)
-%patch30 -p1 -b .ziomon-multipath-2
-
-# Fixed mismatch between man and -h in chshut (#563625)
-%patch31 -p1 -b .man-mismatch
-
-# Update lsdasd man page (#587044)
-%patch32 -p1 -b .lsdasd-man
-
-# Reinitialize array in lsqeth (#587599)
-%patch33 -p1 -b .lsqeth-reinit-array
-
-# Check the length of the parameters line (#594031)
-%patch34 -p1 -b .zipl-max-parmline
-
-# Follow symlinks in ziorep (#598574)
-%patch35 -p1 -b .ziorep-follow-symlinks
-
-# Do not restrict group names to be alphanumeric in ts-shell (#598641)
-%patch36 -p1 -b .ts-shell-groups
-
-# znetconf --drive|-d option returning 'unknown driver' for qeth (#601846)
-%patch37 -p1 -b .znetconf-driver-option
-
-# Fix stack overwrite in cpuplugd (#601847)
-%patch38 -p1 -b .cpuplugd-stack-overwrite
-
-# Fix cmm_min/max limit checks in cpuplugd (#606366)
-%patch39 -p1 -b .cpuplugd-cmm-limits
-
-# Set cpu_min to 1 by default in cpuplugd (#606416)
-%patch40 -p1 -b .cpuplugd-cpu_min
-
-# Fix --dates option in zfcpdbf (#609092)
-%patch41 -p1 -b .zfcpdbf-dates
-
-# lsluns: uninitialized value on adapter offline (#611795)
-%patch42 -p1 -b .lsluns-adapter-offline
-
-# zfcpdbf: Fix 'Use of uninitialized value' and output issues (#612622)
-%patch43 -p1 -b .zfcpdbf-uninitialized-value
-
-# xcec-bridge: fix multicast forwarding (#619504)
-%patch44 -p1 -b .xcec-bridge-multicast
-
-# ziomon: wrong return codes (#623250)
-%patch45 -p1 -b .ziomon-return-codes
-
-# qethconf: process devices with non-zero subchannel (#627692)
-%patch46 -p1 -b .qetgconf-nonzero-subchannel
-
-# wait for completion of any pending actions affecting device (#631527)
-%patch47 -p1 -b .cio_settle
-
-# add infrastructure code for new features (#631541)
-%patch48 -p1 -b .feature-infrastructure
-
-# hyptop: Show hypervisor performance data on System z (#631541)
-%patch49 -p1 -b .hyptop
-
-# cmsfs-fuse: support for CMS EDF filesystems via fuse (#631546)
-%patch50 -p1 -b .cmsfs-fuse
-
-# lsmem/chmem: Tools to manage memory hotplug (#631561)
-%patch51 -p1 -b .lsmem-chmem
-
-# dumpconf: Prevent re-IPL loop for dump on panic (#633411)
-%patch52 -p1 -b .dumpconf-reipl
-
-# ttyrun: run a program if a terminal device is available (#633420)
-%patch53 -p1 -b .ttyrun
-
-# zgetdump/zipl: Add ELF dump support (needed for makedumpfile) (#633437)
-%patch54 -p1 -b .elf-dump
-
-# znetconf: support for OSA CHPID types OSX and OSM (#633534)
-%patch55 -p1 -b .znetconf-osx-osm
-
-# iucvtty: do not specify z/VM user ID as argument to login -h (#636204)
-%patch56 -p1 -b .iucvtty-login
-
-# tunedasd: add new option -Q / --query_reserve (#644935)
-%patch57 -p1 -b .tunedasd-q
-
-# fdasd/dasdfmt: fix format 7 label (#649787)
-%patch58 -p1 -b .vtoc-format-7
-
-# cpuplugd: cmm_pages not set and restored correctly (#658517)
-%patch59 -p1 -b .cpuplugd-cmm_pages
-
-# lsluns: Fix LUN reporting for SAN volume controller (SVC) (#659828)
-%patch60 -p1 -b .lsluns-svc
-
-# lsluns: Accept uppercase and lowercase hex digits (#660361)
-%patch61 -p1 -b .lsluns-ignore-case
-
-# dumpconf: Add DELAY_MINUTES description to man page (#676706)
-%patch62 -p1 -b .dumpconf-update-man
-
-# cmsfs-fuse: fix read and write errors in text mode (#680465)
-%patch63 -p1 -b .cmsfs-fuse-text-mode-errors
-
-# mon_statd: switch to using udevadm settle (#688140)
-%patch64 -p1 -b .mon_statd-udevadm-settle
-
-# hyptop: Fix man page typo for "current weight" (#684244)
-%patch65 -p1 -b .hyptop-man-page-typo
-
-# fdasd: buffer overflow when writing to read-only device (#688340)
-%patch66 -p1 -b .fdasd-buffer-overflow
-
-# cmsfs-fuse: Delete old file if renaming to an existing file.
-%patch67 -p1 -b .cmsfs-fuse-rename-existing
-
-# cmsfs-fuse: Enlarge fsname string
-%patch68 -p1 -b .cmsfs-fuse-fsname-length
-
-# cmsfs-fuse: Unable to use cmsfs-fuse if $HOME is not set
-%patch69 -p1 -b .cmsfs-fuse-config-nohome
-
-# hyptop: Prevent interactive mode on s390 line mode terminals
-%patch70 -p1 -b .hytop-line-mode
-
-# cpuplugd: Fix incorrect multiplication in rules evaluation (#693365)
-%patch71 -p1 -b .cpuplugd-multiplication
 
 # Fix linking with --no-add-needed
-%patch1000 -p1 -b .linker
+#%patch1000 -p1 -b .linker
 
 #
 # cmsfs
@@ -711,7 +433,6 @@ fi
 /sbin/lschp
 /sbin/lscss
 /sbin/lsdasd
-/sbin/lsluns
 /sbin/lsqeth
 /sbin/lstape
 /sbin/lszcrypt
@@ -728,6 +449,7 @@ fi
 /sbin/zgetdump
 /sbin/znetconf
 /sbin/dbginfo.sh
+%{_sbindir}/lsluns
 %{_sbindir}/lsmem
 %{_sbindir}/lsreipl
 %{_sbindir}/lsshut
@@ -948,6 +670,8 @@ License:        GPLv2
 Summary:        z/VM IUCV terminal applications
 Group:          Applications/System
 Requires(pre):  shadow-utils
+Requires(post): grep
+Requires(postun): grep
 BuildRequires:  gettext
 
 %description iucvterm
@@ -1014,8 +738,20 @@ BuildRequires: sg3_utils-devel
 BuildRequires: kernel-devel
 BuildRequires: libhbaapi-devel
 Requires:      libhbaapi
+Requires(post): grep
+Requires(postun): grep sed
 Obsoletes:     %{name}-libzfcphbaapi-devel < 2:1.8.2-4
 
+%post libzfcphbaapi
+grep -q -e "^libzfcphbaapi" /etc/hba.conf ||
+    echo "libzfcphbaapi %{_libdir}/libzfcphbaapi-%{hbaapiver}.so" >> /etc/hba.conf
+:
+
+%preun libzfcphbaapi
+grep -q -e "^libzfcphbaapi" /etc/hba.conf &&
+    sed -i.orig -e "/^libzfcphbaapi/d" /etc/hba.conf
+fi
+:
 
 %description libzfcphbaapi
 ZFCP HBA API Library is an implementation of FC-HBA (see www.t11.org ) for
@@ -1122,6 +858,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Aug 16 2011 Dan Horák <dan[at]danny.cz> 2:1.14.0-1
+- rebased to 1.14.0
+
 * Wed Apr 27 2011 Dan Horák <dan[at]danny.cz> 2:1.8.2-32
 - updated ccw udev rules
 - converted cio_free_device from an upstart job to systemd unit (jstodola)

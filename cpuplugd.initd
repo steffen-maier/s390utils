@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# chkconfig: 2345 90 10
+# chkconfig: - 90 10
 # description: Start the cpu hotplug daemon for Linux on System z
 # processname: cpuplugd
 # config: /etc/sysconfig/cpuplugd
@@ -10,10 +10,8 @@
 # Provides: cpuplugd
 # Required-Start: $local_fs $remote_fs
 # Required-Stop: $local_fs $remote_fs
-# Should-Start:
-# Should-Stop:
-# Default-Start: 2 3 4 5
-# Default-Stop: 0 1 6
+# Default-Start:
+# Default-Stop: 0 1 2 3 4 5 6
 # Short-Description: Start the cpu hotplug daemon for Linux on System z
 # Description: Starts the cpuplugd. It uses the configuration
 #              file /etc/sysconfig/cpuplugd
