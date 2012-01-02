@@ -7,7 +7,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.14.0
+Version:        1.16.0
 Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
@@ -858,6 +858,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Dec 15 2011 Dan Horák <dan[at]danny.cz> 2:1.16.0-1
+- rebased to 1.16.0
+
 * Tue Aug 16 2011 Dan Horák <dan[at]danny.cz> 2:1.14.0-1
 - rebased to 1.14.0
 
