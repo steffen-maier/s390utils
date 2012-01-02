@@ -424,6 +424,7 @@ fi
 /sbin/zipl
 /sbin/dasdfmt
 /sbin/dasdinfo
+/sbin/dasdstat
 /sbin/dasdview
 /sbin/fdasd
 /sbin/chccwdev
@@ -477,6 +478,7 @@ fi
 %{_mandir}/man8/cio_ignore.8*
 %{_mandir}/man8/dasdfmt.8*
 %{_mandir}/man8/dasdinfo.8*
+%{_mandir}/man8/dasdstat.8*
 %{_mandir}/man8/dasdview.8*
 %{_mandir}/man8/dumpconf.8*
 %{_mandir}/man8/fdasd.8*
