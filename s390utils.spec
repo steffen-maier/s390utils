@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.16.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -40,18 +40,16 @@ Source19:       mon_statd.initd
 
 Patch1:         s390-tools-1.14.0-fedora.patch
 
-Patch1000:  1000-ziomon-linker.patch
+Patch1000:      cmsfs-1.1.8-warnings.patch
+Patch1001:      cmsfs-1.1.8-kernel26.patch
+Patch1002:      cmsfs-1.1.8-use-detected-filesystem-block-size-on-FBA-devices.patch
 
-Patch100:       cmsfs-1.1.8-warnings.patch
-Patch101:       cmsfs-1.1.8-kernel26.patch
-Patch102:       cmsfs-1.1.8-use-detected-filesystem-block-size-on-FBA-devices.patch
+Patch2000:      src_vipa-2.0.4-locations.patch
 
-Patch200:       src_vipa-2.0.4-locations.patch
-
-Patch301:       lib-zfcp-hbaapi-2.1-module.patch
-Patch302:       lib-zfcp-hbaapi-2.1-u8.patch
-Patch303:       lib-zfcp-hbaapi-2.1-vendorlib.patch
-Patch304:       lib-zfcp-hbaapi-2.1-HBA_FreeLibrary.patch
+Patch3001:      lib-zfcp-hbaapi-2.1-module.patch
+Patch3002:      lib-zfcp-hbaapi-2.1-u8.patch
+Patch3003:      lib-zfcp-hbaapi-2.1-vendorlib.patch
+Patch3004:      lib-zfcp-hbaapi-2.1-HBA_FreeLibrary.patch
 
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -76,22 +74,18 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # Fedora/RHEL changes
 %patch1 -p1 -b .fedora
 
-
-# Fix linking with --no-add-needed
-#%patch1000 -p1 -b .linker
-
 #
 # cmsfs
 #
 pushd cmsfs-%{cmsfsver}
 # Patch to fix a couple of code bugs
-%patch100 -p1 -b .warnings
+%patch1000 -p1 -b .warnings
 
 # build on kernel-2.6, too
-%patch101 -p1 -b .cmsfs26
+%patch1001 -p1 -b .cmsfs26
 
 # use detected filesystem block size (#651012)
-%patch102 -p1 -b .use-detected-block-size
+%patch1002 -p1 -b .use-detected-block-size
 popd
 
 #
@@ -99,7 +93,7 @@ popd
 #
 pushd src_vipa-%{vipaver}
 # fix location of the library
-%patch200 -p1 -b .locations
+%patch2000 -p1 -b .locations
 popd
 
 #
@@ -107,13 +101,13 @@ popd
 #
 pushd lib-zfcp-hbaapi-%{hbaapiver}
 # build the library as a module
-%patch301 -p1 -b .module
+%patch3001 -p1 -b .module
 
 # kernel headers need u8 type
-%patch302 -p1 -b .u8
+%patch3002 -p1 -b .u8
 
 # fix linking of the tools when using vendor library mode
-%patch303 -p1 -b .vendorlib
+%patch3003 -p1 -b .vendorlib
 popd
 
 # remove --strip from install
@@ -860,6 +854,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Apr 10 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-3
+- include fixed ccw_init and updated device_cio_free
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.16.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 

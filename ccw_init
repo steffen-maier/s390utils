@@ -88,7 +88,7 @@ if [ -n "$PORTNAME" ]; then
         fi
 fi
 if [ "$NETTYPE" = "ctc" -a -n "$CTCPROT" ]; then
-	OPTIONS="$OPTIONS protocol=$CTCPROTO"
+	OPTIONS="$OPTIONS protocol=$CTCPROT"
 fi
 
 # SUBCHANNELS is only set on mainframe ccwgroup devices
