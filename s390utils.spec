@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.16.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -37,6 +37,7 @@ Source16:       ccw_init
 Source17:       ccw.udev
 Source18:       cpuplugd.initd
 Source19:       mon_statd.initd
+Source20:       40-z90crypt.rules
 
 Patch1:         s390-tools-1.14.0-fedora.patch
 
@@ -241,6 +242,9 @@ popd
 mkdir -p ${RPM_BUILD_ROOT}/lib/udev/rules.d
 install -p -m 755 %{SOURCE16} ${RPM_BUILD_ROOT}/lib/udev/ccw_init
 install -p -m 644 %{SOURCE17} ${RPM_BUILD_ROOT}/lib/udev/rules.d/81-ccw.rules
+
+# z90crypt
+install -p -m 644 %{SOURCE20} ${RPM_BUILD_ROOT}/lib/udev/rules.d/40-z90crypt.rules
 
 
 %clean
@@ -854,6 +858,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Apr 17 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-4
+- install the z90crypt udev rule (moved here from the udev package)
+
 * Tue Apr 10 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-3
 - include fixed ccw_init and updated device_cio_free
 
