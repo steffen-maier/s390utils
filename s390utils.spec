@@ -527,6 +527,7 @@ fi
 %{_sysconfdir}/systemd/system/sysinit.target.wants/device_cio_free.service
 /lib/udev/ccw_init
 /lib/udev/rules.d/81-ccw.rules
+/lib/udev/rules.d/40-z90crypt.rules
 
 # src_vipa
 %{_bindir}/src_vipa.sh
