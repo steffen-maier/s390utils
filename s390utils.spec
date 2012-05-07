@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.16.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -246,6 +246,9 @@ install -p -m 644 %{SOURCE17} ${RPM_BUILD_ROOT}/lib/udev/rules.d/81-ccw.rules
 # z90crypt
 install -p -m 644 %{SOURCE20} ${RPM_BUILD_ROOT}/lib/udev/rules.d/40-z90crypt.rules
 
+# zipl.conf to be ghosted
+touch ${RPM_BUILD_ROOT}%{_sysconfdir}/zipl.conf
+
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -462,6 +465,7 @@ fi
 %{_sbindir}/hyptop
 %{_bindir}/vmconvert
 %{_initddir}/dumpconf
+%ghost %config(noreplace) %{_sysconfdir}/zipl.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
 /lib/s390-tools
 %{_mandir}/man1/zfcpdbf.1*
@@ -859,6 +863,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri May  4 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-5
+- zipl.conf must be owned by s390utils-base (#818877)
+
 * Tue Apr 17 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-4
 - install the z90crypt udev rule (moved here from the udev package)
 
