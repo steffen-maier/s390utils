@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.16.0
-Release:        5%{?dist}
+Release:        6%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -39,7 +39,7 @@ Source18:       cpuplugd.initd
 Source19:       mon_statd.initd
 Source20:       40-z90crypt.rules
 
-Patch1:         s390-tools-1.14.0-fedora.patch
+Patch1:         s390-tools-1.16.0-fedora.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -863,6 +863,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri May 11 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-6
+- updated the Fedora patch set - no vol_id tool in udev (#819530)
+
 * Fri May  4 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-5
 - zipl.conf must be owned by s390utils-base (#818877)
 
