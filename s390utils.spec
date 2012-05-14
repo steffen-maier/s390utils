@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.16.0
-Release:        6%{?dist}
+Release:        7%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -269,6 +269,7 @@ Group:          System Environment/Base
 Requires:       perl gawk sed coreutils
 Requires:       sysfsutils
 Requires:       sg3_utils
+Requires:       ethtool
 Requires(pre):   chkconfig
 Requires(preun): chkconfig
 Requires(preun): initscripts
@@ -863,6 +864,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon May 14 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-7
+- ethtool is required by lsqeth (#821421)
+
 * Fri May 11 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-6
 - updated the Fedora patch set - no vol_id tool in udev (#819530)
 
