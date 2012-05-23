@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.16.0
-Release:        7%{?dist}
+Release:        8%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -38,6 +38,7 @@ Source17:       ccw.udev
 Source18:       cpuplugd.initd
 Source19:       mon_statd.initd
 Source20:       40-z90crypt.rules
+Source21:       normalize_dasd_arg
 
 Patch1:         s390-tools-1.16.0-fedora.patch
 
@@ -172,6 +173,7 @@ install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT/sbin
 install -p -m 755 %{SOURCE13} $RPM_BUILD_ROOT/sbin
+install -p -m 755 %{SOURCE21} $RPM_BUILD_ROOT/sbin
 install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/56-zfcp.rules
 install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/56-dasd.rules
 
@@ -528,6 +530,7 @@ fi
 /sbin/device_cio_free
 /sbin/zfcp_cio_free
 /sbin/znet_cio_free
+/sbin/normalize_dasd_arg
 /lib/systemd/system/device_cio_free.service
 %{_sysconfdir}/systemd/system/sysinit.target.wants/device_cio_free.service
 /lib/udev/ccw_init
@@ -864,6 +867,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed May 23 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-8
+- add normalize_dasd_arg script (#823078)
+
 * Mon May 14 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-7
 - ethtool is required by lsqeth (#821421)
 
