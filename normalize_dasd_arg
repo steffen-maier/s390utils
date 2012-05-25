@@ -39,74 +39,82 @@ function canonicalize_devno()
 }
 
 read DASD
-for dasditem in $(echo $DASD |sed 's/,/ /g')
-    do
-    unset range features lo hi attrs devno lodevno hidevno devbusid sys
-    case $dasditem in
-        autodetect|probeonly|nopav|nofcx|"") continue ;; # these don't gen a config
-        *)
-            IFS='('
-            read range features <<< "$dasditem"
-            unset IFS
-            lo=${range%%-*}
-            [[ "$lo" =~ (^[[:xdigit:]]+\.[0-3]\.[[:xdigit:]]{4}$)|(^[[:xdigit:]]{3,4}$) ]]
-            case $? in
-                0)  # string matched the pattern
-                    lo=$(canonicalize_devno $lo) ;;
-                1)  # string did not match the pattern
-                    echo $"Incorrect format for lower bound of DASD range $range: $lo"
-                    exit 1
-                    ;;
-                2)  echo "l.$LINENO: syntax error in regex of match operator =~, code needs to be fixed" 1>&2 ;;
-                *)  echo "l.$LINENO: unexpected return code of regex match operator =~, code needs to be fixed" 1>&2 ;;
-            esac
-            if [ "${range//*-*/}" = "" ]; then
-                hi=${range##*-}
-                [[ "$hi" =~ (^[[:xdigit:]]+\.[0-3]\.[[:xdigit:]]{4}$)|(^[[:xdigit:]]{3,4}$) ]]
-                case $? in
-                    0)  # string matched the pattern
-                        hi=$(canonicalize_devno $hi)
-                        if [ "${lo%.*}" != "${hi%.*}" ]; then
-                            echo $"Prefixes of DASD range $range do not match: ${lo%.*} != ${hi%.*}"
+# See if we've gotten a format like <dev>,feature or <dev>,<dev>,<dev>
+[[ "$DASD" =~ (\,*=[[:digit:]]) ]]
+case $? in
+    # case of 0 is features, just turn the comma into a space
+    0)  echo $DASD |sed 's/,/ /g';;
+    *) # We've got no features, do things normally
+        for dasditem in $(echo $DASD |sed 's/,/ /g')
+            do
+            unset range features lo hi attrs devno lodevno hidevno devbusid sys
+            case $dasditem in
+                autodetect|probeonly|nopav|nofcx|"") continue ;; # these don't gen a config
+                *)
+                    IFS='('
+                    read range features <<< "$dasditem"
+                    unset IFS
+                    lo=${range%%-*}
+                    [[ "$lo" =~ (^[[:xdigit:]]+\.[0-3]\.[[:xdigit:]]{4}$)|(^[[:xdigit:]]{3,4}$) ]]
+                    case $? in
+                        0)  # string matched the pattern
+                            lo=$(canonicalize_devno $lo) ;;
+                        1)  # string did not match the pattern
+                            echo $"Incorrect format for lower bound of DASD range $range: $lo" 1>&2
                             exit 1
-                        fi
-                        ;;
-                    1)  # string did not match the pattern
-                        echo $"Incorrect format for upper bound of DASD range $range: $hi"
-                        exit 1
-                        ;;
-                    2)  echo "l.$LINENO: syntax error in regex of match operator =~, code needs to be fixed" 1>&2 ;;
-                    *)  echo "l.$LINENO: unexpected return code of regex match operator =~, code needs to be fixed" 1>&2 ;;
-                esac
-            fi
-            if [ "${features//*)/}" != "" ]; then
-                echo $"Missing closing parenthesis at features of DASD range $range: ($features"
-                exit 1
-            fi
-            if [ -n "$features" ]; then
-                attrs=""
-                features="${features%)}"
-                for feature in $(echo $features |sed 's/:/\n/g'); do
-                    case $feature in
-                        ro) attrs=$attrs" readonly" ;;
-                        diag) attrs=$attrs" use_diag" ;;
-                        erplog|failfast) attrs=$attrs" "$feature ;;
-                        *) echo $"Unknown DASD feature for device range $range: $feature"
-                           exit 1
-                           ;;
+                            ;;
+                        2)  echo "l.$LINENO: syntax error in regex of match operator =~, code needs to be fixed" 1>&2 ;;
+                        *)  echo "l.$LINENO: unexpected return code of regex match operator =~, code needs to be fixed" 1>&2 ;;
                     esac
-                done
-            fi
-            [ -z "$hi" ] && hi=$lo
-            lodevno=$((0x${lo##*.}))
-            hidevno=$((0x${hi##*.}))
-            for ((devno=$lodevno; $devno <= $hidevno; ++devno)); do
-                devbusid=$(printf "%s.%04x" ${lo%.*} $devno)
-                echo -n "$devbusid"
-                for attr in $attrs; do
-                    echo -n " $attr=1"
-                done
-                echo
-            done
-    esac
-done
+                    if [ "${range//*-*/}" = "" ]; then
+                        hi=${range##*-}
+                        [[ "$hi" =~ (^[[:xdigit:]]+\.[0-3]\.[[:xdigit:]]{4}$)|(^[[:xdigit:]]{3,4}$) ]]
+                        case $? in
+                            0)  # string matched the pattern
+                                hi=$(canonicalize_devno $hi)
+                                if [ "${lo%.*}" != "${hi%.*}" ]; then
+                                    echo $"Prefixes of DASD range $range do not match: ${lo%.*} != ${hi%.*}" 1>&2
+                                    exit 1
+                                fi
+                                ;;
+                            1)  # string did not match the pattern
+                                echo $"Incorrect format for upper bound of DASD range $range: $hi" 1>&2
+                                exit 1
+                                ;;
+                            2)  echo "l.$LINENO: syntax error in regex of match operator =~, code needs to be fixed" 1>&2 ;;
+                            *)  echo "l.$LINENO: unexpected return code of regex match operator =~, code needs to be fixed" 1>&2 ;;
+                        esac
+                    fi
+                    if [ "${features//*)/}" != "" ]; then
+                        echo $"Missing closing parenthesis at features of DASD range $range: ($features" 1>&2
+                        exit 1
+                    fi
+                    if [ -n "$features" ]; then
+                        attrs=""
+                        features="${features%)}"
+                        for feature in $(echo $features |sed 's/:/\n/g'); do
+                            case $feature in
+                                ro) attrs=$attrs" readonly" ;;
+                                diag) attrs=$attrs" use_diag" ;;
+                                erplog|failfast) attrs=$attrs" "$feature ;;
+                                *) echo $"Unknown DASD feature for device range $range: $feature" 1>&2
+                                   exit 1
+                                   ;;
+                            esac
+                        done
+                    fi
+                    [ -z "$hi" ] && hi=$lo
+                    lodevno=$((0x${lo##*.}))
+                    hidevno=$((0x${hi##*.}))
+                    for ((devno=$lodevno; $devno <= $hidevno; ++devno)); do
+                        devbusid=$(printf "%s.%04x" ${lo%.*} $devno)
+                        echo -n "$devbusid"
+                        for attr in $attrs; do
+                            echo -n " $attr=1"
+                        done
+                        echo
+                    done
+            esac
+        done
+        ;;
+esac

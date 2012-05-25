@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.16.0
-Release:        8%{?dist}
+Release:        9%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -867,6 +867,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri May 25 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-9
+- improve DASD parameters handling in normalize_dasd_arg (#824807)
+
 * Wed May 23 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-8
 - add normalize_dasd_arg script (#823078)
 
