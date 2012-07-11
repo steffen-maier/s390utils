@@ -6,7 +6,7 @@ diff -urN cmsfs-1.1.8/cmsfssed.sh cmsfs-1.1.8_/cmsfssed.sh
          MODULES_DIRECTORY="/lib/modules/`uname -r`/fs"
          ;;
 -    2.4*|2.5*)
-+    2.4*|2.5*|2.6*)
++    2.4*|2.5*|2.6*|3.*)
          LINUX_RELEASE="2.4"
  #       ln -s cmsfs24x.c cmsfsvfs.c
          INCLUDES="-I/lib/modules/`uname -r`/build/include"
