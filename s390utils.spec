@@ -8,22 +8,22 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.16.0
-Release:        10%{?dist}
+Release:        11%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 ExclusiveArch:  s390 s390x
 URL:            http://www.ibm.com/developerworks/linux/linux390/s390-tools.html
-# http://www.ibm.com/developerworks/linux/linux390/s390-tools-%{version}.html
+# http://www.ibm.com/developerworks/linux/linux390/s390-tools-%%{version}.html
 Source0:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/s390-tools-%{version}.tar.bz2
 Source2:        s390.sh
 Source3:        s390.csh
 Source4:        http://www.linuxvm.org/Patches/S390/cmsfs-%{cmsfsver}.tar.gz
 Source5:        zfcpconf.sh
-# http://www.ibm.com/developerworks/linux/linux390/src_vipa-%{vipaver}.html
+# http://www.ibm.com/developerworks/linux/linux390/src_vipa-%%{vipaver}.html
 Source6:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/src_vipa-%{vipaver}.tar.gz
 Source7:        zfcp.udev
-# http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi-%{hbaapiver}.html
+# http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi-%%{hbaapiver}.html
 Source9:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/lib-zfcp-hbaapi-%{hbaapiver}.tar.gz
 # files for the Control Program Identification (Linux Call Home) feature (#463282)
 Source10:       cpi.initd
@@ -52,6 +52,7 @@ Patch3001:      lib-zfcp-hbaapi-2.1-module.patch
 Patch3002:      lib-zfcp-hbaapi-2.1-u8.patch
 Patch3003:      lib-zfcp-hbaapi-2.1-vendorlib.patch
 Patch3004:      lib-zfcp-hbaapi-2.1-HBA_FreeLibrary.patch
+Patch3005:      lib-zfcp-hbaapi-2.1-scsi-h.patch
 
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -110,6 +111,12 @@ pushd lib-zfcp-hbaapi-%{hbaapiver}
 
 # fix linking of the tools when using vendor library mode
 %patch3003 -p1 -b .vendorlib
+
+# zfcp-hbaapi: Fix crash on HBA_FreeLibrary call (#713817)
+%patch3004 -p2 -b .HBA_FreeLibrary
+
+# fix build fix recent kernels
+%patch3005 -p1 -b .scsi-h
 popd
 
 # remove --strip from install
@@ -144,9 +151,10 @@ pushd src_vipa-%{vipaver}
 make CC_FLAGS="$RPM_OPT_FLAGS -fPIC" LIBDIR=%{_libdir}
 popd
 
-%ifarch Xs390x
+%ifarch s390x
 pushd lib-zfcp-hbaapi-%{hbaapiver}
-export CPPFLAGS=-I/usr/src/kernels/$(rpm -q --qf="%{VERSION}-%{RELEASE}.%{ARCH}" kernel-devel)/include
+kernel_ver=$(rpm -q --qf="%{VERSION}-%{RELEASE}.%{ARCH}\n" kernel-devel | tail -1)
+export CPPFLAGS=-I/usr/src/kernels/$kernel_ver/include
 %configure --disable-static --enable-vendor-lib
 make EXTRA_CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
 popd
@@ -207,7 +215,7 @@ pushd src_vipa-%{vipaver}
 make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=$RPM_BUILD_ROOT
 popd
 
-%ifarch Xs390x
+%ifarch s390x
 # lib-zfcp-hbaapi
 pushd lib-zfcp-hbaapi-%{hbaapiver}
 %makeinstall docdir=$RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}
@@ -735,7 +743,7 @@ fi
 #
 # *********************** libzfcphbaapi package  ***********************
 #
-%ifarch Xs390x
+%ifarch s390x
 %package libzfcphbaapi
 License:       CPL
 Summary:       ZFCP HBA API Library -- HBA API for the zfcp device driver
@@ -867,6 +875,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Aug 16 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-11
+- fix libzfcphbaapi for recent kernels
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.16.0-10
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 

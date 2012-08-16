@@ -1,0 +1,13 @@
+diff -up lib-zfcp-hbaapi-2.1/vlib_sg_io.c.scsih lib-zfcp-hbaapi-2.1/vlib_sg_io.c
+--- lib-zfcp-hbaapi-2.1/vlib_sg_io.c.scsih	2012-08-16 18:37:10.000000000 +0200
++++ lib-zfcp-hbaapi-2.1/vlib_sg_io.c	2012-08-16 18:37:48.000000000 +0200
+@@ -27,7 +27,8 @@
+ 
+ typedef __u8 u8;
+ 
+-#include <scsi/scsi.h>
++/* we really need the glibc header, not the kernel one */
++#include </usr/include/scsi/scsi.h>
+ #include <scsi/sg.h>
+ 
+ #include <linux/bsg.h>
