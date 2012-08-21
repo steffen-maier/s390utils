@@ -447,6 +447,7 @@ fi
 /sbin/lscss
 /sbin/lsdasd
 /sbin/lsqeth
+/sbin/lsscm
 /sbin/lstape
 /sbin/lszcrypt
 /sbin/lszfcp
@@ -479,6 +480,7 @@ fi
 %ghost %config(noreplace) %{_sysconfdir}/zipl.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
 /lib/s390-tools
+%{_mandir}/man1/dbginfo.sh.1*
 %{_mandir}/man1/zfcpdbf.1*
 %{_mandir}/man4/prandom.4*
 %{_mandir}/man5/zipl.conf.5*
@@ -503,6 +505,7 @@ fi
 %{_mandir}/man8/lsluns.8*
 %{_mandir}/man8/lsqeth.8*
 %{_mandir}/man8/lsreipl.8*
+%{_mandir}/man8/lsscm.8*
 %{_mandir}/man8/lsshut.8*
 %{_mandir}/man8/lstape.8*
 %{_mandir}/man8/lszcrypt.8*
