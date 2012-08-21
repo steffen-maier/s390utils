@@ -7,8 +7,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.16.0
-Release:        11%{?dist}
+Version:        1.17.0
+Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -40,7 +40,7 @@ Source19:       mon_statd.initd
 Source20:       40-z90crypt.rules
 Source21:       normalize_dasd_arg
 
-Patch1:         s390-tools-1.16.0-fedora.patch
+Patch1:         s390-tools-1.17.0-fedora.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -875,6 +875,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Aug 21 2012 Dan Horák <dan[at]danny.cz> 2:1.17.0-1
+- updated to 1.17.0
+- add support for new storage device on System z (#847086)
+
 * Thu Aug 16 2012 Dan Horák <dan[at]danny.cz> 2:1.16.0-11
 - fix libzfcphbaapi for recent kernels
 
