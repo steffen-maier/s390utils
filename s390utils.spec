@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.19.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -857,6 +857,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Aug 27 2012 Dan Horák <dan[at]danny.cz> 2:1.19.0-2
+- add support fro CEX4 devices to chzcrypt/lszcrypt (#847092)
+
 * Mon Aug 27 2012 Dan Horák <dan[at]danny.cz> 2:1.19.0-1
 - updated to 1.19.0 (#804774)
 - fixed syntax in s390.sh script (#851096)
