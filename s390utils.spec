@@ -11,7 +11,6 @@ Version:        1.19.0
 Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
-Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 ExclusiveArch:  s390 s390x
 URL:            http://www.ibm.com/developerworks/linux/linux390/s390-tools.html
 # http://www.ibm.com/developerworks/linux/linux390/s390-tools-%%{version}.html
@@ -161,9 +160,7 @@ popd
 
 
 %install
-rm -rf ${RPM_BUILD_ROOT}
-
-mkdir -p $RPM_BUILD_ROOT{%{_lib},%{_libdir},/sbin,/bin,/boot,%{_mandir}/man1,%{_mandir}/man8,%{_sbindir},%{_bindir},%{_sysconfdir}/{profile.d,udev/rules.d,sysconfig},%{_initddir}}
+mkdir -p $RPM_BUILD_ROOT{%{_lib},%{_libdir},/sbin,/bin,/boot,/lib/udev/rules.d,%{_mandir}/man1,%{_mandir}/man8,%{_sbindir},%{_bindir},%{_sysconfdir}/{profile.d,sysconfig},%{_initddir}}
 
 # workaround an issue in the zipl-device-mapper patch
 rm -f zipl/src/zipl_helper.device-mapper.*
@@ -181,8 +178,8 @@ install -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT/sbin
 install -p -m 755 %{SOURCE13} $RPM_BUILD_ROOT/sbin
 install -p -m 755 %{SOURCE21} $RPM_BUILD_ROOT/sbin
-install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/56-zfcp.rules
-install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/56-dasd.rules
+install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT/lib/udev/rules.d/56-zfcp.rules
+install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT/lib/udev/rules.d/56-dasd.rules
 
 touch $RPM_BUILD_ROOT%{_sysconfdir}/{zfcp.conf,dasd.conf}
 
@@ -195,7 +192,7 @@ install -p -m 755 %{SOURCE19} ${RPM_BUILD_ROOT}%{_initddir}/mon_statd
 install -p -m 644 etc/sysconfig/cpuplugd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
 install -p -m 755 %{SOURCE18} ${RPM_BUILD_ROOT}%{_initddir}/cpuplugd
 
-install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
+install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}/lib/udev/rules.d
 
 # cmsfs tools must be available in /sbin
 install -p -m 755 cmsfs-%{cmsfsver}/cmsfscat $RPM_BUILD_ROOT/sbin
@@ -256,12 +253,7 @@ install -p -m 644 %{SOURCE17} ${RPM_BUILD_ROOT}/lib/udev/rules.d/81-ccw.rules
 touch ${RPM_BUILD_ROOT}%{_sysconfdir}/zipl.conf
 
 
-%clean
-rm -rf ${RPM_BUILD_ROOT}
-
-
 %files
-%defattr(-,root,root,-)
 %doc README
 
 #
@@ -426,7 +418,6 @@ fi
 :
 
 %files base
-%defattr(-,root,root,-)
 %doc README
 %doc LICENSE
 /sbin/zipl
@@ -525,10 +516,6 @@ fi
 /boot/tape0
 %{_sysconfdir}/profile.d/s390.csh
 %{_sysconfdir}/profile.d/s390.sh
-%config(noreplace) %{_sysconfdir}/udev/rules.d/56-zfcp.rules
-%config(noreplace) %{_sysconfdir}/udev/rules.d/56-dasd.rules
-%config(noreplace) %{_sysconfdir}/udev/rules.d/59-dasd.rules
-%config(noreplace) %{_sysconfdir}/udev/rules.d/60-readahead.rules
 %ghost %config(noreplace) %{_sysconfdir}/dasd.conf
 %ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
 %{_initddir}/cpi
@@ -543,8 +530,12 @@ fi
 /lib/systemd/system/device_cio_free.service
 %{_sysconfdir}/systemd/system/sysinit.target.wants/device_cio_free.service
 /lib/udev/ccw_init
-/lib/udev/rules.d/81-ccw.rules
 /lib/udev/rules.d/40-z90crypt.rules
+/lib/udev/rules.d/56-zfcp.rules
+/lib/udev/rules.d/56-dasd.rules
+/lib/udev/rules.d/59-dasd.rules
+/lib/udev/rules.d/60-readahead.rules
+/lib/udev/rules.d/81-ccw.rules
 
 # src_vipa
 %{_bindir}/src_vipa.sh
@@ -567,9 +558,8 @@ features Fast Ethernet, Gigabit Ethernet, High Speed Token Ring and
 ATM Ethernet LAN Emulation in QDIO mode.
 
 %files osasnmpd
-%defattr(-,root,root,-)
 %{_sbindir}/osasnmpd
-%config(noreplace) %{_sysconfdir}/udev/rules.d/57-osasnmpd.rules
+/lib/udev/rules.d/57-osasnmpd.rules
 %{_mandir}/man8/osasnmpd.8*
 
 #
@@ -605,7 +595,6 @@ fi
 :
 
 %files mon_statd
-%defattr(-,root,root,-)
 %{_sbindir}/mon_fsstatd
 %{_sbindir}/mon_procd
 %config(noreplace) %{_sysconfdir}/sysconfig/mon_statd
@@ -642,7 +631,6 @@ fi
 :
 
 %files cpuplugd
-%defattr(-,root,root,-)
 %{_initddir}/cpuplugd
 %config(noreplace) %{_sysconfdir}/sysconfig/cpuplugd
 %{_sbindir}/cpuplugd
@@ -662,7 +650,6 @@ Requires:       perl lsscsi coreutils blktrace >= 1.0.1
 Tool set to collect data for zfcp performance analysis and report.
 
 %files ziomon
-%defattr(-,root,root,-)
 %{_sbindir}/ziomon
 %{_sbindir}/ziomon_fcpconf
 %{_sbindir}/ziomon_mgr
@@ -721,7 +708,6 @@ then
 fi
 
 %files iucvterm
-%defattr(-,root,root,-)
 %dir %{_sysconfdir}/iucvterm
 %config(noreplace) %attr(0640,root,ts-shell) %{_sysconfdir}/iucvterm/ts-audit-systems.conf
 %config(noreplace) %attr(0640,root,ts-shell) %{_sysconfdir}/iucvterm/ts-authorization.conf
@@ -776,7 +762,6 @@ ZFCP HBA API Library is an implementation of FC-HBA (see www.t11.org ) for
 the zfcp device driver.
 
 %files libzfcphbaapi
-%defattr (-,root,root,-)
 %doc lib-zfcp-hbaapi-%{hbaapiver}/README
 %doc lib-zfcp-hbaapi-%{hbaapiver}/COPYING
 %doc lib-zfcp-hbaapi-%{hbaapiver}/ChangeLog
@@ -807,7 +792,6 @@ Documentation for the ZFCP HBA API Library.
 
 
 %files libzfcphbaapi-docs
-%defattr (-,root,root,-)
 %docdir %{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}
 %{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}/
 
@@ -827,7 +811,6 @@ URL:            http://www.casita.net/pub/cmsfs/cmsfs.html
 This package contains the CMS file system tools.
 
 %files cmsfs
-%defattr(-,root,root,-)
 /sbin/cmsfscat
 /sbin/cmsfsck
 /sbin/cmsfscp
@@ -853,7 +836,6 @@ Requires:       fuse
 This package contains the CMS file system based on FUSE.
 
 %files cmsfs-fuse
-%defattr(-,root,root,-)
 %dir %{_sysconfdir}/cmsfs-fuse
 %config(noreplace) %{_sysconfdir}/cmsfs-fuse/filetypes.conf
 %{_bindir}/cmsfs-fuse
@@ -871,7 +853,6 @@ Group:          Development/Libraries
 User-space development files for the s390/s390x architecture.
 
 %files devel
-%defattr(-,root,root,-)
 %{_includedir}/%{name}
 
 
