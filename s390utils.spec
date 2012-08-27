@@ -859,6 +859,8 @@ User-space development files for the s390/s390x architecture.
 %changelog
 * Mon Aug 27 2012 Dan Horák <dan[at]danny.cz> 2:1.19.0-1
 - updated to 1.19.0 (#804774)
+- fixed syntax in s390.sh script (#851096)
+- spec cleanup
 
 * Tue Aug 21 2012 Dan Horák <dan[at]danny.cz> 2:1.17.0-1
 - updated to 1.17.0
