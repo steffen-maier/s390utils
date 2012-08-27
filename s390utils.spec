@@ -7,7 +7,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.17.0
+Version:        1.19.0
 Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
@@ -37,10 +37,9 @@ Source16:       ccw_init
 Source17:       ccw.udev
 Source18:       cpuplugd.initd
 Source19:       mon_statd.initd
-Source20:       40-z90crypt.rules
 Source21:       normalize_dasd_arg
 
-Patch1:         s390-tools-1.17.0-fedora.patch
+Patch1:         s390-tools-1.19.0-fedora.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -253,9 +252,6 @@ mkdir -p ${RPM_BUILD_ROOT}/lib/udev/rules.d
 install -p -m 755 %{SOURCE16} ${RPM_BUILD_ROOT}/lib/udev/ccw_init
 install -p -m 644 %{SOURCE17} ${RPM_BUILD_ROOT}/lib/udev/rules.d/81-ccw.rules
 
-# z90crypt
-install -p -m 644 %{SOURCE20} ${RPM_BUILD_ROOT}/lib/udev/rules.d/40-z90crypt.rules
-
 # zipl.conf to be ghosted
 touch ${RPM_BUILD_ROOT}%{_sysconfdir}/zipl.conf
 
@@ -455,6 +451,7 @@ fi
 /sbin/zfcpdbf
 /sbin/qetharp
 /sbin/qethconf
+/sbin/qethqoat
 /sbin/tape390_display
 /sbin/tape390_crypt
 /sbin/ttyrun
@@ -512,6 +509,7 @@ fi
 %{_mandir}/man8/lszfcp.8*
 %{_mandir}/man8/qetharp.8*
 %{_mandir}/man8/qethconf.8*
+%{_mandir}/man8/qethqoat.8*
 %{_mandir}/man8/tape390_crypt.8*
 %{_mandir}/man8/tape390_display.8*
 %{_mandir}/man8/ttyrun.8*
@@ -878,6 +876,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Aug 27 2012 Dan Horák <dan[at]danny.cz> 2:1.19.0-1
+- updated to 1.19.0 (#804774)
+
 * Tue Aug 21 2012 Dan Horák <dan[at]danny.cz> 2:1.17.0-1
 - updated to 1.17.0
 - add support for new storage device on System z (#847086)
