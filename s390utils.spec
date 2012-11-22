@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.19.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -550,7 +550,7 @@ License:        GPLv2+
 Summary:        SNMP sub-agent for OSA-Express cards
 Group:          System Environment/Daemons
 Requires:       net-snmp
-BuildRequires:  net-snmp-devel openssl-devel
+BuildRequires:  net-snmp-devel
 
 %description osasnmpd
 UCD-SNMP/NET-SNMP sub-agent implementing MIBs provided by OSA-Express
@@ -736,8 +736,9 @@ License:       CPL
 Summary:       ZFCP HBA API Library -- HBA API for the zfcp device driver
 Group:         System Environment/Libraries
 URL:           http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi.html
-BuildRequires: automake autoconf
-BuildRequires: doxygen libsysfs-devel
+BuildRequires: automake
+BuildRequires: doxygen
+BuildRequires: libsysfs-devel
 BuildRequires: sg3_utils-devel
 BuildRequires: kernel-devel
 BuildRequires: libhbaapi-devel
@@ -857,6 +858,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Nov 22 2012 Dan Horák <dan[at]danny.cz> - 2:1.19.0-4
+- clean BuildRequires a bit
+
 * Mon Sep 16 2012 Dan Horák <dan[at]danny.cz> - 2:1.19.0-3
 - zipl: Flush disk buffers before installing IPL record (#857814)
 
