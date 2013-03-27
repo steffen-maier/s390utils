@@ -8,7 +8,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.20.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -149,7 +149,7 @@ pushd src_vipa-%{vipaver}
 make CC_FLAGS="$RPM_OPT_FLAGS -fPIC" LIBDIR=%{_libdir}
 popd
 
-%ifarch s390x
+%ifarch Xs390x
 pushd lib-zfcp-hbaapi-%{hbaapiver}
 kernel_ver=$(rpm -q --qf="%{VERSION}-%{RELEASE}.%{ARCH}\n" kernel-devel | tail -1)
 export CPPFLAGS=-I/usr/src/kernels/$kernel_ver/include
@@ -211,7 +211,7 @@ pushd src_vipa-%{vipaver}
 make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=$RPM_BUILD_ROOT
 popd
 
-%ifarch s390x
+%ifarch Xs390x
 # lib-zfcp-hbaapi
 pushd lib-zfcp-hbaapi-%{hbaapiver}
 %makeinstall docdir=$RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}
@@ -730,7 +730,7 @@ fi
 #
 # *********************** libzfcphbaapi package  ***********************
 #
-%ifarch s390x
+%ifarch Xs390x
 %package libzfcphbaapi
 License:       CPL
 Summary:       ZFCP HBA API Library -- HBA API for the zfcp device driver
@@ -858,6 +858,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Mar 27 2013 Dan Horák <dan[at]danny.cz> - 2:1.20.0-3
+- disable libzfcphbaapi subpackage, fails to build with recent kernels
+
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.20.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
