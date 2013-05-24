@@ -1,6 +1,5 @@
 %define cmsfsver 1.1.8c
 %define vipaver 2.0.4
-%define hbaapiver 2.1
 
 %{!?_initddir: %define _initddir %{_initrddir}}
 
@@ -8,7 +7,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.20.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -22,8 +21,6 @@ Source5:        zfcpconf.sh
 # http://www.ibm.com/developerworks/linux/linux390/src_vipa-%%{vipaver}.html
 Source6:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/src_vipa-%{vipaver}.tar.gz
 Source7:        zfcp.udev
-# http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi-%%{hbaapiver}.html
-Source9:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/lib-zfcp-hbaapi-%{hbaapiver}.tar.gz
 # files for the Control Program Identification (Linux Call Home) feature (#463282)
 Source10:       cpi.initd
 Source11:       cpi.sysconfig
@@ -46,12 +43,6 @@ Patch1002:      cmsfs-1.1.8-use-detected-filesystem-block-size-on-FBA-devices.pa
 
 Patch2000:      src_vipa-2.0.4-locations.patch
 
-Patch3001:      lib-zfcp-hbaapi-2.1-module.patch
-Patch3002:      lib-zfcp-hbaapi-2.1-u8.patch
-Patch3003:      lib-zfcp-hbaapi-2.1-vendorlib.patch
-Patch3004:      lib-zfcp-hbaapi-2.1-HBA_FreeLibrary.patch
-Patch3005:      lib-zfcp-hbaapi-2.1-scsi-h.patch
-
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
 Requires:       s390utils-cpuplugd = %{epoch}:%{version}-%{release}
@@ -70,7 +61,7 @@ The s390utils packages contain a set of user space utilities that should to
 be used together with the zSeries (s390) Linux kernel and device drivers.
 
 %prep
-%setup -q -n s390-tools-%{version} -a 4 -a 6 -a 9
+%setup -q -n s390-tools-%{version} -a 4 -a 6
 
 # Fedora/RHEL changes
 %patch1 -p1 -b .fedora
@@ -97,25 +88,6 @@ pushd src_vipa-%{vipaver}
 %patch2000 -p1 -b .locations
 popd
 
-#
-# lib-zfcp-hbaapi
-#
-pushd lib-zfcp-hbaapi-%{hbaapiver}
-# build the library as a module
-%patch3001 -p1 -b .module
-
-# kernel headers need u8 type
-%patch3002 -p1 -b .u8
-
-# fix linking of the tools when using vendor library mode
-%patch3003 -p1 -b .vendorlib
-
-# zfcp-hbaapi: Fix crash on HBA_FreeLibrary call (#713817)
-%patch3004 -p2 -b .HBA_FreeLibrary
-
-# fix build fix recent kernels
-%patch3005 -p1 -b .scsi-h
-popd
 
 # remove --strip from install
 find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
@@ -131,12 +103,6 @@ mv CREDITS CREDITS.cmsfs
 popd
 
 
-pushd lib-zfcp-hbaapi-%{hbaapiver}
-# lib-zfcp-hbaapi: fix perms
-chmod a-x *.h AUTHORS README ChangeLog LICENSE
-popd
-
-
 %build
 make OPT_FLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing" DISTRELEASE=%{release} V=1
 
@@ -148,15 +114,6 @@ popd
 pushd src_vipa-%{vipaver}
 make CC_FLAGS="$RPM_OPT_FLAGS -fPIC" LIBDIR=%{_libdir}
 popd
-
-%ifarch Xs390x
-pushd lib-zfcp-hbaapi-%{hbaapiver}
-kernel_ver=$(rpm -q --qf="%{VERSION}-%{RELEASE}.%{ARCH}\n" kernel-devel | tail -1)
-export CPPFLAGS=-I/usr/src/kernels/$kernel_ver/include
-%configure --disable-static --enable-vendor-lib
-make EXTRA_CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
-popd
-%endif
 
 
 %install
@@ -210,17 +167,6 @@ install -p -m 644 cmsfs-%{cmsfsver}/cmsfsck.8  $RPM_BUILD_ROOT%{_mandir}/man8
 pushd src_vipa-%{vipaver}
 make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=$RPM_BUILD_ROOT
 popd
-
-%ifarch Xs390x
-# lib-zfcp-hbaapi
-pushd lib-zfcp-hbaapi-%{hbaapiver}
-%makeinstall docdir=$RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}
-popd
-# keep only html docs
-rm -rf $RPM_BUILD_ROOT%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}/latex
-# remove unwanted files
-rm -f $RPM_BUILD_ROOT%{_libdir}/libzfcphbaapi.*
-%endif
 
 # install usefull headers for devel subpackage
 mkdir -p $RPM_BUILD_ROOT%{_includedir}/%{name}
@@ -550,6 +496,7 @@ License:        GPLv2+
 Summary:        SNMP sub-agent for OSA-Express cards
 Group:          System Environment/Daemons
 Requires:       net-snmp
+Requires:       psmisc
 BuildRequires:  net-snmp-devel
 
 %description osasnmpd
@@ -728,77 +675,6 @@ fi
 %{_mandir}/man9/hvc_iucv.9*
 
 #
-# *********************** libzfcphbaapi package  ***********************
-#
-%ifarch Xs390x
-%package libzfcphbaapi
-License:       CPL
-Summary:       ZFCP HBA API Library -- HBA API for the zfcp device driver
-Group:         System Environment/Libraries
-URL:           http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi.html
-BuildRequires: automake
-BuildRequires: doxygen
-BuildRequires: libsysfs-devel
-BuildRequires: sg3_utils-devel
-BuildRequires: kernel-devel
-BuildRequires: libhbaapi-devel
-Requires:      libhbaapi
-Requires(post): grep
-Requires(postun): grep sed
-Obsoletes:     %{name}-libzfcphbaapi-devel < 2:1.8.2-4
-
-%post libzfcphbaapi
-grep -q -e "^libzfcphbaapi" /etc/hba.conf ||
-    echo "libzfcphbaapi %{_libdir}/libzfcphbaapi-%{hbaapiver}.so" >> /etc/hba.conf
-:
-
-%preun libzfcphbaapi
-grep -q -e "^libzfcphbaapi" /etc/hba.conf &&
-    sed -i.orig -e "/^libzfcphbaapi/d" /etc/hba.conf
-fi
-:
-
-%description libzfcphbaapi
-ZFCP HBA API Library is an implementation of FC-HBA (see www.t11.org ) for
-the zfcp device driver.
-
-%files libzfcphbaapi
-%doc lib-zfcp-hbaapi-%{hbaapiver}/README
-%doc lib-zfcp-hbaapi-%{hbaapiver}/COPYING
-%doc lib-zfcp-hbaapi-%{hbaapiver}/ChangeLog
-%doc lib-zfcp-hbaapi-%{hbaapiver}/AUTHORS
-%doc lib-zfcp-hbaapi-%{hbaapiver}/LICENSE
-%{_bindir}/zfcp_ping
-%{_bindir}/zfcp_show
-%{_libdir}/libzfcphbaapi-%{hbaapiver}.so
-%{_mandir}/man3/libzfcphbaapi.3*
-%{_mandir}/man3/SupportedHBAAPIs.3*
-%{_mandir}/man3/UnSupportedHBAAPIs.3*
-%{_mandir}/man8/zfcp_ping.8*
-%{_mandir}/man8/zfcp_show.8*
-%exclude %{_mandir}/man3/hbaapi.h.3*
-
-#
-# *********************** libzfcphbaapi-devel package  ***********************
-#
-%package libzfcphbaapi-docs
-License:  CPL
-Summary:  ZFCP HBA API Library -- Documentation
-Group:    Development/Libraries
-URL:      http://www.ibm.com/developerworks/linux/linux390/zfcp-hbaapi.html
-Requires: %{name}-libzfcphbaapi = %{epoch}:%{version}-%{release}
-
-%description libzfcphbaapi-docs
-Documentation for the ZFCP HBA API Library.
-
-
-%files libzfcphbaapi-docs
-%docdir %{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}
-%{_docdir}/lib-zfcp-hbaapi-%{hbaapiver}/
-
-%endif
-
-#
 # *********************** cmsfs package  ***********************
 #
 %package cmsfs
@@ -858,6 +734,11 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue May 21 2013 Dan Horák <dan[at]danny.cz> - 2:1.20.0-4
+- drop the libzfcphbaapi subpackage as it is moved to its own package (#963670)
+- update the zfcp udev rules (#958197)
+- fix runtime dependencies for osasnmpd (#965413)
+
 * Wed Mar 27 2013 Dan Horák <dan[at]danny.cz> - 2:1.20.0-3
 - disable libzfcphbaapi subpackage, fails to build with recent kernels
 
