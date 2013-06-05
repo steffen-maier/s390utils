@@ -7,7 +7,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.20.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -734,6 +734,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Jun 05 2013 Dan Horák <dan[at]danny.cz> - 2:1.20.0-5
+- update with patches from RHEL-6
+- rebase zIPL to 1.21 to fix booting from FBA DASD (#970859)
+
 * Tue May 21 2013 Dan Horák <dan[at]danny.cz> - 2:1.20.0-4
 - drop the libzfcphbaapi subpackage as it is moved to its own package (#963670)
 - update the zfcp udev rules (#958197)

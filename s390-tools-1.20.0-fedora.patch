@@ -1,11 +1,11 @@
 From 1ef1449e23dfeed77186a03f103221992029fb7e Mon Sep 17 00:00:00 2001
 From: Dan Horak <dan@danny.cz>
 Date: Sun, 20 Jul 2008 09:24:05 +0200
-Subject: [PATCH 1/2] s390-tools-1.5.3-zipl-zfcpdump-2
+Subject: [PATCH 1/7] s390-tools-1.5.3-zipl-zfcpdump-2
 
 ---
- common.mak |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ common.mak | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/common.mak b/common.mak
 index a15e3e6..83e052f 100644
@@ -23,17 +23,17 @@ index a15e3e6..83e052f 100644
  export ZFCPDUMP_DIR ZFCPDUMP_IMAGE ZFCPDUMP_RD
  
 -- 
-1.7.7.6
+1.8.1.4
 
 
 From 9d80e20eaa26d89612f2b93452c5012ea26af9a0 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Thu, 23 Apr 2009 11:46:01 +0200
-Subject: [PATCH 2/2] s390-tools-1.8.1-fdasd-su
+Subject: [PATCH 2/7] s390-tools-1.8.1-fdasd-su
 
 ---
- fdasd/fdasd.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ fdasd/fdasd.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/fdasd/fdasd.c b/fdasd/fdasd.c
 index ba22475..f2ac417 100644
@@ -57,5 +57,728 @@ index ba22475..f2ac417 100644
  
  		if (anc->verbose) printf("disk layout check   : ok\n");
 -- 
-1.7.7.6
+1.8.1.4
+
+
+From 1a5cf421cd33c8481b365dd83e25dc0513350270 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 5 Jun 2013 16:09:46 +0200
+Subject: [PATCH 3/7] ziomon: cope with scsi disks not part of multipath device
+
+Description:  ziomon: cope with scsi disks not part of multipath device
+Symptom:      # ziorep_config -M
+              or
+              # ziorep_config -M -i some.cfg
+              Use of uninitialized value within %mapper_dev in \
+               concatenation (.) or string at /usr/sbin/ziorep_config \
+               line 305.
+              ...
+              or
+              Use of uninitialized value in concatenation (.) or string \
+               at /usr/sbin/ziorep_config line 305.
+              ...
+              or
+              Use of uninitialized value in string eq at \
+               /sbin/ziorep_config line 161.
+              Use of uninitialized value in concatenation (.) or string \
+               at /sbin/ziorep_config line 337.
+              ...
+Problem:      ziorep_config did not correctly ignore scsi disks, that are
+              not part of a multipath device, when creating the multipath
+              mapper report. get_line() returns "n/a" if the sysfs
+              attribute does not exist. This is stored in the value for
+              hash key mp_dev_mm so its value cannot be used in a check for
+              being undefined.
+Solution:     The hash field mp_dev remains undefined, if no multipath
+              device was found, so use this to ignore scsi disks,
+              that are not part of a multipath device.
+Reproduction: Blacklist some scsi disks in /etc/multipath.conf
+              or dynamically delete some path from a pathgroup with
+              "multipathd -k'del path sdd'" or remove some multipath map
+              that includes scsi disks by means of "multipath -f <map>".
+              In addition, have at least one multipath device configured.
+              Run "ziorep_config -M", or collect configuration data
+              by means of "ziomon -o some ..." or "ziomon_fcpconf -o some"
+              and then run "ziorep_config -M -i some.cfg".
+Upstream-ID:  -
+---
+ ziomon/ziorep_config | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ziomon/ziorep_config b/ziomon/ziorep_config
+index f2ad35c..6a77e5a 100755
+--- a/ziomon/ziorep_config
++++ b/ziomon/ziorep_config
+@@ -293,7 +293,7 @@ sub mapper_report
+ 		      "=====================================================\n";
+ 	}
+ 	foreach my $hctl (sort keys %devices) {
+-		next if (! $devices{$hctl}{mp_dev_mm});
++		next if (! $devices{$hctl}{mp_dev});
+ 		next if (@$adapters && "@$adapters" !~ /\b$devices{$hctl}{hba_id}\b/);
+ 		next if (@$ports && "@$ports" !~ /\b$devices{$hctl}{wwpn}\b/);
+ 		next if (@$s_devs && "@$s_devs" !~ /\b$devices{$hctl}{dev}\b/);
+-- 
+1.8.1.4
+
+
+From e21f641828a84fa5c1657a75af52e780ad8b0ec8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 5 Jun 2013 16:10:19 +0200
+Subject: [PATCH 4/7] s390: Fuzzy live dump for System z
+
+Summary:     s390: Fuzzy live dump for System z
+Description: A new dump mechanism is established to create a completely
+             non-disruptive kernel dump. Because the Linux system
+             continues running while the dump is written and kernel data
+             structures are changing during the procedure, the resulting
+             dump will not be consistent (fuzzy).
+
+             This patch adds the following features to the zgetdump tool:
+               - Live dump creation using new devmem source dump format
+               - Live dump detection using --info option
+---
+ zdump/Makefile   |  5 ++---
+ zdump/zgetdump.c | 13 +++++++++++--
+ 2 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/zdump/Makefile b/zdump/Makefile
+index bdd1340..1926e40 100644
+--- a/zdump/Makefile
++++ b/zdump/Makefile
+@@ -6,9 +6,8 @@ LDLIBS += -lz
+ all: zgetdump
+ 
+ OBJECTS = zgetdump.o opts.o zg.o \
+-	  dfi.o dfi_vmcoreinfo.o \
+-	  dfi_lkcd.o dfi_elf.o dfi_s390.o dfi_s390mv.o dfi_s390tape.o \
+-	  dfi_kdump.o dfi_devmem.o \
++	  dfi.o dfi_lkcd.o dfi_elf.o dfi_s390.o dfi_s390mv.o dfi_s390tape.o \
++	  dfi_kdump.o dfi_devmem.o dfi_vmcoreinfo.o \
+ 	  dfo.o dfo_elf.o dfo_s390.o \
+ 	  df_s390.o \
+ 	  dt.o dt_s390sv.o dt_s390mv.o \
+diff --git a/zdump/zgetdump.c b/zdump/zgetdump.c
+index 4943be9..aae6b8d 100644
+--- a/zdump/zgetdump.c
++++ b/zdump/zgetdump.c
+@@ -129,6 +129,7 @@ static int do_dump_info(void)
+ 	}
+ 	kdump_select_check();
+ 	dfi_info_print();
++	dfi_exit();
+ 	return 0;
+ }
+ 
+@@ -137,11 +138,15 @@ static int do_dump_info(void)
+  */
+ static int do_mount(void)
+ {
++	int rc;
++
+ 	if (dfi_init() != 0)
+ 		ERR_EXIT("Dump cannot be processed (is not complete)");
+ 	dfo_init();
+ 	kdump_select_check();
+-	return zfuse_mount_dump();
++	rc = zfuse_mount_dump();
++	dfi_exit();
++	return rc;
+ }
+ 
+ /*
+@@ -149,11 +154,15 @@ static int do_mount(void)
+  */
+ static int do_stdout(void)
+ {
++	int rc;
++
+ 	if (dfi_init() != 0)
+ 		ERR_EXIT("Dump cannot be processed (is not complete)");
+ 	dfo_init();
+ 	kdump_select_check();
+-	return stdout_write_dump();
++	rc = stdout_write_dump();
++	dfi_exit();
++	return rc;
+ }
+ 
+ /*
+-- 
+1.8.1.4
+
+
+From 3005996e186dd0b4969cdcb170079fd012b45f5b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 5 Jun 2013 16:12:03 +0200
+Subject: [PATCH 5/7] dasd: add safe offline interface
+
+Summary:     dasd: add safe offline interface
+Description: The regular behavior of the DASD device driver when setting a
+             device offline is to return all outstanding I/O as failed. This
+             behavior is different from that of other System z operating
+             systems and may lead to unexpected data loss. Adding an explicit
+             'safe' offline function will allow customers to use DASDs in the
+             way they expect them to work.
+Upstream-ID: -
+---
+ zconf/chccwdev   | 59 +++++++++++++++++++++++++++++++++++++++-----------------
+ zconf/chccwdev.8 | 32 ++++++++++++++++++++++--------
+ 2 files changed, 65 insertions(+), 26 deletions(-)
+
+diff --git a/zconf/chccwdev b/zconf/chccwdev
+index 649c7a2..ca5c25a 100755
+--- a/zconf/chccwdev
++++ b/zconf/chccwdev
+@@ -29,6 +29,8 @@
+ CMD=$(basename $0)
+ MAX_RETRIES=5
+ CIO_SETTLE="/proc/cio_settle"
++ONLINEATTR="online"
++SYSPATH=NULL
+ 
+ if [ "$(cat /proc/filesystems|grep sysfs)" = "" ]; then
+ 	echo "ERROR: $CMD requires sysfs support!" >&2
+@@ -52,6 +54,8 @@ function PrintUsage() {
+ 		 		driver supports this.
+ 		  	-d|--offline
+ 		  		Tries to set the given device offline.
++		  	-s|--safeoffline
++		  		Tries to set the given device offline waiting for all outstanding I/O. May block forever.
+ 		 	-v|--version
+ 		 		Show tools and command version.
+ 
+@@ -102,6 +106,12 @@ function SetAttribute()
+ 		fi
+ 		ACTIONSET=true
+ 		return
++	elif [ "$NAME" = "save_offline" ]; then
++		CheckOnlineArg 1
++		ONLINE=0
++		ACTIONSET=true
++		ONLINEATTR="safe_offline"
++		return
+ 	fi
+ 
+ 	while [ $CNT -lt $NUMATTR ]; do
+@@ -148,6 +158,9 @@ while [ $# -gt 0 ]; do
+ 		-d|--offline)
+ 				SetAttribute "online" 0
+ 				;;
++		-s|--safeoffline)
++				SetAttribute "save_offline" 0
++				;;
+ 		-v|--version)
+ 				PrintVersion
+ 				exit 0
+@@ -371,6 +384,27 @@ function StoreAttribute()
+ 	return 0
+ }
+ 
++function PrintError()
++{
++	read ERROR
++	if [ -n "$ERROR" ] ;then
++		echo "Failed (${ERROR##*: })" >&2
++		if [ ! -e $SYSPATH/driver ]; then
++			read CUTYPE 2>/dev/null < $SYSPATH/cutype
++			read DEVTYPE 2>/dev/null < $SYSPATH/devtype
++			if [ $? -ne 0 ] ;then
++				exit 1
++			fi
++			if [[ $DEVTYPE == "n/a" ]] ;then
++				DEVTYPE="0000/00"
++			fi
++			echo "Note: No driver is attached to this device" \
++				"(DevType:$DEVTYPE CU Type:$CUTYPE)." >&2
++		fi
++		exit 1
++	fi
++}
++
+ SAVEDATTRS=("${ATTRVAL[@]}")
+ for BUSID in $BUSIDLIST; do
+ 	SYSPATH=$SYSFSDIR/bus/ccw/devices/$BUSID
+@@ -407,26 +441,15 @@ for BUSID in $BUSIDLIST; do
+ 			else
+ 				echo "Setting device $BUSID offline"
+ 			fi
++			if [ ! -e $SYSPATH/$ONLINEATTR ]; then
++				echo "$ONLINEATTR attribute not available for" \
++				    " device[$BUSID]" >&2
++				exit 1
++			fi
+ 			if [ "$FORCE" != "" ]; then
+-				ERROR=$(echo $FORCE 2>&1 >$SYSPATH/online)
++				echo $FORCE 2>&1 >$SYSPATH/$ONLINEATTR | PrintError
+ 			else
+-				ERROR=$(echo $ONLINE 2>&1 >$SYSPATH/online)
+-			fi
+-			if [ $? -ne 0 ] ;then
+-				echo "Failed (${ERROR##*: })" >&2
+-				if [ ! -e $SYSPATH/driver ]; then
+-					read CUTYPE 2>/dev/null < $SYSPATH/cutype
+-					read DEVTYPE 2>/dev/null < $SYSPATH/devtype
+-					if [ $? -ne 0 ] ;then
+-						exit 1
+-					fi
+-					if [[ $DEVTYPE == "n/a" ]] ;then
+-						DEVTYPE="0000/00"
+-					fi
+-					echo "Note: No driver is attached to this device" \
+-					     "(DevType:$DEVTYPE CU Type:$CUTYPE)." >&2
+-				fi
+-				exit 1
++				echo $ONLINE 2>&1 > $SYSPATH/$ONLINEATTR | PrintError
+ 			fi
+ 			#
+ 			# Workaround for bad drivers which report success but
+diff --git a/zconf/chccwdev.8 b/zconf/chccwdev.8
+index 8ba7695..a40f092 100644
+--- a/zconf/chccwdev.8
++++ b/zconf/chccwdev.8
+@@ -11,7 +11,7 @@ chccwdev \- modify generic attributes of channel attached devices.
+ .B chccwdev
+ .RB "[ (" -a
+ .IB <name> = <value>
+-.RB "| " -e " | " -d " | " -f  ") [...]]"
++.RB "| " -e " | " -d " | " -s " | " -f  ") [...]]"
+ .br
+ .I  <range>
+ .RI "[, " "<range>" " [...]]"
+@@ -28,7 +28,7 @@ special.
+ If the same attribute is given more than one time the value that was set
+ last will be used. This is also true (while not that obvious) when mixing
+ the generic
+-.BR -a " and the " -e ", " -d " and " -f " arguments."
++.BR -a " and the " -e ", " -d ", "-s" and " -f " arguments."
+ .P
+ All attributes will be set in the following order:
+ .RS
+@@ -38,7 +38,8 @@ All attributes except online. If the device is offline there will be no
+ error if the attribute doesn't exist.
+ .TP
+ 2.
+-Set the online attribute to the desired value ((forced) online or offline).
++Set the online attribute to the desired value ((forced) online or
++(safe) offline).
+ .TP
+ 3.
+ Set all the attributes that havn't been set, yet. At this point invalid
+@@ -65,7 +66,7 @@ the attribute it will be read to check whether the setting was accepted.
+ 
+ .TP
+ .BR -e | --online
+-Try to set the given range of devices online.
++Try to set the specified devices offline.
+ 
+ .TP
+ .BR -f | --forceonline
+@@ -74,8 +75,15 @@ be used to bring it online regardless of any reserved states.
+ 
+ .TP
+ .BR -d | --offline
+-Try to set the given range of devices offline. The online and offline
+-option are exclusive.
++Try to set the specified devices offline. The --online, --forceonline,
++--offline, and --safeoffline options are mutually exclusive.
++
++.TP
++.BR -s |--safeoffline
++DASD only: For each specified device, wait until all outstanding I/O
++requests have completed, and then try to set the device offline. The
++--online, --forceonline, --offline, and --safeoffline options are
++mutually exclusive.
+ 
+ .TP
+ \fB<range>\fR = <bus ID>\fB[-\fR<bus ID>\fB]\fR
+@@ -89,8 +97,9 @@ Example: "0192" becomes "0.0.0192".
+ .SH EXAMPLES
+ \fBchccwdev --online 0.0.0192,0.0.0195-0.0.0198\fR
+ .RS
+-Will try to set the devices with bus ID 0.0.0192, 0.0.0195, 0.0.0196,
+-0.0.0197 and 0.0.0198 online
++After completing all outstanding I/O requests for the devices with bus
++ID 0.0.0192, 0.0.0195, 0.0.0196, 0.0.0197 and 0.0.0198, tries to set
++the  device offline.
+ .RE
+ .P
+ .B chccwdev --attribute readonly=1 --attribute online=1 0.0.0192
+@@ -105,6 +114,13 @@ Set the cmb_enable attribute of the devices 0.0.0195, 0.0.0196, 0.0.0197 and
+ 0.0.0198 to one. This would for example activate the usage of the channel
+ measurement block facility.
+ .RE
++.P
++.B chccwdev --safeoffline 0.0.0192,0.0.0195-0.0.0198
++.RS
++Will  try  to  set  the  devices with bus ID 0.0.0192, 0.0.0195,
++0.0.0196, 0.0.0197 and 0.0.0198 offline and finish all outstanding I/O
++requests before.
++.RE
+ 
+ .SH AUTHOR
+ .nf
+-- 
+1.8.1.4
+
+
+From eaa9c5f46041369915f3207e2ca42667fbad5495 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 5 Jun 2013 16:12:45 +0200
+Subject: [PATCH 6/7] cio: Provide PCHID mapping
+
+Summary:     cio: Provide PCHID mapping
+Description: This feature helps you to locate physical channel-type
+             interfaces that are associated with Channel-Path IDs
+             (CHPIDs).
+Upstream-ID: -
+---
+ zconf/lschp   | 23 ++++++++++++++++++-----
+ zconf/lschp.8 | 12 ++++++++++++
+ 2 files changed, 30 insertions(+), 5 deletions(-)
+
+diff --git a/zconf/lschp b/zconf/lschp
+index 09f9c38..55f2ec3 100755
+--- a/zconf/lschp
++++ b/zconf/lschp
+@@ -82,7 +82,7 @@ function get_chp_id_attr()
+ 	if [ -r $2/$3 ] ; then
+ 		read < $2/$3 VAL 2>/dev/null
+ 	fi
+-	eval $VAR=$VAL
++	eval $VAR=\"$VAL\"
+ }
+ 
+ # Parse command line parameters
+@@ -121,8 +121,8 @@ if [ ! -d "$SYSFS" ] ; then
+ fi
+ 
+ # Generate output
+-echo "CHPID  Vary  Cfg.  Type  Cmg  Shared"
+-echo "===================================="
++echo "CHPID  Vary  Cfg.  Type  Cmg  Shared  PCHID"
++echo "============================================"
+ 
+ CSS_ID_LIST=$(get_css_id_list $SYSFS/devices)
+ 
+@@ -170,8 +170,21 @@ for CSS_ID in $CSS_ID_LIST ; do
+ 			CHP_SHARED=$(printf "%x" $CHP_SHARED)
+ 		fi
+ 
+-		printf "%-5s  %-4s  %-4s  %-4s  %-3s  %-6s\n" \
++		get_chp_id_attr CHP_CHID $CHP_DIR "chid" "-"
++		get_chp_id_attr CHP_CHID_E $CHP_DIR "chid_external" "0"
++		if [ -z "$CHP_CHID" -o "$CHP_CHID" == "-" ] ; then
++			CHP_CHID=" -"
++		else
++			if [ $CHP_CHID_E == "1" ] ; then
++				CHP_CHID=" $CHP_CHID "
++			else
++				CHP_CHID="($CHP_CHID)"
++			fi
++		fi
++
++
++		printf "%-5s  %-4s  %-4s  %-4s  %-3s  %-6s %-6s\n" \
+ 		       "$CHP" "$CHP_VARY" "$CHP_CFG" \
+-		       "$CHP_TYPE" "$CHP_CMG" "$CHP_SHARED"
++		       "$CHP_TYPE" "$CHP_CMG" "$CHP_SHARED" "$CHP_CHID"
+ 	done
+ done
+diff --git a/zconf/lschp.8 b/zconf/lschp.8
+index 336d965..10a7c5c 100644
+--- a/zconf/lschp.8
++++ b/zconf/lschp.8
+@@ -60,6 +60,18 @@ Indicates whether a channel\-path is shared between LPARs:
+ 1 = channel\-path is shared
+ .RE
+ 
++PCHID
++.RS
++Physical channel-ID unless the 4-digit hexadecimal value is enclosed in
++parenthesis.
++
++If the value is enclosed in parenthesis, no physical channel-ID is
++associated with the CHPID, and the value is an internal channel-ID.
++
++For example, 0501 specifies a PCHID whereas (0502) specifies an internal
++channel-ID.
++.RE
++
+ A column value of '\-' indicates that a facility associated with the respective
+ channel\-path attribute is not available.
+ 
+-- 
+1.8.1.4
+
+
+From 52aa5f36e0ce244953e5f2573ef4e7938726c64c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 5 Jun 2013 16:39:05 +0200
+Subject: [PATCH 7/7] update zIPL to 1.21
+
+update zIPL to 1.21 to resolve issues with booting from FBA DASD
+---
+ zipl/boot/common.S | 33 ++++++++++++++++++---------------
+ zipl/boot/eckd2.S  | 23 ++++++++++++++++-------
+ zipl/boot/fba2.S   | 32 +++++++++++++++++++-------------
+ 3 files changed, 53 insertions(+), 35 deletions(-)
+
+diff --git a/zipl/boot/common.S b/zipl/boot/common.S
+index cbaa60f..3eae04f 100644
+--- a/zipl/boot/common.S
++++ b/zipl/boot/common.S
+@@ -33,6 +33,7 @@ __LC_PANIC_MAGIC= 0xE00
+ _start: stm    %r0,%r15,0x180           # store all registers 
+         basr   %r13,0
+ 0:      l      %r15,3f-0b(%r13)         # load end of stack address
++	mvc    .Lstage2-0b(16,%r13),STAGE2_DESC # save stage2_desc from lowcore
+ 
+ 	bas    %r14,_menu-0b(%r13)	# show menu
+ 	lr     %r6,%r2
+@@ -48,18 +49,18 @@ _start: stm    %r0,%r15,0x180           # store all registers
+ 6:
+         la     %r10,0
+         st     %r10,__LC_PANIC_MAGIC    # clear panic flag
+-	lm     %r2,%r3,STAGE2_DESC      # get block with configurations
+-	lr     %r4,%r11
+-	l      %r5,4f-0b(%r13)
++	la     %r2,.Lstage2-0b(%r13)    # load blockpointer address
++	lr     %r4,%r11			# load sid
++	l      %r5,4f-0b(%r13)	        # load load-address
+ 	la     %r12,0(%r5)              # FIXME: provide the correct offset
+         bas    %r14,_load_direct-0b(%r13)
+ 	ar     %r6,%r12
+-        lm     %r2,%r3,16(%r6)           # get block with load descriptors
++        la     %r2,16(%r6)              # get load descriptors address
+         lr     %r4,%r11
+         lr     %r5,%r12                 # set load address
+         bas    %r14,_load_direct-0b(%r13)
+ 	la     %r12,32(%r12)		# skip header entry
+-1:      lm     %r2,%r3,0(%r12)		# load blocklist container of descriptor
++1:      la     %r2,0(%r12)		# load address of descriptor
+ 	l      %r4,20(%r12)		# load type
+ 	lhi    %r5,0xf
+ 	nr     %r4,%r5			# only the last four bits are the type
+@@ -76,6 +77,10 @@ _start: stm    %r0,%r15,0x180           # store all registers
+ 5:	.long  _bug			# type 0: not allowed
+ 	.long  _execute			# type 1: jump to target
+ 	.long  _load_binary		# type 2: binary file
++.Lstage2:				# area to save stage2_desc
++	.long  0x00000000,0x00000000
++	.long  0x00000000,0x00000000
++	.align 2
+ 
+ _bug:
+ 	basr   %r1,0
+@@ -112,7 +117,7 @@ _execute:
+ 
+ #
+ # The load descriptor is 32 bytes in length and contains 3 entries:
+-#   offset 0  : a blocklist descriptor (fba/eckd, 64 bit)
++#   offset 0  : a blocklist descriptor (fba/eckd, 128 bit)
+ #   offset 23 : a type (8 bit)
+ #   offset 24 : an address (64 bit)
+ # The meaning of the address and the validity of the blocklst
+@@ -122,7 +127,7 @@ _execute:
+ #
+ 	.macro blocklist_traverser
+ # parameter
+-#   %r2+%r3: blocklist head descriptor
++#   %r2    : blocklist head descriptor address
+ #   %r4    : device subchannel id
+ #   %r5    : load address
+ _load_blocklist:
+@@ -131,12 +136,10 @@ _load_blocklist:
+ 0:      s      %r15,7f-0b(%r13)         # create stack frame
+ 1:	lr     %r12,%r4                 # save device subchannel id
+ 	lr     %r11,%r5                 # save load address
+-	lr     %r8,%r2                  # save descriptor
+-	lr     %r9,%r3
++	lr     %r8,%r2                  # save descriptor address
+ 	bas    %r14,_extract_length-0b(%r13)   # get length from descriptor
+ 	lr     %r10,%r2                 # save returned length
+-	lr     %r2,%r8                  # reload descriptor to %r2/%r3
+-	lr     %r3,%r9
++	lr     %r2,%r8                  # reload descriptor address to %r2
+ 	lr     %r4,%r12                 # reload device id to %r4
+ 	l      %r5,9f-0b(%r13)          # get memory area for indirect block
+         bas    %r14,_load_direct-0b(%r13) # load indirect block
+@@ -146,11 +149,11 @@ _load_blocklist:
+ 	l      %r8,9f-0b(%r13)
+ 2:	clc    0(8,%r8),8f-0b(%r13)     # test block descriptor
+ 	be     6f-0b(%r13)              # descriptor == 0 -> done
+-	lm     %r2,%r3,0(%r8)           # pass block descriptor
++	la     %r2,0(%r8)               # pass descriptor address
+ 	bas    %r14,_is_zero_block-0b(%r13)    # test for special 0 descriptor
+ 	ltr    %r2,%r2                  # is it a hole to fill with 0?
+ 	bne    4f-0b(%r13)              # no, normal block descriptor
+-	lm     %r2,%r3,0(%r8)           # pass block descriptor
++	la     %r2,0(%r8)               # pass descriptor address
+ 	bas    %r14,_extract_length-0b(%r13)   # get length from descriptor
+ 	lr     %r3,%r2                  # move length to an odd register
+ 	lr     %r2,%r11                 # move address to an even register
+@@ -159,14 +162,14 @@ _load_blocklist:
+ 3:	mvcle  %r2,%r4,0                # clear storage
+ 	bo     3b-0b(%r13)	
+ 	b      5f-0b(%r13)
+-4:	lm     %r2,%r3,0(%r8)           # pass block descriptor
++4:	la     %r2,0(%r8)               # pass descriptor address
+ 	lr     %r4,%r12                 # pass device subchannel id
+         lr     %r5,%r11                 # pass load address
+         bas    %r14,_load_direct-0b(%r13) # load indirect block
+ 	lr     %r11,%r2                 # move updated load address
+ 5:	la     %r8,16(%r8)               # next descriptor
+ 	bct    %r9,2b-0b(%r13)
+-	lm     %r2,%r3,0(%r8)           # load continuation descriptor
++	la     %r2,0(%r8)               # load continuation descriptor address
+ 	lr     %r4,%r12                 # move device id for next round
+ 	lr     %r5,%r11			# move load address for next round
+ 	clc    0(8,%r8),8f-0b(%r13)     # test continuation descriptor
+diff --git a/zipl/boot/eckd2.S b/zipl/boot/eckd2.S
+index c720d95..8a3bdb6 100644
+--- a/zipl/boot/eckd2.S
++++ b/zipl/boot/eckd2.S
+@@ -5,10 +5,11 @@
+ #    Author(s):	 Martin Schwidefsky (schwidefsky@de.ibm.com),
+ #                Antoinette Kaschner (anto@de.ibm.com),
+ #
+-# An ckd/eckd  loadlist  entry is 8 bytes in length and contains 3 entries:
+-#   offset 0 :	 C C H H R  ( cyl head record )
+-#   offset 5 :	 record length (16 bit)
+-#   offset 7 :	 number of records(8 bit)
++# An ckd/eckd  loadlist  entry is 16 bytes in length and contains 4 entries:
++#   offset 0 :	 CC HH R  (cyl head record 40bit)
++#   offset 5 :	 LL record length (16 bit)
++#   offset 7 :	 N number of records(8 bit)
++#   offset 8 :	 unused(64 bit)
+ 
+ STAGE2_DESC = 0x78
+ 
+@@ -26,10 +27,12 @@ STAGE2_DESC = 0x78
+ 	panik
+ 
+ # parameter
+-#   %r2+%r3: blocklist descriptor
++#   %r2    : blocklist descriptor address
++#	     16 byte CCHHR LL N 00000000
+ # returns
+ #   %r2    : number of bytes (blocksize * number of blocks)
+ _extract_length:
++	l      %r3,4(%r2)
+ 	lr     %r2,%r3
+ 	sll    %r2,8
+ 	srl    %r2,16
+@@ -40,17 +43,21 @@ _extract_length:
+ 	br     %r14
+ 
+ # parameter
+-#   %r2+%r3: blocklist descriptor
++#   %r2    : blocklist descriptor address
++#	     16 byte CCHHR LL N 00000000
+ # returns
+ #   %r2    : == 0 for normal block descriptor
+ #            != 0 for zero block descriptor
+ _is_zero_block:
++	l      %r3,4(%r2)
++	l      %r2,0(%r2)
+ 	srl    %r3,24
+ 	or     %r2,%r3
+ 	br     %r14
+ 
+ # parameter
+-#   %r2+%r3:	 recordlist descriptor  CCHHRLLn
++#   %r2    :	 address of recordlist descriptor
++#	         16 byte CCHHR LL N 00000000
+ #   %r4    :	 device subchannel id
+ #   %r5    :	 load address
+ _load_direct:	
+@@ -60,6 +67,8 @@ _load_direct:
+ 	s      %r15,.Lc96-.Lbase(%r13)  # new save area address
+         lr     %r12,%r5                 # save load address
+         lr     %r11,%r4                 # save subchannel id
++	l      %r3,4(%r2)		# get load descriptor from address
++	l      %r2,0(%r2)		# get load descriptor from address
+ 	stm    %r2,%r3,.Lsearch-.Lbase(%r13)         # get listdescriptor into search argument
+         slr    %r10,%r10                # clear reg 10
+ 	icm    %r10,1,.Lsearch+7-.Lbase(%r13)        # get record  number
+diff --git a/zipl/boot/fba2.S b/zipl/boot/fba2.S
+index 73e4b09..d9610ae 100644
+--- a/zipl/boot/fba2.S
++++ b/zipl/boot/fba2.S
+@@ -5,13 +5,15 @@
+ #
+ 
+ #
+-# An fba blocklist is 8 bytes in length and contains 3 entries:
+-#   offset 0 : block number (32 bit)
+-#   offset 4 : size of blocks (16 bit)
+-#   offset 6 : number of blocks (16 bit) - 1
++# An fba blocklist is 16 bytes in length and contains 3 entries:
++#   offset 0  : unused (32 bit)
++#   offset 4  : BBBB block number (32 bit)
++#   offset 8  : SS size of blocks (16 bit)
++#   offset 10 : NN number of blocks (16 bit) - 1
++#   offset 12 : unused (32bit)
+ #
+ 
+-STAGE2_DESC = 0x70
++STAGE2_DESC = 0x78
+ 
+ #include "common.S"
+ 
+@@ -26,10 +28,12 @@ STAGE2_DESC = 0x70
+ 	panik
+ 
+ # parameter
+-#   %r2+%r3: blocklist descriptor
++#   %r2    : blocklist descriptor address
++#	     16 bytes 00000000 BBBB SS NN 00000000
+ # returns
+ #   %r2    : number of bytes (blocksize * number of blocks)
+ _extract_length:
++	l      %r3,8(%r2)
+ 	lr     %r2,%r3
+ 	srl    %r2,16
+ 	sll    %r3,16
+@@ -39,15 +43,17 @@ _extract_length:
+ 	br     %r14
+ 
+ # parameter
+-#   %r2+%r3: blocklist descriptor
++#   %r2    : blocklist descriptor address
++#	     16 bytes 00000000 BBBB SS NN 00000000
+ # returns
+-#   %r2    : == 0 for normal block descriptor
+-#            != 0 for zero block descriptor
++#   %r2    : block number
+ _is_zero_block:
++	l      %r2,4(%r2)
+ 	br     %r14
+ 
+ # parameter
+-#   %r2+%r3: blocklist descriptor
++#   %r2    : address of blocklist descriptor
++#	     16 bytes 00000000 BBBB SS NN 00000000
+ #   %r4    : device subchannel id
+ #   %r5    : load address
+ # returns
+@@ -58,12 +64,12 @@ _load_direct:
+ .Lbase:	s      %r15,.Lc96-.Lbase(%r13)  # create stack frame
+ 	lr     %r12,%r5                 # save load address
+ 	lr     %r11,%r4                 # save subchannel id
+-	lr     %r10,%r3
++	l      %r10,8(%r2)		# load number of blocks/blocksize
+ 	n      %r10,.Lc65535-.Lbase(%r13)       # low word = number of blocks
+ 	la     %r10,1(%r10)             # add 1 to number of blocks
+-	lr     %r9,%r3
++	l      %r9,8(%r2)		# load number of blocks/blocksize
+ 	srl    %r9,16                   # high word = size of blocks
+-	lr     %r8,%r2                  # save block number
++	l      %r8,4(%r2)               # save block number
+ .Lmain: # main loop
+ 	ltr    %r0,%r10                 # any blocks left ?
+ 	bnp    .Lexit-.Lbase(%r13)
+-- 
+1.8.1.4
 
