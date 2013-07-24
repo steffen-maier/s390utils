@@ -6,8 +6,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.20.0
-Release:        5%{?dist}
+Version:        1.23.0
+Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -35,7 +35,7 @@ Source18:       cpuplugd.initd
 Source19:       mon_statd.initd
 Source21:       normalize_dasd_arg
 
-Patch1:         s390-tools-1.20.0-fedora.patch
+Patch1:         s390-tools-1.23.0-fedora.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -734,6 +734,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Jul 23 2013 Dan Horák <dan[at]danny.cz> - 2:1.23.0-1
+- rebased to 1.23 (#804774)
+
 * Wed Jun 05 2013 Dan Horák <dan[at]danny.cz> - 2:1.20.0-5
 - update with patches from RHEL-6
 - rebase zIPL to 1.21 to fix booting from FBA DASD (#970859)
