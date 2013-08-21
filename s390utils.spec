@@ -7,7 +7,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.23.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -734,6 +734,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Aug 21 2013 Dan Horák <dan[at]danny.cz> - 2:1.23.0-3
+- dbginfo.sh: Avoiding exclusion list for pipes in sysfs (#996732)
+- zipl: Fix zipl "--force" option for DASD multi-volume dump (#997361)
+
 * Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.23.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
