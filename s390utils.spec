@@ -1,13 +1,11 @@
 %define cmsfsver 1.1.8c
 %define vipaver 2.0.4
 
-%{!?_initddir: %define _initddir %{_initrddir}}
-
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.23.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -36,6 +34,7 @@ Source19:       mon_statd.initd
 Source21:       normalize_dasd_arg
 
 Patch1:         s390-tools-1.23.0-fedora.patch
+Patch2:         s390-tools-1.23.0-hardening.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -65,6 +64,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Fedora/RHEL changes
 %patch1 -p1 -b .fedora
+%patch2 -p1 -b .hardening
 
 #
 # cmsfs
@@ -734,6 +734,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Nov 06 2013 Dan Horák <dan[at]danny.cz> - 2:1.23.0-4
+- build daemons hardened (#881250)
+- zipl: Use "possible_cpus" kernel parameter (#1016180)
+
 * Wed Aug 21 2013 Dan Horák <dan[at]danny.cz> - 2:1.23.0-3
 - dbginfo.sh: Avoiding exclusion list for pipes in sysfs (#996732)
 - zipl: Fix zipl "--force" option for DASD multi-volume dump (#997361)
