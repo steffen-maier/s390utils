@@ -1,7 +1,7 @@
 From 9b225fac81186176075f673dfe5cf8e373b2068a Mon Sep 17 00:00:00 2001
 From: Dan Horak <dan@danny.cz>
 Date: Sun, 20 Jul 2008 09:24:05 +0200
-Subject: [PATCH 1/5] s390-tools-1.5.3-zipl-zfcpdump-2
+Subject: [PATCH 1/7] s390-tools-1.5.3-zipl-zfcpdump-2
 
 ---
  common.mak | 4 ++--
@@ -29,7 +29,7 @@ index 44adc6e..4373da5 100644
 From a3d9221076f9eb7cc8434baac71327f786351c63 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Thu, 23 Apr 2009 11:46:01 +0200
-Subject: [PATCH 2/5] s390-tools-1.8.1-fdasd-su
+Subject: [PATCH 2/7] s390-tools-1.8.1-fdasd-su
 
 ---
  fdasd/fdasd.c | 10 ++++++----
@@ -63,7 +63,7 @@ index ba22475..f2ac417 100644
 From d13c754f68ea838a47b8125006b9b493cfbbb7f4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 21 Aug 2013 12:13:30 +0200
-Subject: [PATCH 3/5] dbginfo.sh: Avoiding exclusion list for pipes in sysfs
+Subject: [PATCH 3/7] dbginfo.sh: Avoiding exclusion list for pipes in sysfs
 
 Description:  dbginfo.sh: Avoiding exclusion list for pipes in sysfs
 Symptom:      The dbginfo.sh script hangs
@@ -133,7 +133,7 @@ index 6d07132..0ada40b 100755
 From 7d540e7f40c731092ac655d1d38af7d69ceee706 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 21 Aug 2013 12:13:58 +0200
-Subject: [PATCH 4/5] zipl: Fix zipl "--force" option for DASD multi-volume
+Subject: [PATCH 4/7] zipl: Fix zipl "--force" option for DASD multi-volume
  dump
 
 Description:  zipl: Fix zipl "--force" option for DASD multi-volume dump
@@ -184,7 +184,7 @@ index f1cec78..529d6b3 100644
 From 21caf0d0dc05c5e950f369f72027a203a7d3e772 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Tue, 5 Nov 2013 12:23:18 +0100
-Subject: [PATCH 5/5] zipl: Use "possible_cpus" kernel parameter
+Subject: [PATCH 5/7] zipl: Use "possible_cpus" kernel parameter
 
 Description:  zipl: Use "possible_cpus" kernel parameter
 Symptom:      The zfcpdump system might run out-of memory.
@@ -217,6 +217,616 @@ index cc2ed16..68dffe1 100644
  	result[DUMP_PARAM_MAX_LEN - 1] = 0;
  	return result;
  }
+-- 
+1.8.1.4
+
+
+From d3792e20601152ac2deea8d592b9fc176590ec5f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Tue, 19 Nov 2013 18:02:03 +0100
+Subject: [PATCH 6/7] dbginfo.sh: enhancements for script execution and man
+ page
+
+Description:  dbginfo.sh: enhancements for script execution and man page
+Symptom:      The result of the data collection does not provide all required
+              information which is required to finally analyze the situation.
+Problem:      The execution of the script has the following issues
+              * The script does not verify if it is running for user root
+              * The script does not post any messages into syslog during
+                runtime. This makes it quite difficulty to verify, when the
+                data collection started and ended.
+              * The script does not run in a dedicated locale. The output of
+                various tools can include messages in the language which has
+                been set by the administrator.
+              * Some Linux on System z specific tools are not yet processed
+                during data collection, such as lsmem and lschp.
+              * Some important configuration files are still not collected,
+                such as openssl.conf and openssl.cnf.
+              * Some parts in the man page might not be shown properly
+Solution:     The following changes are implemented:
+              * Added verification if the script is executed for user root
+              * Added logging mechanism to print messages into syslog.
+              * Added statement for LC_ALL to set the "C" 'standard' locale
+              * Added lsmem and lschp for commands being executed
+              * Added openssl.conf and openssl.cnf to be collected as
+                configuration files
+              * Corrected some parts in the man page
+Reproduction: Some information how to reproduce the issues
+              * Run the script as 'non-root' user. The output will not contain
+                all the important information.
+              * Run the script and verify if something is stated in syslog,
+                when the script is executed.
+              * Run the script on a system, where the locale is set to
+                'non-en' locale. Some out put of important commands will be
+                printed in the non-en locale.
+              * Run the data collection and verify that the output of lsmem,
+                and lschp and that the config files openssl.conf, and
+                openssl.cnf are not collected.
+---
+ scripts/dbginfo.sh   | 167 ++++++++++++++++++++++++++++++---------------------
+ scripts/dbginfo.sh.1 |  34 +++++------
+ 2 files changed, 116 insertions(+), 85 deletions(-)
+
+diff --git a/scripts/dbginfo.sh b/scripts/dbginfo.sh
+index 0ada40b..9b64076 100755
+--- a/scripts/dbginfo.sh
++++ b/scripts/dbginfo.sh
+@@ -28,6 +28,9 @@
+ # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ ###############################################################################
+ 
++# Switching to neutral locale
++export LC_ALL=C
++
+ # The kernel release version as delivered from uname -r
+ readonly KERNEL_RELEASE_VERSION="`uname -r 2>/dev/null`"
+ 
+@@ -44,6 +47,9 @@ readonly TERMINAL="`tty 2>/dev/null`"
+ # The processor ID for the first processor
+ readonly PROCESSORID=`grep -E ".*processor 0:.*" /proc/cpuinfo | sed 's/.*identification[[:space:]]*\=[[:space:]]*\([[:alnum:]]*\).*/\1/g'`
+ 
++# The processor version for the first processor
++readonly PROCESSORVERSION=`grep -E ".*processor 0:.*" /proc/cpuinfo | sed 's/.*version[[:space:]]*\=[[:space:]]*\([[:alnum:]]*\).*/\1/g'`
++
+ # The current date
+ readonly DATETIME=`date +%Y-%m-%d-%H-%M-%S 2>/dev/null`
+ 
+@@ -114,13 +120,13 @@ else
+     readonly LINUX_SUPPORT_SYSFSDBF=0
+ fi
+ 
+-# Is this Linux on System z under z/VM (0=yes, 1=no)
+-if grep -q 'z/VM' /proc/sysinfo 2>/dev/null; then
+-    readonly LINUX_ON_ZVM=0
++if test "x${PROCESSORVERSION}" = "xFF" || test "x${PROCESSORVERSION}" = "xff"; then
++    readonly RUNTIME_ENVIRONMENT=`grep -E "VM00.*Control Program.*" /proc/sysinfo| sed 's/.*:[[:space:]]*\([[:graph:]]*\).*/\1/g'`;
+ else
+-    readonly LINUX_ON_ZVM=1
++    readonly RUNTIME_ENVIRONMENT="LPAR"
+ fi
+ 
++
+ ########################################
+ 
+ # Collection of proc fs entries
+@@ -181,8 +187,8 @@ fi
+ if test ${LINUX_SUPPORT_SYSFSDBF} -eq 1; then
+     if test -e /proc/s390dbf; then
+ 	PROCFILES="${PROCFILES}\
+-	  `find /proc/s390dbf -type f -not -path \"*/raw\" -not -path \"*/flush\" 2>/dev/null`\
+-	  "
++          `find /proc/s390dbf -type f -not -path \"*/raw\" -not -path \"*/flush\" 2>/dev/null`\
++          "
+     fi
+ fi
+ 
+@@ -277,7 +283,9 @@ CMDS="uname -a\
+   :multipath -d\
+   :multipath -t\
+   :lsqeth\
++  :lschp\
+   :lscss\
++  :lsmem\
+   :lsdasd\
+   :ziorep_config -ADM\
+   :lsmod\
+@@ -376,7 +384,7 @@ collect_cmdsout() {
+     local cmd
+     local ifs_orig="${IFS}"
+ 
+-    pr_log_stdout " 1 of ${COLLECTION_COUNT}: Collecting command output"
++    pr_syslog_stdout "1 of ${COLLECTION_COUNT}: Collecting command output"
+ 
+     IFS=:
+     for cmd in ${CMDS}; do
+@@ -397,8 +405,8 @@ collect_vmcmdsout() {
+     local module_loaded=1
+     local ifs_orig="${IFS}"
+ 
+-    if test ${LINUX_ON_ZVM} -eq 0; then
+-	pr_log_stdout " 2 of ${COLLECTION_COUNT}: Collecting z/VM command output"
++    if echo "${RUNTIME_ENVIRONMENT}" | grep -qi "z/VM" >/dev/null 2>&1; then
++	pr_syslog_stdout "2 of ${COLLECTION_COUNT}: Collecting z/VM command output"
+ 
+ 	if type vmcp >/dev/null 2>&1; then
+ 	    cp_command="vmcp"
+@@ -412,8 +420,8 @@ collect_vmcmdsout() {
+ 	    fi
+ 	else
+ 	    pr_log_stdout " "
+-	    pr_log_stdout "  WARNING: No program found to communicate to z/VM CP"
+-	    pr_log_stdout "  WARNING: Skipping the collection of z/VM command output"
++	    pr_log_stdout "WARNING: No program found to communicate to z/VM CP"
++	    pr_log_stdout "WARNING: Skipping the collection of z/VM command output"
+ 	    pr_log_stdout " "
+ 	    return 1
+ 	fi
+@@ -443,7 +451,7 @@ collect_vmcmdsout() {
+ 	    rmmod vmcp
+ 	fi
+     else
+-	pr_log_stdout " 2 of ${COLLECTION_COUNT}: Running in LPAR, no z/VM command output collected"
++	pr_syslog_stdout "2 of ${COLLECTION_COUNT}: Collecting z/VM command output skipped - no z/VM environment"
+     fi
+ 
+     pr_log_stdout " "
+@@ -454,7 +462,7 @@ collect_vmcmdsout() {
+ collect_procfs() {
+     local file_name
+ 
+-    pr_log_stdout " 3 of ${COLLECTION_COUNT}: Collecting procfs"
++    pr_syslog_stdout "3 of ${COLLECTION_COUNT}: Collecting procfs"
+ 
+     for file_name in ${PROCFILES}; do
+ 	call_collect_file "${file_name}"
+@@ -473,7 +481,7 @@ collect_sysfs() {
+ 
+     # Requires kernel version newer then 2.4
+     if test ${LINUX_SUPPORT_SYSFS} -eq 0; then
+-	pr_log_stdout " 4 of ${COLLECTION_COUNT}: Collecting sysfs"
++	pr_syslog_stdout "4 of ${COLLECTION_COUNT}: Collecting sysfs"
+ 	# Requires kernel version of 2.6.13 or newer
+ 	if test ${LINUX_SUPPORT_SYSFSDBF} -eq 0; then
+ 	    if ! grep -qE "${MOUNT_POINT_DEBUGFS}.*debugfs" /proc/mounts 2>/dev/null; then
+@@ -481,7 +489,7 @@ collect_sysfs() {
+ 		    sleep 2
+ 		    debugfs_mounted=1;
+ 		else
+-		    pr_log_stdout "  WARNING: \"Unable to mount debugfs ${MOUNT_POINT_DEBUGFS}\""
++		    pr_log_stdout "WARNING: \"Unable to mount debugfs ${MOUNT_POINT_DEBUGFS}\""
+ 		fi
+ 	    fi
+ 	fi
+@@ -493,7 +501,7 @@ collect_sysfs() {
+ 	done
+ 
+ 	find /sys -noleaf -type f -perm /444 2>/dev/null | while IFS= read -r file_name; do
+-	    echo "  ${file_name}"
++	    echo " ${file_name}"
+ 	    dd if="${file_name}" iflag=nonblock of="${WORKPATH}${file_name}"
+ 	done
+ 
+@@ -501,7 +509,7 @@ collect_sysfs() {
+ 	    umount "${MOUNT_POINT_DEBUGFS}"
+ 	fi
+     else
+-	pr_log_stdout " 4 of ${COLLECTION_COUNT}: Collecting sysfs skipped. Kernel `uname -r` must be newer than 2.4"
++	pr_syslog_stdout "4 of ${COLLECTION_COUNT}: Collecting sysfs skipped. Kernel `uname -r` must be newer than 2.4"
+     fi
+ 
+     pr_log_stdout " "
+@@ -512,7 +520,7 @@ collect_sysfs() {
+ collect_logfiles() {
+     local file_name
+ 
+-    pr_log_stdout " 5 of ${COLLECTION_COUNT}: Collecting log files"
++    pr_syslog_stdout "5 of ${COLLECTION_COUNT}: Collecting log files"
+ 
+     for file_name in ${LOGFILES}; do
+ 	call_collect_file "${file_name}"
+@@ -521,11 +529,12 @@ collect_logfiles() {
+     pr_log_stdout " "
+ }
+ 
++
+ ########################################
+ collect_configfiles() {
+     local file_name
+ 
+-    pr_log_stdout " 6 of ${COLLECTION_COUNT}: Collecting config files"
++    pr_syslog_stdout "6 of ${COLLECTION_COUNT}: Collecting config files"
+ 
+     for file_name in ${CONFIGFILES}; do
+ 	call_collect_file "${file_name}"
+@@ -542,16 +551,16 @@ collect_osaoat() {
+ 
+     if which qethqoat >/dev/null 2>&1; then
+ 	if test -n "${network_devices}"; then
+-	    pr_log_stdout " 7 of ${COLLECTION_COUNT}: Collecting osa oat output"
++	    pr_syslog_stdout "7 of ${COLLECTION_COUNT}: Collecting osa oat output"
+ 	    for network_device in "${network_devices}"; do
+ 		call_run_command "qethqoat ${network_device}" "${OUTPUT_FILE_OSAOAT}.out" &&
+ 		call_run_command "qethqoat -r ${network_device}" "${OUTPUT_FILE_OSAOAT}_${network_device}.raw"
+ 	    done
+ 	else
+-	    pr_log_stdout " 7 of ${COLLECTION_COUNT}: Collecting osa oat output skipped - no devices"
++	    pr_syslog_stdout "7 of ${COLLECTION_COUNT}: Collecting osa oat output skipped - no devices"
+ 	fi
+     else
+-	pr_log_stdout " 7 of ${COLLECTION_COUNT}: Collecting osa oat output skipped - not available"
++	pr_syslog_stdout "7 of ${COLLECTION_COUNT}: Collecting osa oat output skipped - not available"
+     fi
+ 
+     pr_log_stdout " "
+@@ -571,16 +580,16 @@ call_run_command() {
+ 
+     # check if command exists
+     if ! which "${raw_cmd}" >/dev/null 2>&1; then
+-	# check if command is a builtin
++        # check if command is a builtin
+ 	if ! command -v "${raw_cmd}" >/dev/null 2>&1; then
+-	    echo "  WARNING: Command \"${raw_cmd}\" not available" >> "${logfile}"
++	    echo "WARNING: Command \"${raw_cmd}\" not available" >> "${logfile}"
+ 	    echo >> "${logfile}"
+ 	    return 1;
+ 	fi
+     fi
+ 
+     if ! eval "${cmd}" >> "${logfile}" 2>&1; then
+-	echo "  WARNING: Command \"${cmd}\" failed" >> "${logfile}"
++	echo "WARNING: Command \"${cmd}\" failed" >> "${logfile}"
+ 	echo >> "${logfile}"
+ 	return 1
+     else
+@@ -595,7 +604,7 @@ call_collect_file() {
+     local directory_name
+     local file_name="${1}"
+ 
+-    echo "  ${file_name}"
++    echo " ${file_name}"
+ 
+     directory_name="`dirname \"${file_name}\" 2>/dev/null`"
+     if test ! -e "${WORKPATH}${directory_name}"; then
+@@ -616,8 +625,8 @@ call_collect_file() {
+ # print version info
+ print_version() {
+     cat <<EOF
+- ${SCRIPTNAME}: Debug information script version %S390_TOOLS_VERSION%
+- Copyright IBM Corp. 2002, 2013
++${SCRIPTNAME}: Debug information script version %S390_TOOLS_VERSION%
++Copyright IBM Corp. 2002, 2013
+ EOF
+ }
+ 
+@@ -631,30 +640,30 @@ print_usage()
+     cat <<EOF
+ 
+ 
+- Usage: ${SCRIPTNAME} [OPTIONS]
++Usage: ${SCRIPTNAME} [OPTIONS]
+ 
+- This script collects runtime, configuration and trace information about
+- your Linux on System z installation for debugging purposes.
++This script collects runtime, configuration and trace information about
++your Linux on System z installation for debugging purposes.
+ 
+- It also traces information about z/VM if the Linux runs under z/VM.
++It also traces information about z/VM if the Linux runs under z/VM.
+ 
+ 
+- The collected information is written to a TAR archive named
++The collected information is written to a TAR archive named
+ 
+-     /tmp/DBGINFO-[date]-[time]-[hostname]-[processorid].tgz
++    /tmp/DBGINFO-[date]-[time]-[hostname]-[processorid].tgz
+ 
+- where [date] and [time] are the date and time when debug data is collected.
+- [hostname] indicates the hostname of the system the data was collected from.
+- The [processorid] is taken from the processor 0 and indicates the processor
+- identification.
++where [date] and [time] are the date and time when debug data is collected.
++[hostname] indicates the hostname of the system the data was collected from.
++The [processorid] is taken from the processor 0 and indicates the processor
++identification.
+ 
+- Options:
++Options:
+ 
+         -h|--help          print this help
+         -v|--version       print version information
+ 
+ 
+- Please report bugs to: linux390@de.ibm.com
++Please report bugs to: linux390@de.ibm.com
+ 
+ EOF
+ }
+@@ -668,9 +677,9 @@ print_alreadyrunning() {
+     cat <<EOF
+ 
+ 
+- Please check the system if another instance of ${SCRIPTNAME} is already
+- running. If this is not the case, please remove the lock file
+- '${WORKDIR_BASE}${SCRIPTNAME}.lock'.
++Please check the system if another instance of ${SCRIPTNAME} is already
++running. If this is not the case, please remove the lock file
++'${WORKDIR_BASE}${SCRIPTNAME}.lock'.
+ EOF
+ }
+ 
+@@ -689,15 +698,15 @@ commandline_parse()
+ 	    print_version
+ 	else
+ 	    echo
+-	    echo " ${SCRIPTNAME}: invalid option ${cmdline_arg1}"
+-	    echo " Try '${SCRIPTNAME} --help' for more information"
++	    echo "${SCRIPTNAME}: invalid option ${cmdline_arg1}"
++	    echo "Try '${SCRIPTNAME} --help' for more information"
+ 	    echo
+ 	    exit 1
+ 	fi
+ 	exit 0
+     elif test ${cmdline_count} -ge 1; then
+ 	echo
+-	echo " ERROR: Invalid number of arguments!"
++	echo "ERROR: Invalid number of arguments!"
+ 	echo
+ 	print_usage
+ 	exit 1
+@@ -712,21 +721,21 @@ environment_setup()
+     if test ! -e "${WORKDIR_BASE}"; then
+ 	mkdir -p "${WORKDIR_BASE}"
+     elif test ! -d "${WORKDIR_BASE}"; then
+-	echo " ERROR: ${WORKDIR_BASE} exists but this is a file!"
+-	echo "        Please make sure ${WORKDIR_BASE} is a directory."
++	echo "ERROR: ${WORKDIR_BASE} exists but this is a file!"
++	echo "       Please make sure ${WORKDIR_BASE} is a directory."
+ 	exit 1
+     fi
+ 
+     if test -e "${WORKDIR_BASE}${SCRIPTNAME}".lock; then
+ 	print_alreadyrunning
+-	exit 1
++        exit 1
+     else
+ 	touch "${WORKDIR_BASE}${SCRIPTNAME}".lock
+     fi
+ 
+     if ! mkdir "${WORKPATH}" 2>/dev/null; then
+-	echo " ERROR: Target directory ${WORKPATH} already exists or"
+-	echo "        ${WORKDIR_BASE} does not exist!"
++	echo "ERROR: Target directory ${WORKPATH} already exists or"
++	echo "       ${WORKDIR_BASE} does not exist!"
+ 	exit 1
+     fi
+ }
+@@ -736,18 +745,18 @@ environment_setup()
+ # create gzip-ped tar file
+ create_package()
+ {
+-    pr_stdout " Finalizing: Creating archive with collected data"
++    pr_stdout "Finalizing: Creating archive with collected data"
+     cd "${WORKDIR_BASE}"
+ 
+     if ! tar -czf "${WORKARCHIVE}" "${WORKDIR_CURRENT}"; then
+ 	pr_stdout " "
+-	pr_stdout " ERROR: Collection of data failed!"
+-	pr_stdout "        The creation of ${WORKARCHIVE} was not successful."
+-	pr_stdout "        Please check the directory ${WORKDIR_BASE}"
+-	pr_stdout "        to provide enough free available space."
++	pr_stdout "ERROR: Collection of data failed!"
++	pr_stdout "       The creation of ${WORKARCHIVE} was not successful."
++	pr_stdout "       Please check the directory ${WORKDIR_BASE}"
++	pr_stdout "       to provide enough free available space."
+     else
+ 	pr_stdout " "
+-	pr_stdout " Collected data was saved to:"
++	pr_stdout "Collected data was saved to:"
+ 	pr_stdout " >>  ${WORKARCHIVE}  <<"
+     fi
+ 
+@@ -761,14 +770,14 @@ environment_cleanup()
+ {
+     if ! rm -rf "${WORKPATH}" 2>/dev/null; then
+ 	pr_stdout " "
+-	pr_stdout " WARNING: Deletion of ${WORKPATH} failed"
+-	pr_stdout " Please remove the directory manually"
++	pr_stdout "WARNING: Deletion of ${WORKPATH} failed"
++	pr_stdout "Please remove the directory manually"
+ 	pr_stdout " "
+     fi
+     if ! rm -f "${WORKDIR_BASE}${SCRIPTNAME}".lock 2>/dev/null; then
+ 	pr_stdout " "
+-	pr_stdout " WARNING: Deletion of ${WORKDIR_BASE}${SCRIPTNAME} failed"
+-	pr_stdout " Please remove the file manually"
++	pr_stdout "WARNING: Deletion of ${WORKDIR_BASE}${SCRIPTNAME} failed"
++	pr_stdout "Please remove the file manually"
+ 	pr_stdout " "
+     fi
+ }
+@@ -779,12 +788,13 @@ environment_cleanup()
+ emergency_exit()
+ {
+     pr_stdout " "
+-    pr_stdout " INFO: Data collection has been interrupted"
+-    pr_stdout " INFO: Cleanup of temporary collected data"
++    pr_stdout "INFO: Data collection has been interrupted"
++    pr_stdout "INFO: Cleanup of temporary collected data"
+     environment_cleanup
+-    pr_stdout " INFO: Emergency exit processed"
+-    
++    pr_stdout "INFO: Emergency exit processed"
++
+     pr_stdout " "
++    logger -t "${SCRIPTNAME}" "Data collection interrupted"
+     exit;
+ }
+ 
+@@ -806,10 +816,27 @@ pr_log_stdout()
+ }
+ 
+ 
++########################################
++# Function to print to stdout and into log file when rediretion is active
++pr_syslog_stdout()
++{
++    echo "$@"
++    echo "$@" >&8
++    logger -t ${SCRIPTNAME} "$@"
++}
++
++
+ ###############################################################################
+ # Running the script
+ 
+ commandline_parse ${*}
++
++# Verification to run as root
++if test `/usr/bin/id -u 2>/dev/null` -ne 0; then
++    echo "ERROR: You must be user root to run ${SCRIPTNAME}!"
++    exit 1
++fi
++
+ environment_setup
+ print_version
+ 
+@@ -820,11 +847,13 @@ exec 8>&1 9>&2 >${LOGFILE} 2>&1
+ trap emergency_exit 1 2 15
+ 
+ pr_log_stdout ""
+-pr_log_stdout " Hardware platform     = `uname -i`"
+-pr_log_stdout " Kernel version        = ${KERNEL_VERSION}.${KERNEL_MAJOR_REVISION}.${KERNEL_MINOR_REVISION} (`uname -r 2>/dev/null`)"
+-pr_log_stdout " Runtime environment   = `test ${LINUX_ON_ZVM} -eq 0 && echo 'z/VM' || echo 'LPAR'`"
++pr_log_stdout "Hardware platform     = `uname -i`"
++pr_log_stdout "Kernel version        = ${KERNEL_VERSION}.${KERNEL_MAJOR_REVISION}.${KERNEL_MINOR_REVISION} (`uname -r 2>/dev/null`)"
++pr_log_stdout "Runtime environment   = ${RUNTIME_ENVIRONMENT}"
+ pr_log_stdout ""
+ 
++logger -t "${SCRIPTNAME}" "Starting data collection"
++
+ collect_cmdsout
+ 
+ collect_vmcmdsout
+@@ -845,6 +874,8 @@ create_package
+ 
+ environment_cleanup
+ 
++logger -t "${SCRIPTNAME}" "Data collection completed"
++
+ exec 1>&8 2>&9 8>&- 9>&-
+ 
+ #EOF
+diff --git a/scripts/dbginfo.sh.1 b/scripts/dbginfo.sh.1
+index cdef849..c0975cc 100644
+--- a/scripts/dbginfo.sh.1
++++ b/scripts/dbginfo.sh.1
+@@ -1,5 +1,5 @@
+-.TH DBGINFO.SH  1 "November 2012" "s390-tools"
+- 
++.TH DBGINFO.SH  1 "October 2013" "s390-tools"
++
+ .SH NAME
+ dbginfo.sh \- collect runtime, configuration and trace information
+ for debugging Linux on System z
+@@ -44,35 +44,35 @@ Sample invocation:
+ .P
+ [root@host]# dbginfo.sh
+ .br
+- dbginfo.sh: Debug information script version %S390_TOOLS_VERSION%
++dbginfo.sh: Debug information script version %S390_TOOLS_VERSION%
+ .br
+- Copyright IBM Corp. 2002, 2012
++Copyright IBM Corp. 2002, 2013
+ .PP
+- Hardware platform     = s390x
++Hardware platform     = s390x
+ .br
+- Kernel version        = 3.0.13 (3.0.13\-0.27\-default)
++Kernel version        = <kernel\-version>
+ .br
+- Runtime environment   = z/VM
++Runtime environment   = z/VM
+ .PP
+- 1 of 7: Collecting command output
++1 of 7: Collecting command output
+ .PP
+- 2 of 7: Collecting z/VM command output
++2 of 7: Collecting z/VM command output
+ .PP
+- 3 of 7: Collecting procfs
++3 of 7: Collecting procfs
+ .PP
+- 4 of 7: Collecting sysfs
++4 of 7: Collecting sysfs
+ .PP
+- 5 of 7: Collecting log files
++5 of 7: Collecting log files
+ .PP
+- 6 of 7: Collecting config files
++6 of 7: Collecting config files
+ .PP
+- 7 of 7: Collecting osa oat output skipped
++7 of 7: Collecting osa oat output skipped \- not available
+ .PP
+- Finalizing: Creating archive with collected data
++Finalizing: Creating archive with collected data
+ .PP
+- Collected data was saved to:
++Collected data was saved to:
+ .br
+- >>  /tmp/DBGINFO\-2012\-10\-14\-13\-10\-42-host-123456.tgz  <<
++ >>  /tmp/DBGINFO\-2013\-10\-08\-10\-43\-16\-host\-012345.tgz  <<
+ .SH HINTS
+ Run the script with root authority.
+ .br
+-- 
+1.8.1.4
+
+
+From 31cd858e82efd289c4ea8ea4801346746aefcd2c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Tue, 19 Nov 2013 18:02:35 +0100
+Subject: [PATCH 7/7] dbginfo.sh: avoid double data collection
+
+Description:  dbginfo.sh: avoid double data collection
+Symptom:      Execution of dbginfo.sh fails with 'no space left on device'
+Problem:      The data collection of the dbginfo.sh script collects two times
+              entries from the sysfs. First, the script itself collects
+              all 'files' and later on, the script ziomon_fcpconf is
+              collecting a subset of the sysfs along with some additional
+              data. The additional data (information about the /dev entries)
+              is collected by the dbginfo.sh script also. Therefore, the
+              execution of ziomon_fcpconf is obsolete.
+Solution:     Avoid the execution of ziomon_fcpconf in the dbginfo.sh script
+Reproduction: Run the dbginfo.sh script on a machine, where /tmp should be
+              able to cover the amount of data being collected. The machine
+              should have quite a lot of devices being attached.
+---
+ scripts/dbginfo.sh | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/scripts/dbginfo.sh b/scripts/dbginfo.sh
+index 9b64076..e83774b 100755
+--- a/scripts/dbginfo.sh
++++ b/scripts/dbginfo.sh
+@@ -81,9 +81,6 @@ readonly OUTPUT_FILE_VMCMD="${WORKPATH}zvm_runtime.out"
+ # File that includes content of files from sysfs
+ readonly OUTPUT_FILE_SYSFS="${WORKPATH}sysfsfiles.out"
+ 
+-# File that includes content of zFCP settings
+-readonly OUTPUT_FILE_FCPCONF="${WORKPATH}scsi"
+-
+ # File that includes content of OSA OAT
+ readonly OUTPUT_FILE_OSAOAT="${WORKPATH}osa_oat"
+ 
+@@ -314,7 +311,6 @@ CMDS="uname -a\
+   :java -version\
+   :cat /root/.bash_history\
+   :env\
+-  :ziomon_fcpconf -o ${OUTPUT_FILE_FCPCONF}\
+   "
+ 
+ ########################################
 -- 
 1.8.1.4
 
