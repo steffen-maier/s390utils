@@ -46,7 +46,8 @@ if [ -f "$CONFIG" ]; then
 		   WWPN=$2
 		   FCPLUN=$3
 	       fi
-	       echo 1 > /sys/bus/ccw/drivers/zfcp/${DEVICE}/online
+               [ `cat /sys/bus/ccw/drivers/zfcp/${DEVICE}/online` == "0" ] \
+                   && echo 1 > /sys/bus/ccw/drivers/zfcp/${DEVICE}/online
 	       [ ! -d /sys/bus/ccw/drivers/zfcp/${DEVICE}/${WWPN}/${FCPLUN} ] \
 		   && echo $FCPLUN > /sys/bus/ccw/drivers/zfcp/${DEVICE}/${WWPN}/unit_add
 	       ;;

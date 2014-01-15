@@ -1,7 +1,7 @@
 From 9b225fac81186176075f673dfe5cf8e373b2068a Mon Sep 17 00:00:00 2001
 From: Dan Horak <dan@danny.cz>
 Date: Sun, 20 Jul 2008 09:24:05 +0200
-Subject: [PATCH 1/7] s390-tools-1.5.3-zipl-zfcpdump-2
+Subject: [PATCH 1/8] s390-tools-1.5.3-zipl-zfcpdump-2
 
 ---
  common.mak | 4 ++--
@@ -29,7 +29,7 @@ index 44adc6e..4373da5 100644
 From a3d9221076f9eb7cc8434baac71327f786351c63 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Thu, 23 Apr 2009 11:46:01 +0200
-Subject: [PATCH 2/7] s390-tools-1.8.1-fdasd-su
+Subject: [PATCH 2/8] s390-tools-1.8.1-fdasd-su
 
 ---
  fdasd/fdasd.c | 10 ++++++----
@@ -63,7 +63,7 @@ index ba22475..f2ac417 100644
 From d13c754f68ea838a47b8125006b9b493cfbbb7f4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 21 Aug 2013 12:13:30 +0200
-Subject: [PATCH 3/7] dbginfo.sh: Avoiding exclusion list for pipes in sysfs
+Subject: [PATCH 3/8] dbginfo.sh: Avoiding exclusion list for pipes in sysfs
 
 Description:  dbginfo.sh: Avoiding exclusion list for pipes in sysfs
 Symptom:      The dbginfo.sh script hangs
@@ -133,7 +133,7 @@ index 6d07132..0ada40b 100755
 From 7d540e7f40c731092ac655d1d38af7d69ceee706 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 21 Aug 2013 12:13:58 +0200
-Subject: [PATCH 4/7] zipl: Fix zipl "--force" option for DASD multi-volume
+Subject: [PATCH 4/8] zipl: Fix zipl "--force" option for DASD multi-volume
  dump
 
 Description:  zipl: Fix zipl "--force" option for DASD multi-volume dump
@@ -184,7 +184,7 @@ index f1cec78..529d6b3 100644
 From 21caf0d0dc05c5e950f369f72027a203a7d3e772 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Tue, 5 Nov 2013 12:23:18 +0100
-Subject: [PATCH 5/7] zipl: Use "possible_cpus" kernel parameter
+Subject: [PATCH 5/8] zipl: Use "possible_cpus" kernel parameter
 
 Description:  zipl: Use "possible_cpus" kernel parameter
 Symptom:      The zfcpdump system might run out-of memory.
@@ -224,7 +224,7 @@ index cc2ed16..68dffe1 100644
 From d3792e20601152ac2deea8d592b9fc176590ec5f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Tue, 19 Nov 2013 18:02:03 +0100
-Subject: [PATCH 6/7] dbginfo.sh: enhancements for script execution and man
+Subject: [PATCH 6/8] dbginfo.sh: enhancements for script execution and man
  page
 
 Description:  dbginfo.sh: enhancements for script execution and man page
@@ -786,7 +786,7 @@ index cdef849..c0975cc 100644
 From 31cd858e82efd289c4ea8ea4801346746aefcd2c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Tue, 19 Nov 2013 18:02:35 +0100
-Subject: [PATCH 7/7] dbginfo.sh: avoid double data collection
+Subject: [PATCH 7/8] dbginfo.sh: avoid double data collection
 
 Description:  dbginfo.sh: avoid double data collection
 Symptom:      Execution of dbginfo.sh fails with 'no space left on device'
@@ -827,6 +827,49 @@ index 9b64076..e83774b 100755
    "
  
  ########################################
+-- 
+1.8.1.4
+
+
+From 4009f4a16c96f7fee65d77de112ef61109fdc0bb Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 15 Jan 2014 15:08:29 +0100
+Subject: [PATCH 8/8] zipl: fix segmentation fault in automenu array
+
+Description:  zipl: fix segmentation fault in automenu array
+Symptom:      Building an automenu with a large number of entries may
+              lead to a 'double free or corruption' error in zipl.
+Problem:      The array to store automenu items is to small.
+Solution:     Correct the calculation for automenu array size.
+Reproduction: Use zipl and build an automenu with a large number of
+              entries in the zipl configuration file.
+---
+ zipl/src/scan.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/zipl/src/scan.c b/zipl/src/scan.c
+index 597b01c..c357418 100644
+--- a/zipl/src/scan.c
++++ b/zipl/src/scan.c
+@@ -1672,10 +1672,14 @@ scan_build_automenu(struct scan_token* scan)
+ 		if (scan[i].id == scan_id_section_heading)
+ 			num_sections++;
+ 	}
+-	size = /* old scan array + delimiter */ i + 1 +
+-	       /* defaultboot heading + keyword */ 2 +
+-	       /* automenu heading + keywords */ 10 +
+-	       /* missing target definitions */ num_sections * num_targets;
++	size = /* old scan array + delimiter */     i + 1 +
++	       /* defaultboot heading  */           1 +
++	       /* defaultmenu */                    1 +
++	       /* menu heading  */                  1 +
++	       /* keyword default,prompt,timeout */ 3 +
++	       /* target keywords*/                 num_targets +
++	       /* missing target definitions */     num_sections * num_targets +
++	       /* number assigment  */              num_sections;
+ 	size *= sizeof(struct scan_token);
+ 	new_scan = misc_malloc(size);
+ 	if (!new_scan)
 -- 
 1.8.1.4
 

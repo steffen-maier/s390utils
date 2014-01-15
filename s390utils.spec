@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.23.0
-Release:        5%{?dist}
+Release:        6%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -734,6 +734,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Jan 15 2014 Dan Horák <dan[at]danny.cz> - 2:1.23.0-6
+- zipl: fix segmentation fault in automenu array (#1017541)
+- zfcpconf.sh: check current online state before setting zfcp device online (#1042496)
+
 * Tue Nov 19 2013 Dan Horák <dan[at]danny.cz> - 2:1.23.0-5
 - dbginfo.sh: enhancements for script execution and man page (#1031144)
 - dbginfo.sh: avoid double data collection (#1032068)
