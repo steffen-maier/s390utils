@@ -759,7 +759,7 @@ User-space development files for the s390/s390x architecture.
 * Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.23.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
-* Wed Jul 23 2013 Dan Horák <dan[at]danny.cz> - 2:1.23.0-1
+* Wed Jul 24 2013 Dan Horák <dan[at]danny.cz> - 2:1.23.0-1
 - rebased to 1.23 (#804774)
 
 * Wed Jun 05 2013 Dan Horák <dan[at]danny.cz> - 2:1.20.0-5
@@ -783,7 +783,7 @@ User-space development files for the s390/s390x architecture.
 * Thu Nov 22 2012 Dan Horák <dan[at]danny.cz> - 2:1.19.0-4
 - clean BuildRequires a bit
 
-* Mon Sep 16 2012 Dan Horák <dan[at]danny.cz> - 2:1.19.0-3
+* Mon Sep 17 2012 Dan Horák <dan[at]danny.cz> - 2:1.19.0-3
 - zipl: Flush disk buffers before installing IPL record (#857814)
 
 * Mon Aug 27 2012 Dan Horák <dan[at]danny.cz> 2:1.19.0-2
@@ -1066,7 +1066,7 @@ User-space development files for the s390/s390x architecture.
 * Fri Dec 12 2008 Hans-Joachim Picht <hans@linux.vnet.ibm.com> 2:1.8.0-2
 - Adapted package for F9
 
-* Tue Dec 8 2008 Michael Holzheu <michael.holzheu@de.ibm.com> 2:1.8.0-1
+* Tue Dec 9 2008 Michael Holzheu <michael.holzheu@de.ibm.com> 2:1.8.0-1
 - Changed spec file to create sub packages
 - Updated to zfcphbaapi version 2.0
 
@@ -1392,7 +1392,7 @@ User-space development files for the s390/s390x architecture.
 - add IBM 4 patch
 - add profile.d scripts to set correct TERM in 3270 console
 
-* Thu Dec 18 2001 Karsten Hopp <karsten@redhat.de>
+* Tue Dec 18 2001 Karsten Hopp <karsten@redhat.de>
 - add cpint programs
 
 * Mon Nov 26 2001 Harald Hoyer <harald@redhat.de> 20011012-6
@@ -1401,7 +1401,7 @@ User-space development files for the s390/s390x architecture.
 * Thu Nov 15 2001 Karsten Hopp <karsten@redhat.de>
 - add fdisk - > fdasd symlink
 
-* Thu Nov 12 2001 Karsten Hopp <karsten@redhat.de>
+* Mon Nov 12 2001 Karsten Hopp <karsten@redhat.de>
 - add IBM patch (11/09/2001) and redo percentage patch
 
 * Thu Nov 08 2001 Karsten Hopp <karsten@redhat.de>
