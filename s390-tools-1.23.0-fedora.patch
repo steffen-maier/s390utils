@@ -1,7 +1,7 @@
 From 9b225fac81186176075f673dfe5cf8e373b2068a Mon Sep 17 00:00:00 2001
 From: Dan Horak <dan@danny.cz>
 Date: Sun, 20 Jul 2008 09:24:05 +0200
-Subject: [PATCH 1/9] s390-tools-1.5.3-zipl-zfcpdump-2
+Subject: [PATCH 01/10] s390-tools-1.5.3-zipl-zfcpdump-2
 
 ---
  common.mak | 4 ++--
@@ -23,13 +23,13 @@ index 44adc6e..4373da5 100644
  export ZFCPDUMP_DIR ZFCPDUMP_IMAGE ZFCPDUMP_RD
  
 -- 
-1.8.1.4
+1.8.5.3
 
 
 From a3d9221076f9eb7cc8434baac71327f786351c63 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Thu, 23 Apr 2009 11:46:01 +0200
-Subject: [PATCH 2/9] s390-tools-1.8.1-fdasd-su
+Subject: [PATCH 02/10] s390-tools-1.8.1-fdasd-su
 
 ---
  fdasd/fdasd.c | 10 ++++++----
@@ -57,13 +57,13 @@ index ba22475..f2ac417 100644
  
  		if (anc->verbose) printf("disk layout check   : ok\n");
 -- 
-1.8.1.4
+1.8.5.3
 
 
 From d13c754f68ea838a47b8125006b9b493cfbbb7f4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 21 Aug 2013 12:13:30 +0200
-Subject: [PATCH 3/9] dbginfo.sh: Avoiding exclusion list for pipes in sysfs
+Subject: [PATCH 03/10] dbginfo.sh: Avoiding exclusion list for pipes in sysfs
 
 Description:  dbginfo.sh: Avoiding exclusion list for pipes in sysfs
 Symptom:      The dbginfo.sh script hangs
@@ -127,13 +127,13 @@ index 6d07132..0ada40b 100755
  	touch "${WORKDIR_BASE}${SCRIPTNAME}".lock
      fi
 -- 
-1.8.1.4
+1.8.5.3
 
 
 From 7d540e7f40c731092ac655d1d38af7d69ceee706 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 21 Aug 2013 12:13:58 +0200
-Subject: [PATCH 4/9] zipl: Fix zipl "--force" option for DASD multi-volume
+Subject: [PATCH 04/10] zipl: Fix zipl "--force" option for DASD multi-volume
  dump
 
 Description:  zipl: Fix zipl "--force" option for DASD multi-volume dump
@@ -178,13 +178,13 @@ index f1cec78..529d6b3 100644
  .Lmem_upper_limit:
  	.long 0xffffffff,0xffffffff           # can be used for memsize=xxx
 -- 
-1.8.1.4
+1.8.5.3
 
 
 From 21caf0d0dc05c5e950f369f72027a203a7d3e772 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Tue, 5 Nov 2013 12:23:18 +0100
-Subject: [PATCH 5/9] zipl: Use "possible_cpus" kernel parameter
+Subject: [PATCH 05/10] zipl: Use "possible_cpus" kernel parameter
 
 Description:  zipl: Use "possible_cpus" kernel parameter
 Symptom:      The zfcpdump system might run out-of memory.
@@ -218,13 +218,13 @@ index cc2ed16..68dffe1 100644
  	return result;
  }
 -- 
-1.8.1.4
+1.8.5.3
 
 
 From d3792e20601152ac2deea8d592b9fc176590ec5f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Tue, 19 Nov 2013 18:02:03 +0100
-Subject: [PATCH 6/9] dbginfo.sh: enhancements for script execution and man
+Subject: [PATCH 06/10] dbginfo.sh: enhancements for script execution and man
  page
 
 Description:  dbginfo.sh: enhancements for script execution and man page
@@ -780,13 +780,13 @@ index cdef849..c0975cc 100644
  Run the script with root authority.
  .br
 -- 
-1.8.1.4
+1.8.5.3
 
 
 From 31cd858e82efd289c4ea8ea4801346746aefcd2c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Tue, 19 Nov 2013 18:02:35 +0100
-Subject: [PATCH 7/9] dbginfo.sh: avoid double data collection
+Subject: [PATCH 07/10] dbginfo.sh: avoid double data collection
 
 Description:  dbginfo.sh: avoid double data collection
 Symptom:      Execution of dbginfo.sh fails with 'no space left on device'
@@ -828,13 +828,13 @@ index 9b64076..e83774b 100755
  
  ########################################
 -- 
-1.8.1.4
+1.8.5.3
 
 
 From 4009f4a16c96f7fee65d77de112ef61109fdc0bb Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 15 Jan 2014 15:08:29 +0100
-Subject: [PATCH 8/9] zipl: fix segmentation fault in automenu array
+Subject: [PATCH 08/10] zipl: fix segmentation fault in automenu array
 
 Description:  zipl: fix segmentation fault in automenu array
 Symptom:      Building an automenu with a large number of entries may
@@ -871,13 +871,13 @@ index 597b01c..c357418 100644
  	new_scan = misc_malloc(size);
  	if (!new_scan)
 -- 
-1.8.1.4
+1.8.5.3
 
 
 From 5eca8bced9faf6a15bdb7a0c43b53b6817a53473 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 29 Jan 2014 10:37:03 +0100
-Subject: [PATCH 9/9] zipl: Fix zfcpdump "struct job_ipl_data" initialization
+Subject: [PATCH 09/10] zipl: Fix zfcpdump "struct job_ipl_data" initialization
 
 Description:  zipl: Fix zfcpdump "struct job_ipl_data" initialization
 Symptom:      When zfcpdump starts, dump fails and the following error
@@ -913,5 +913,77 @@ index 68dffe1..d573eda 100644
  	ipl.image_addr = dump_fs->image_addr;
  	ipl.ramdisk = dump_fs->ramdisk;
 -- 
-1.8.1.4
+1.8.5.3
+
+
+From 89e147e16348335cdfe6438e43171e7848e94dce Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Mon, 3 Feb 2014 09:55:38 +0100
+Subject: [PATCH 10/10] znetconf,lsqeth: Allow for 16-char network interface
+ name
+
+Description:  znetconf,lsqeth: Allow for 16-char network interface names
+Symptom:      In the output of `znetconf -c` interface name is truncated.
+              In the output of `lsqeth -p` interface name is jammed with the
+              following field (card type). This happens when the "new"
+              interface names are in play, i.e. "enccw0.0.e000" rather than
+              traditional "eth1".
+Problem:      In the functions that are doing formatted printout, the width
+              of the field reserved for the interface name is insufficinet.
+Solution:     Printing procedures in the `zneconf` and `lsqeth` are modified
+              to allow the interface names of up to 16 characters (IFNAMSIZ).
+Reproduction: Rename some network interface to use more characters than
+              the usual 4. E.g. if the original interace name is "eth1",
+              use this command:
+                  ip link set dev eth1 name 123456789ABCDEF
+              (Note: while the maximum length of the interface name is 16
+              chars, the `ip` command limits it to 15 chars.) Issue the
+              commands `znetconf -c` and `lsqeth -p`. Observe that the
+              interface name is truncated in the `znetconf` output, and
+              jammed together with the "card type" field in the `lsqeth`
+              output.
+---
+ zconf/lsqeth   | 6 +++---
+ zconf/znetconf | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/zconf/lsqeth b/zconf/lsqeth
+index c3a0c64..bcd6277 100755
+--- a/zconf/lsqeth
++++ b/zconf/lsqeth
+@@ -238,7 +238,7 @@ function __print_proc_format
+ 
+ 	# print device data
+ 	printf '%-27s' "${format_array_print[0]}/${format_array_print[1]}/${format_array_print[2]}"
+-	for j in 6 11 15 5 7 11 5 5 6 5
++	for j in 6 17 15 5 7 11 5 5 6 5
+ 		do
+ 			if [ "$countc" -eq 3 ]; then
+ 				printf "%-${j}s" "x${format_array_print[$countc]}"
+@@ -396,8 +396,8 @@ fi
+ device_list_temp="`ls $interface_dir`"
+ 
+ if [ $format = 1 ]; then
+-	echo "devices                    CHPID interface  cardtype       port chksum prio-q'ing rtr4 rtr6 lay'2 cnt"
+-	echo "-------------------------- ----- ---------- -------------- ---- ------ ---------- ---- ---- ----- -----"
++	echo "devices                    CHPID interface        cardtype       port chksum prio-q'ing rtr4 rtr6 lay'2 cnt"
++	echo "-------------------------- ----- ---------------- -------------- ---- ------ ---------- ---- ---- ----- -----"
+ fi
+ #
+ # list entries for device
+diff --git a/zconf/znetconf b/zconf/znetconf
+index 73bbe32..87c881b 100755
+--- a/zconf/znetconf
++++ b/zconf/znetconf
+@@ -737,7 +737,7 @@ function list_configured()
+ 		supress_header=$1
+ 	fi
+ 
+-	local LIST_FORMAT_STRING="%-26.26s %-7.7s %-14.14s %5.5s %-4.4s %-11.11s %-7.7s\n"
++	local LIST_FORMAT_STRING="%-26.26s %-7.7s %-14.14s %5.5s %-4.4s %-16.16s %-7.7s\n"
+ 	if [ $supress_header -eq 0 ]
+ 	then
+ 		printf "$LIST_FORMAT_STRING" "Device IDs" "Type" \
+-- 
+1.8.5.3
 
