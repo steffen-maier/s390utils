@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.23.0
-Release:        8%{?dist}
+Release:        9%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -734,6 +734,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Feb 10 2014 Dan Horák <dan[at]danny.cz> - 2:1.23.0-9
+- znetconf: Allow for 16-char network interface names (#1062285)
+- qetharp: Allow for 16-char network interface names (#1062250)
+
 * Mon Feb 03 2014 Dan Horák <dan[at]danny.cz> - 2:1.23.0-8
 - znetconf,lsqeth: Allow for 16-char network interface name (#1060303)
 

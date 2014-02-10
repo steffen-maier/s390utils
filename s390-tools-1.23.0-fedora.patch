@@ -1,7 +1,7 @@
 From 9b225fac81186176075f673dfe5cf8e373b2068a Mon Sep 17 00:00:00 2001
 From: Dan Horak <dan@danny.cz>
 Date: Sun, 20 Jul 2008 09:24:05 +0200
-Subject: [PATCH 01/10] s390-tools-1.5.3-zipl-zfcpdump-2
+Subject: [PATCH 01/12] s390-tools-1.5.3-zipl-zfcpdump-2
 
 ---
  common.mak | 4 ++--
@@ -29,7 +29,7 @@ index 44adc6e..4373da5 100644
 From a3d9221076f9eb7cc8434baac71327f786351c63 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Thu, 23 Apr 2009 11:46:01 +0200
-Subject: [PATCH 02/10] s390-tools-1.8.1-fdasd-su
+Subject: [PATCH 02/12] s390-tools-1.8.1-fdasd-su
 
 ---
  fdasd/fdasd.c | 10 ++++++----
@@ -63,7 +63,7 @@ index ba22475..f2ac417 100644
 From d13c754f68ea838a47b8125006b9b493cfbbb7f4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 21 Aug 2013 12:13:30 +0200
-Subject: [PATCH 03/10] dbginfo.sh: Avoiding exclusion list for pipes in sysfs
+Subject: [PATCH 03/12] dbginfo.sh: Avoiding exclusion list for pipes in sysfs
 
 Description:  dbginfo.sh: Avoiding exclusion list for pipes in sysfs
 Symptom:      The dbginfo.sh script hangs
@@ -133,7 +133,7 @@ index 6d07132..0ada40b 100755
 From 7d540e7f40c731092ac655d1d38af7d69ceee706 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 21 Aug 2013 12:13:58 +0200
-Subject: [PATCH 04/10] zipl: Fix zipl "--force" option for DASD multi-volume
+Subject: [PATCH 04/12] zipl: Fix zipl "--force" option for DASD multi-volume
  dump
 
 Description:  zipl: Fix zipl "--force" option for DASD multi-volume dump
@@ -184,7 +184,7 @@ index f1cec78..529d6b3 100644
 From 21caf0d0dc05c5e950f369f72027a203a7d3e772 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Tue, 5 Nov 2013 12:23:18 +0100
-Subject: [PATCH 05/10] zipl: Use "possible_cpus" kernel parameter
+Subject: [PATCH 05/12] zipl: Use "possible_cpus" kernel parameter
 
 Description:  zipl: Use "possible_cpus" kernel parameter
 Symptom:      The zfcpdump system might run out-of memory.
@@ -224,7 +224,7 @@ index cc2ed16..68dffe1 100644
 From d3792e20601152ac2deea8d592b9fc176590ec5f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Tue, 19 Nov 2013 18:02:03 +0100
-Subject: [PATCH 06/10] dbginfo.sh: enhancements for script execution and man
+Subject: [PATCH 06/12] dbginfo.sh: enhancements for script execution and man
  page
 
 Description:  dbginfo.sh: enhancements for script execution and man page
@@ -786,7 +786,7 @@ index cdef849..c0975cc 100644
 From 31cd858e82efd289c4ea8ea4801346746aefcd2c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Tue, 19 Nov 2013 18:02:35 +0100
-Subject: [PATCH 07/10] dbginfo.sh: avoid double data collection
+Subject: [PATCH 07/12] dbginfo.sh: avoid double data collection
 
 Description:  dbginfo.sh: avoid double data collection
 Symptom:      Execution of dbginfo.sh fails with 'no space left on device'
@@ -834,7 +834,7 @@ index 9b64076..e83774b 100755
 From 4009f4a16c96f7fee65d77de112ef61109fdc0bb Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 15 Jan 2014 15:08:29 +0100
-Subject: [PATCH 08/10] zipl: fix segmentation fault in automenu array
+Subject: [PATCH 08/12] zipl: fix segmentation fault in automenu array
 
 Description:  zipl: fix segmentation fault in automenu array
 Symptom:      Building an automenu with a large number of entries may
@@ -877,7 +877,7 @@ index 597b01c..c357418 100644
 From 5eca8bced9faf6a15bdb7a0c43b53b6817a53473 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Wed, 29 Jan 2014 10:37:03 +0100
-Subject: [PATCH 09/10] zipl: Fix zfcpdump "struct job_ipl_data" initialization
+Subject: [PATCH 09/12] zipl: Fix zfcpdump "struct job_ipl_data" initialization
 
 Description:  zipl: Fix zfcpdump "struct job_ipl_data" initialization
 Symptom:      When zfcpdump starts, dump fails and the following error
@@ -919,7 +919,7 @@ index 68dffe1..d573eda 100644
 From 89e147e16348335cdfe6438e43171e7848e94dce Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Mon, 3 Feb 2014 09:55:38 +0100
-Subject: [PATCH 10/10] znetconf,lsqeth: Allow for 16-char network interface
+Subject: [PATCH 10/12] znetconf,lsqeth: Allow for 16-char network interface
  name
 
 Description:  znetconf,lsqeth: Allow for 16-char network interface names
@@ -984,6 +984,109 @@ index 73bbe32..87c881b 100755
  	if [ $supress_header -eq 0 ]
  	then
  		printf "$LIST_FORMAT_STRING" "Device IDs" "Type" \
+-- 
+1.8.5.3
+
+
+From 78560f75fa2ce043ff63647cc1618f69251dbbf7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Mon, 10 Feb 2014 10:20:51 +0100
+Subject: [PATCH 11/12] znetconf: Allow for 16-char network interface names
+
+Description:  znetconf: Allow for 16-char network interface names
+Symptom:      In the output of `znetconf -r/R` interface name is truncated.
+              This happens when the "new" interface names are in play,
+              i.e. "enccw0.0.e000" rather than traditional "eth1".
+Problem:      In the function that extracts the interface name from the
+              "$CFGLINE" string, only 11 characters of the interface name
+              are extracted.
+Solution:     Modify the function to extract 16 chacaters of the interface
+              name.
+Reproduction: Rename some network interface to use more characters than
+              the usual 4. E.g. if the original interace name is "eth1",
+              use this command:
+                  ip link set dev eth1 name 123456789ABCDEF
+              (Note: while the maximum length of the intrface name is 16
+              chars, the `ip` command limits it to 15 chars.)
+              Issue command `znetconf -r <interface-name>`. Observe that
+              interface name is truncated in the output.
+---
+ zconf/znetconf | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/zconf/znetconf b/zconf/znetconf
+index 87c881b..09f0904 100755
+--- a/zconf/znetconf
++++ b/zconf/znetconf
+@@ -1092,7 +1092,7 @@ function ask_for_remove()
+ function extract_interface_name()
+ {
+ 	local CFGLINE="$1"
+-	local IF_NAME=$(expr substr "$CFGLINE" 62 11)
++	local IF_NAME=$(expr substr "$CFGLINE" 62 16)
+ 	REPLY=${IF_NAME%% *}
+ 	return 0
+ }
+-- 
+1.8.5.3
+
+
+From 883724cff09a02a19268a47102816e161a4b01af Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Mon, 10 Feb 2014 10:21:23 +0100
+Subject: [PATCH 12/12] qetharp: Allow for 16-char network interface names
+
+Description:  qetharp: Allow for 16-char network interface names
+Symptom:      In the output of `qetharp -p` interface name is truncated.
+              This happens when the "new" interface names are in play,
+              i.e. "enccw0.0.e000" rather than traditional "eth1".
+Problem:      In the functions that are doing formatted printout, the width
+              of the field reserved for the interface name is insufficinet.
+Solution:     Printing procedure is modified to allow the interface names
+              of up to 16 characters (IFNAMSIZ).
+Reproduction: Rename some network interface to use more characters than
+              the usual 4. E.g. if the original interace name is "eth1",
+              use this command:
+                  ip link set dev eth1 name 123456789ABCDEF
+              (Note: while the maximum length of the intrface name is 16
+              chars, the `ip` command limits it to 15 chars.)
+              Issue command `qetharp -p <interface-name>`. Observe that
+              interface name is truncated in the output.
+---
+ qetharp/qetharp.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/qetharp/qetharp.c b/qetharp/qetharp.c
+index 58debdc..5eccda3 100644
+--- a/qetharp/qetharp.c
++++ b/qetharp/qetharp.c
+@@ -79,7 +79,7 @@ qeth_hex_dump(unsigned char *buf, int len)
+ static void
+ show_header() 
+ {
+-	printf("%-40.40s%-20.20s%-10.10s%-10.10s\n", 
++	printf("%-40.40s%-20.20s%-10.10s%-16.16s\n",
+ 	       "Address","HWaddress","HWType","Iface");
+ }
+ 
+@@ -152,7 +152,7 @@ void show_entry5(__u8 ipaddr_type, __u8 *ip, struct option_info *opin)
+ 				name = fqhn;
+ 			}
+ 		}
+-		printf("%-40.40s%-20.20s%-10.10s%-10.10s\n", name, "","hiper",
++		printf("%-40.40s%-20.20s%-10.10s%-16.16s\n", name, "","hiper",
+ 			opin->dev_name);
+ 	}
+ 
+@@ -219,7 +219,7 @@ void show_entry7(__u8 ipaddr_type, __u8 *ip, __u8 *mac,
+ 		sprintf(macstrbuf,"%02x:%02x:%02x:%02x:%02x:%02x",
+ 			mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+ 
+-		printf("%-40.40s%-20.20s%-10.10s%-10.10s\n", name, macstrbuf,
++		printf("%-40.40s%-20.20s%-10.10s%-16.16s\n", name, macstrbuf,
+ 			(flags==OSACARD_FLAGS)? "ether":
+ 			(flags==OSA_TR_FLAGS)? "tr":"n/a",
+ 			opin->dev_name);
 -- 
 1.8.5.3
 
