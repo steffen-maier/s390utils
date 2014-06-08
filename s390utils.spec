@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.23.0
-Release:        10%{?dist}
+Release:        11%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -734,6 +734,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.23.0-11
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
 * Tue Mar 04 2014 Dan Horák <dan[at]danny.cz> - 2:1.23.0-10
 - fix zFCP device discovery in anaconda GUI (#1054691)
 
