@@ -1,0 +1,57 @@
+diff -up s390-tools-1.23.0/tape390/tape390_display.c.format s390-tools-1.23.0/tape390/tape390_display.c
+--- s390-tools-1.23.0/tape390/tape390_display.c.format	2014-02-10 04:59:30.430126870 -0500
++++ s390-tools-1.23.0/tape390/tape390_display.c	2014-02-10 05:00:08.960127361 -0500
+@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
+ 	) {
+ 		switch(c) {
+ 			case 'h':
+-				fprintf(stderr, help_text);
++				fprintf(stderr, "%s", help_text);
+ 				exit(0);
+ 			case 'b':
+ 				ds.cntrl.blink = 1;
+@@ -266,7 +266,7 @@ int main(int argc, char *argv[]) {
+ 		strchkcpy(ds.message1, argv[optind]);
+ 		pathname = argv[optind+1];
+ 	} else {
+-		fprintf(stderr, help_text);
++		fprintf(stderr, "%s", help_text);
+ 		exit(1);
+ 	}
+ 
+diff -up s390-tools-1.23.0/vmur/vmur.cpp.format s390-tools-1.23.0/vmur/vmur.cpp
+--- s390-tools-1.23.0/vmur/vmur.cpp.format	2014-02-10 05:00:32.430127965 -0500
++++ s390-tools-1.23.0/vmur/vmur.cpp	2014-02-10 05:00:47.900128212 -0500
+@@ -201,7 +201,7 @@ static char HELP_TEXT[] =
+ 
+ static void usage(void)
+ {
+-	printf(HELP_TEXT);
++	printf("%s", HELP_TEXT);
+ }
+ 
+ /*
+diff -up s390-tools-1.23.0/zdump/opts.c.format s390-tools-1.23.0/zdump/opts.c
+--- s390-tools-1.23.0/zdump/opts.c.format	2014-02-10 04:58:26.760125680 -0500
++++ s390-tools-1.23.0/zdump/opts.c	2014-02-10 04:58:45.510125937 -0500
+@@ -72,7 +72,7 @@ static void print_usage_exit(void)
+  */
+ static void print_help_exit(void)
+ {
+-	STDOUT(help_text);
++	STDOUT("%s", help_text);
+ 	zg_exit(0);
+ }
+ 
+diff -up s390-tools-1.23.0/zdump/zgetdump.c.format s390-tools-1.23.0/zdump/zgetdump.c
+--- s390-tools-1.23.0/zdump/zgetdump.c.format	2014-02-10 04:57:23.100124931 -0500
++++ s390-tools-1.23.0/zdump/zgetdump.c	2014-02-10 04:56:57.640124530 -0500
+@@ -95,7 +95,7 @@ static void kdump_select_check(void)
+ 		return;
+ 	if (!dfi_kdump_base())
+ 		return;
+-	ERR_EXIT(msg);
++	ERR_EXIT("%s", msg);
+ }
+ 
+ /*
