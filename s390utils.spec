@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.23.0
-Release:        12%{?dist}
+Release:        13%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -593,7 +593,17 @@ fi
 License:        GPLv2
 Summary:        S390 ziomon tools
 Group:          Applications/System
-Requires:       perl lsscsi coreutils blktrace >= 1.0.1
+Requires:       blktrace
+Requires:       coreutils
+Requires:       device-mapper-multipath
+Requires:       gawk
+Requires:       grep
+Requires:       lsscsi
+Requires:       procps-ng
+Requires:       rsync
+Requires:       sed
+Requires:       tar
+Requires:       util-linux
 
 %description ziomon
 Tool set to collect data for zfcp performance analysis and report.
@@ -736,6 +746,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Oct 09 2014 Dan Horák <dan[at]danny.cz> - 2:1.23.0-13
+- update device_cio_free script
+- udpate Requires for ziomon subpackage
+
 * Wed Jun 11 2014 Dan Horák <dan[at]danny.cz> - 2:1.23.0-12
 - update for -Werror=format-security
 

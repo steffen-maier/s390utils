@@ -101,7 +101,6 @@ wait_on_devices()
     if [ -w $CIO_SETTLE ]; then
 	[ $VERBOSE ] && echo "Waiting until all pending CIO requests are processed"
 	echo 1 > $CIO_SETTLE
-	udevadm settle
 	return
     fi
 
@@ -249,6 +248,7 @@ if [ "$DEVICE" ]; then
     [ $VERBOSE ] && echo "Freeing specific devices"
     free_device $DEVICE
     wait_on_devices
+    udevadm settle
     exit 0
 fi
 
