@@ -1,11 +1,11 @@
 %define cmsfsver 1.1.8c
-%define vipaver 2.0.4
+%define vipaver 2.1.0
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.23.0
-Release:        13%{?dist}
+Release:        14%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -40,8 +40,6 @@ Patch3:         s390-tools-1.23.0-format.patch
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
 Patch1002:      cmsfs-1.1.8-use-detected-filesystem-block-size-on-FBA-devices.patch
-
-Patch2000:      src_vipa-2.0.4-locations.patch
 
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -80,14 +78,6 @@ pushd cmsfs-%{cmsfsver}
 
 # use detected filesystem block size (#651012)
 %patch1002 -p1 -b .use-detected-block-size
-popd
-
-#
-# src_vipa
-#
-pushd src_vipa-%{vipaver}
-# fix location of the library
-%patch2000 -p1 -b .locations
 popd
 
 
@@ -167,7 +157,7 @@ install -p -m 644 cmsfs-%{cmsfsver}/cmsfsck.8  $RPM_BUILD_ROOT%{_mandir}/man8
 
 # src_vipa
 pushd src_vipa-%{vipaver}
-make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=$RPM_BUILD_ROOT
+make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=$RPM_BUILD_ROOT LDCONFIG=/bin/true
 popd
 
 # install usefull headers for devel subpackage
@@ -731,6 +721,23 @@ This package contains the CMS file system based on FUSE.
 %{_mandir}/man1/cmsfs-fuse.1*
 
 #
+# *********************** zdsfs package  ***********************
+#
+%package zdsfs
+License:        GPLv2
+Summary:        z/OS data set access based on FUSE
+Group:          System Environment/Base
+BuildRequires:  fuse-devel
+Requires:       fuse
+
+%description zdsfs
+This package contains the z/OS data set access based on FUSE.
+
+%files zdsfs
+%{_bindir}/zdsfs
+%{_mandir}/man1/zdsfs.1*
+
+#
 # *********************** devel package  ***********************
 #
 %package devel
@@ -746,6 +753,12 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Jan 28 2015 Dan Horák <dan[at]danny.cz> - 2:1.23.0-14
+- refresh from RHEL-7
+ - update patches
+ - add zdsfs subpackage
+ - rebase src_vipa to 2.1.0
+
 * Thu Oct 09 2014 Dan Horák <dan[at]danny.cz> - 2:1.23.0-13
 - update device_cio_free script
 - udpate Requires for ziomon subpackage
