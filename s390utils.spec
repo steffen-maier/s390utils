@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.23.0
-Release:        14%{?dist}
+Release:        15%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -753,6 +753,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Apr 07 2015 Dan Horák <dan[at]danny.cz> - 2:1.23.0-15
+- remove bashism from zfcpconf.sh
+
 * Wed Jan 28 2015 Dan Horák <dan[at]danny.cz> - 2:1.23.0-14
 - refresh from RHEL-7
  - update patches
