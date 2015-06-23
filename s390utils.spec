@@ -4,8 +4,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.23.0
-Release:        16%{?dist}
+Version:        1.29.0
+Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -33,9 +33,7 @@ Source18:       cpuplugd.initd
 Source19:       mon_statd.initd
 Source21:       normalize_dasd_arg
 
-Patch1:         s390-tools-1.23.0-fedora.patch
-Patch2:         s390-tools-1.23.0-hardening.patch
-Patch3:         s390-tools-1.23.0-format.patch
+Patch1:         s390-tools-1.29.0-format.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -62,9 +60,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %setup -q -n s390-tools-%{version} -a 4 -a 6
 
 # Fedora/RHEL changes
-%patch1 -p1 -b .fedora
-%patch2 -p1 -b .hardening
-%patch3 -p1 -b .format
+%patch1 -p1 -b .format
 
 #
 # cmsfs
@@ -119,6 +115,7 @@ make install \
         MANDIR=$RPM_BUILD_ROOT%{_mandir} \
         LIBDIR=${RPM_BUILD_ROOT}/%{_lib} \
         DISTRELEASE=%{release} \
+        SYSTEMDSYSTEMUNITDIR=$RPM_BUILD_ROOT%{_unitdir} \
         V=1
 
 install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
@@ -210,6 +207,8 @@ Requires(pre):   chkconfig
 Requires(preun): chkconfig
 Requires(preun): initscripts
 BuildRequires:  ncurses-devel
+BuildRequires:  libpfm-devel
+BuildRequires:  glibc-static
 
 
 %description base
@@ -389,10 +388,12 @@ fi
 /sbin/zgetdump
 /sbin/znetconf
 /sbin/dbginfo.sh
+%{_bindir}/lscpumf
 %{_sbindir}/lsluns
 %{_sbindir}/lsmem
 %{_sbindir}/lsreipl
 %{_sbindir}/lsshut
+%{_sbindir}/chcpumf
 %{_sbindir}/chmem
 %{_sbindir}/chreipl
 %{_sbindir}/chshut
@@ -408,10 +409,12 @@ fi
 /lib/s390-tools
 %{_mandir}/man1/dbginfo.sh.1*
 %{_mandir}/man1/zfcpdbf.1*
+%{_mandir}/man1/lscpumf.1*
 %{_mandir}/man4/prandom.4*
 %{_mandir}/man5/zipl.conf.5*
 %{_mandir}/man8/chccwdev.8*
 %{_mandir}/man8/chchp.8*
+%{_mandir}/man8/chcpumf.8*
 %{_mandir}/man8/chmem.8*
 %{_mandir}/man8/chreipl.8*
 %{_mandir}/man8/chshut.8*
@@ -449,6 +452,8 @@ fi
 %{_mandir}/man8/zgetdump.8*
 %{_mandir}/man8/znetconf.8*
 %{_mandir}/man8/zipl.8*
+%dir %{_datadir}/s390-tools/
+%{_datadir}/s390-tools/cpumf/
 
 # Additional Redhat specific stuff
 /boot/tape0
@@ -627,6 +632,7 @@ Requires(pre):  shadow-utils
 Requires(post): grep
 Requires(postun): grep
 BuildRequires:  gettext
+BuildRequires: systemd
 
 %description iucvterm
 A set of applications to provide terminal access via the z/VM Inter-User
@@ -675,6 +681,8 @@ fi
 %{_mandir}/man7/af_iucv.7*
 %{_mandir}/man8/chiucvallow.8*
 %{_mandir}/man9/hvc_iucv.9*
+%{_unitdir}/iucvtty-login@.service
+%{_unitdir}/ttyrun-getty@.service
 
 #
 # *********************** cmsfs package  ***********************
@@ -738,6 +746,58 @@ This package contains the z/OS data set access based on FUSE.
 %{_mandir}/man1/zdsfs.1*
 
 #
+# *********************** hmcdrvfs package  ***********************
+#
+%package hmcdrvfs
+License:       GPLv2
+Summary:       HMC drive file system based on FUSE
+Group:         System Environment/Base
+BuildRequires: fuse-devel
+Requires:      fuse
+
+%description hmcdrvfs
+This package contains a HMC drive file system based on FUSE and a tool
+to list files and directories.
+
+%files hmcdrvfs
+%{_bindir}/hmcdrvfs
+%{_sbindir}/lshmc
+%{_mandir}/man1/hmcdrvfs.1*
+%{_mandir}/man8/lshmc.8*
+
+#
+# *********************** cpacfstatsd package  ***********************
+#
+%package cpacfstatsd
+License:       GPLv2
+Summary:       Monitor and maintain CPACF activity counters
+Group:         System Environment/Base
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
+BuildRequires: systemd
+
+%description cpacfstatsd
+The cpacfstats tools provide a client/server application set to monitor
+and maintain CPACF activity counters.
+
+%post cpacfstatsd
+%systemd_post cpacfstatsd.service
+
+%preun cpacfstatsd
+%systemd_preun cpacfstatsd.service
+
+%postun cpacfstatsd
+%systemd_postun_with_restart cpacfstatsd.service
+
+%files cpacfstatsd
+%{_bindir}/cpacfstats
+%{_sbindir}/cpacfstatsd
+%{_mandir}/man1/cpacfstats.1*
+%{_mandir}/man8/cpacfstatsd.8*
+%{_unitdir}/cpacfstatsd.service
+
+#
 # *********************** devel package  ***********************
 #
 %package devel
@@ -753,6 +813,12 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Jun 23 2015 Dan Horák <dan[at]danny.cz> - 2:1.29.0-1
+- rebased to 1.29.0
+- dropped daemon hardening patch as hardening is enabled globally
+- added hmcdrvfs and cpacfstatsd subpackages
+- install systemd units where available
+
 * Fri Jun 19 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.23.0-16
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
