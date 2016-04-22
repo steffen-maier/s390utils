@@ -92,7 +92,11 @@ popd
 
 
 %build
-make OPT_FLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing" DISTRELEASE=%{release} V=1
+make \
+        OPT_FLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing" \
+        BINDIR=/usr/sbin \
+        DISTRELEASE=%{release} \
+        V=1
 
 pushd cmsfs-%{cmsfsver}
 ./configure
@@ -110,6 +114,7 @@ rm -f zipl/src/zipl_helper.device-mapper.*
 
 make install \
         DESTDIR=$RPM_BUILD_ROOT \
+        BINDIR=/usr/sbin \
         SYSTEMDSYSTEMUNITDIR=%{_unitdir} \
         DISTRELEASE=%{release} \
         V=1
@@ -118,9 +123,9 @@ mkdir -p $RPM_BUILD_ROOT{/boot,/lib/udev/rules.d,%{_initddir},%{_sysconfdir}/{pr
 install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
 install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
-install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT/sbin
-install -p -m 755 %{SOURCE13} $RPM_BUILD_ROOT/sbin
-install -p -m 755 %{SOURCE21} $RPM_BUILD_ROOT/sbin
+install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT%{_sbindir}
+install -p -m 755 %{SOURCE13} $RPM_BUILD_ROOT%{_sbindir}
+install -p -m 755 %{SOURCE21} $RPM_BUILD_ROOT%{_sbindir}
 install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT/lib/udev/rules.d/56-zfcp.rules
 install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT/lib/udev/rules.d/56-dasd.rules
 
@@ -139,7 +144,7 @@ install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}/lib/udev/rules.d
 
 # cmsfs tools must be available in /sbin
 for f in cat lst vol cp ck; do
-    install -p -m 755 cmsfs-%{cmsfsver}/cmsfs${f} $RPM_BUILD_ROOT/sbin
+    install -p -m 755 cmsfs-%{cmsfsver}/cmsfs${f} $RPM_BUILD_ROOT%{_sbindir}
     install -p -m 644 cmsfs-%{cmsfsver}/cmsfs${f}.8 $RPM_BUILD_ROOT%{_mandir}/man8
 done
 
@@ -157,8 +162,8 @@ install -p -m 644 %{SOURCE11} ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig/cpi
 install -p -m 755 %{SOURCE10} ${RPM_BUILD_ROOT}%{_initddir}/cpi
 
 # device_cio_free
-install -p -m 755 %{SOURCE14} ${RPM_BUILD_ROOT}/sbin
-pushd ${RPM_BUILD_ROOT}/sbin
+install -p -m 755 %{SOURCE14} ${RPM_BUILD_ROOT}%{_sbindir}
+pushd ${RPM_BUILD_ROOT}%{_sbindir}
 for lnk in dasd zfcp znet; do
     ln -sf device_cio_free ${lnk}_cio_free
 done
@@ -348,39 +353,39 @@ fi
 %files base
 %doc README zdev/src/*.txt
 %doc LICENSE
-/sbin/zipl
-/sbin/dasdfmt
-/sbin/dasdinfo
-/sbin/dasdstat
-/sbin/dasdview
-/sbin/fdasd
-/sbin/chccwdev
-/sbin/chchp
-/sbin/chzcrypt
-/sbin/chzdev
-/sbin/cio_ignore
-/sbin/lschp
-/sbin/lscss
-/sbin/lsdasd
-/sbin/lsqeth
-/sbin/lsscm
-/sbin/lstape
-/sbin/lszcrypt
-/sbin/lszdev
-/sbin/lszfcp
-/sbin/scsi_logging_level
-/sbin/zfcpdbf
-/sbin/qetharp
-/sbin/qethconf
-/sbin/qethqoat
-/sbin/tape390_display
-/sbin/tape390_crypt
-/sbin/ttyrun
-/sbin/tunedasd
-/sbin/vmcp
-/sbin/zgetdump
-/sbin/znetconf
-/sbin/dbginfo.sh
+%{_sbindir}/zipl
+%{_sbindir}/dasdfmt
+%{_sbindir}/dasdinfo
+%{_sbindir}/dasdstat
+%{_sbindir}/dasdview
+%{_sbindir}/fdasd
+%{_sbindir}/chccwdev
+%{_sbindir}/chchp
+%{_sbindir}/chzcrypt
+%{_sbindir}/chzdev
+%{_sbindir}/cio_ignore
+%{_sbindir}/lschp
+%{_sbindir}/lscss
+%{_sbindir}/lsdasd
+%{_sbindir}/lsqeth
+%{_sbindir}/lsscm
+%{_sbindir}/lstape
+%{_sbindir}/lszcrypt
+%{_sbindir}/lszdev
+%{_sbindir}/lszfcp
+%{_sbindir}/scsi_logging_level
+%{_sbindir}/zfcpdbf
+%{_sbindir}/qetharp
+%{_sbindir}/qethconf
+%{_sbindir}/qethqoat
+%{_sbindir}/tape390_display
+%{_sbindir}/tape390_crypt
+%{_sbindir}/ttyrun
+%{_sbindir}/tunedasd
+%{_sbindir}/vmcp
+%{_sbindir}/zgetdump
+%{_sbindir}/znetconf
+%{_sbindir}/dbginfo.sh
 %{_bindir}/lscpumf
 %{_sbindir}/lsluns
 %{_sbindir}/lsmem
@@ -458,13 +463,13 @@ fi
 %ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
 %{_initddir}/cpi
 %config(noreplace) %{_sysconfdir}/sysconfig/cpi
-/sbin/dasdconf.sh
-/sbin/zfcpconf.sh
-/sbin/dasd_cio_free
-/sbin/device_cio_free
-/sbin/zfcp_cio_free
-/sbin/znet_cio_free
-/sbin/normalize_dasd_arg
+%{_sbindir}/dasdconf.sh
+%{_sbindir}/zfcpconf.sh
+%{_sbindir}/dasd_cio_free
+%{_sbindir}/device_cio_free
+%{_sbindir}/zfcp_cio_free
+%{_sbindir}/znet_cio_free
+%{_sbindir}/normalize_dasd_arg
 /lib/systemd/system/device_cio_free.service
 %{_sysconfdir}/systemd/system/sysinit.target.wants/device_cio_free.service
 /lib/udev/ccw_init
@@ -693,11 +698,11 @@ URL:            http://www.casita.net/pub/cmsfs/cmsfs.html
 This package contains the CMS file system tools.
 
 %files cmsfs
-/sbin/cmsfscat
-/sbin/cmsfsck
-/sbin/cmsfscp
-/sbin/cmsfslst
-/sbin/cmsfsvol
+%{_sbindir}/cmsfscat
+%{_sbindir}/cmsfsck
+%{_sbindir}/cmsfscp
+%{_sbindir}/cmsfslst
+%{_sbindir}/cmsfsvol
 %{_mandir}/man8/cmsfscat.8*
 %{_mandir}/man8/cmsfsck.8*
 %{_mandir}/man8/cmsfscp.8*
