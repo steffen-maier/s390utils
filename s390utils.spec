@@ -170,9 +170,9 @@ done
 popd
 mkdir -p ${RPM_BUILD_ROOT}/lib/systemd/system
 mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/systemd/system/sysinit.target.wants
-install -p -m 644 %{SOURCE15} ${RPM_BUILD_ROOT}/lib/systemd/system
+install -p -m 644 %{SOURCE15} ${RPM_BUILD_ROOT}%{_unitdir}
 pushd ${RPM_BUILD_ROOT}%{_sysconfdir}/systemd/system/sysinit.target.wants
-ln -sf /lib/systemd/system/device_cio_free.service device_cio_free.service
+ln -sf %{_unitdir}/device_cio_free.service device_cio_free.service
 popd
 
 # ccw
@@ -469,7 +469,7 @@ fi
 %{_sbindir}/zfcp_cio_free
 %{_sbindir}/znet_cio_free
 %{_sbindir}/normalize_dasd_arg
-/lib/systemd/system/device_cio_free.service
+%{_unitdir}/device_cio_free.service
 %{_sysconfdir}/systemd/system/sysinit.target.wants/device_cio_free.service
 /usr/lib/udev/ccw_init
 %{_udevrulesdir}/40-z90crypt.rules

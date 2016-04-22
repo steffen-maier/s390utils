@@ -6,5 +6,5 @@ Before=sysinit.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/sbin/device_cio_free
+ExecStart=/usr/sbin/device_cio_free
 StandardOutput=syslog
