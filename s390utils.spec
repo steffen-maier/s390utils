@@ -4,8 +4,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.30.0
-Release:        3%{?dist}
+Version:        1.34.0
+Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -33,7 +33,7 @@ Source18:       cpuplugd.initd
 Source19:       mon_statd.initd
 Source21:       normalize_dasd_arg
 
-Patch1:         s390-tools-1.29.0-format.patch
+Patch1:         s390-tools-1.34.0-zipl-flags.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -60,7 +60,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %setup -q -n s390-tools-%{version} -a 4 -a 6
 
 # Fedora/RHEL changes
-%patch1 -p1 -b .format
+%patch1 -p1 -b .zipl-flags
 
 #
 # cmsfs
@@ -105,19 +105,16 @@ popd
 
 
 %install
-mkdir -p $RPM_BUILD_ROOT{%{_lib},%{_libdir},/sbin,/bin,/boot,/lib/udev/rules.d,%{_mandir}/man1,%{_mandir}/man8,%{_sbindir},%{_bindir},%{_sysconfdir}/{profile.d,sysconfig},%{_initddir}}
-
 # workaround an issue in the zipl-device-mapper patch
 rm -f zipl/src/zipl_helper.device-mapper.*
 
 make install \
-        INSTROOT=$RPM_BUILD_ROOT \
-        MANDIR=$RPM_BUILD_ROOT%{_mandir} \
-        LIBDIR=${RPM_BUILD_ROOT}/%{_lib} \
+        DESTDIR=$RPM_BUILD_ROOT \
+        SYSTEMDSYSTEMUNITDIR=%{_unitdir} \
         DISTRELEASE=%{release} \
-        SYSTEMDSYSTEMUNITDIR=$RPM_BUILD_ROOT%{_unitdir} \
         V=1
 
+mkdir -p $RPM_BUILD_ROOT{/boot,/lib/udev/rules.d,%{_initddir},%{_sysconfdir}/{profile.d,sysconfig}}
 install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
 install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
@@ -141,16 +138,10 @@ install -p -m 755 %{SOURCE18} ${RPM_BUILD_ROOT}%{_initddir}/cpuplugd
 install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}/lib/udev/rules.d
 
 # cmsfs tools must be available in /sbin
-install -p -m 755 cmsfs-%{cmsfsver}/cmsfscat $RPM_BUILD_ROOT/sbin
-install -p -m 755 cmsfs-%{cmsfsver}/cmsfslst $RPM_BUILD_ROOT/sbin
-install -p -m 755 cmsfs-%{cmsfsver}/cmsfsvol $RPM_BUILD_ROOT/sbin
-install -p -m 755 cmsfs-%{cmsfsver}/cmsfscp  $RPM_BUILD_ROOT/sbin
-install -p -m 755 cmsfs-%{cmsfsver}/cmsfsck  $RPM_BUILD_ROOT/sbin
-install -p -m 644 cmsfs-%{cmsfsver}/cmsfscat.8 $RPM_BUILD_ROOT%{_mandir}/man8
-install -p -m 644 cmsfs-%{cmsfsver}/cmsfslst.8 $RPM_BUILD_ROOT%{_mandir}/man8
-install -p -m 644 cmsfs-%{cmsfsver}/cmsfsvol.8 $RPM_BUILD_ROOT%{_mandir}/man8
-install -p -m 644 cmsfs-%{cmsfsver}/cmsfscp.8  $RPM_BUILD_ROOT%{_mandir}/man8
-install -p -m 644 cmsfs-%{cmsfsver}/cmsfsck.8  $RPM_BUILD_ROOT%{_mandir}/man8
+for f in cat lst vol cp ck; do
+    install -p -m 755 cmsfs-%{cmsfsver}/cmsfs${f} $RPM_BUILD_ROOT/sbin
+    install -p -m 644 cmsfs-%{cmsfsver}/cmsfs${f}.8 $RPM_BUILD_ROOT%{_mandir}/man8
+done
 
 # src_vipa
 pushd src_vipa-%{vipaver}
@@ -355,7 +346,7 @@ fi
 :
 
 %files base
-%doc README
+%doc README zdev/src/*.txt
 %doc LICENSE
 /sbin/zipl
 /sbin/dasdfmt
@@ -366,6 +357,7 @@ fi
 /sbin/chccwdev
 /sbin/chchp
 /sbin/chzcrypt
+/sbin/chzdev
 /sbin/cio_ignore
 /sbin/lschp
 /sbin/lscss
@@ -374,6 +366,7 @@ fi
 /sbin/lsscm
 /sbin/lstape
 /sbin/lszcrypt
+/sbin/lszdev
 /sbin/lszfcp
 /sbin/scsi_logging_level
 /sbin/zfcpdbf
@@ -410,6 +403,7 @@ fi
 %{_mandir}/man1/dbginfo.sh.1*
 %{_mandir}/man1/zfcpdbf.1*
 %{_mandir}/man1/lscpumf.1*
+%{_mandir}/man1/vmconvert.1*
 %{_mandir}/man4/prandom.4*
 %{_mandir}/man5/zipl.conf.5*
 %{_mandir}/man8/chccwdev.8*
@@ -419,6 +413,7 @@ fi
 %{_mandir}/man8/chreipl.8*
 %{_mandir}/man8/chshut.8*
 %{_mandir}/man8/chzcrypt.8*
+%{_mandir}/man8/chzdev.8*
 %{_mandir}/man8/cio_ignore.8*
 %{_mandir}/man8/dasdfmt.8*
 %{_mandir}/man8/dasdinfo.8*
@@ -438,6 +433,7 @@ fi
 %{_mandir}/man8/lsshut.8*
 %{_mandir}/man8/lstape.8*
 %{_mandir}/man8/lszcrypt.8*
+%{_mandir}/man8/lszdev.8*
 %{_mandir}/man8/lszfcp.8*
 %{_mandir}/man8/qetharp.8*
 %{_mandir}/man8/qethconf.8*
@@ -446,7 +442,6 @@ fi
 %{_mandir}/man8/tape390_display.8*
 %{_mandir}/man8/ttyrun.8*
 %{_mandir}/man8/tunedasd.8*
-%{_mandir}/man8/vmconvert.8*
 %{_mandir}/man8/vmcp.8*
 %{_mandir}/man8/vmur.8*
 %{_mandir}/man8/zgetdump.8*
