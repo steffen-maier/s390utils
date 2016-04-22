@@ -808,6 +808,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Apr 22 2016 Dan Horák <dan[at]danny.cz> - 2:1.34.0-1
+- rebased to 1.34.0
+
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 2:1.30.0-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
