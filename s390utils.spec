@@ -119,15 +119,15 @@ make install \
         DISTRELEASE=%{release} \
         V=1
 
-mkdir -p $RPM_BUILD_ROOT{/boot,/lib/udev/rules.d,%{_initddir},%{_sysconfdir}/{profile.d,sysconfig}}
+mkdir -p $RPM_BUILD_ROOT{/boot,%{_udevrulesdir},%{_initddir},%{_sysconfdir}/{profile.d,sysconfig}}
 install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
 install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT%{_sbindir}
 install -p -m 755 %{SOURCE13} $RPM_BUILD_ROOT%{_sbindir}
 install -p -m 755 %{SOURCE21} $RPM_BUILD_ROOT%{_sbindir}
-install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT/lib/udev/rules.d/56-zfcp.rules
-install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT/lib/udev/rules.d/56-dasd.rules
+install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_udevrulesdir}/56-zfcp.rules
+install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_udevrulesdir}/56-dasd.rules
 
 touch $RPM_BUILD_ROOT%{_sysconfdir}/{zfcp.conf,dasd.conf}
 
@@ -140,7 +140,7 @@ install -p -m 755 %{SOURCE19} ${RPM_BUILD_ROOT}%{_initddir}/mon_statd
 install -p -m 644 etc/sysconfig/cpuplugd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
 install -p -m 755 %{SOURCE18} ${RPM_BUILD_ROOT}%{_initddir}/cpuplugd
 
-install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}/lib/udev/rules.d
+install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}%{_udevrulesdir}
 
 # cmsfs tools must be available in /sbin
 for f in cat lst vol cp ck; do
@@ -176,9 +176,8 @@ ln -sf /lib/systemd/system/device_cio_free.service device_cio_free.service
 popd
 
 # ccw
-mkdir -p ${RPM_BUILD_ROOT}/lib/udev/rules.d
-install -p -m 755 %{SOURCE16} ${RPM_BUILD_ROOT}/lib/udev/ccw_init
-install -p -m 644 %{SOURCE17} ${RPM_BUILD_ROOT}/lib/udev/rules.d/81-ccw.rules
+install -p -m 755 %{SOURCE16} ${RPM_BUILD_ROOT}/usr/lib/udev/ccw_init
+install -p -m 644 %{SOURCE17} ${RPM_BUILD_ROOT}%{_udevrulesdir}/81-ccw.rules
 
 # zipl.conf to be ghosted
 touch ${RPM_BUILD_ROOT}%{_sysconfdir}/zipl.conf
@@ -472,13 +471,13 @@ fi
 %{_sbindir}/normalize_dasd_arg
 /lib/systemd/system/device_cio_free.service
 %{_sysconfdir}/systemd/system/sysinit.target.wants/device_cio_free.service
-/lib/udev/ccw_init
-/lib/udev/rules.d/40-z90crypt.rules
-/lib/udev/rules.d/56-zfcp.rules
-/lib/udev/rules.d/56-dasd.rules
-/lib/udev/rules.d/59-dasd.rules
-/lib/udev/rules.d/60-readahead.rules
-/lib/udev/rules.d/81-ccw.rules
+/usr/lib/udev/ccw_init
+%{_udevrulesdir}/40-z90crypt.rules
+%{_udevrulesdir}/56-zfcp.rules
+%{_udevrulesdir}/56-dasd.rules
+%{_udevrulesdir}/59-dasd.rules
+%{_udevrulesdir}/60-readahead.rules
+%{_udevrulesdir}/81-ccw.rules
 
 # src_vipa
 %{_bindir}/src_vipa.sh
@@ -503,7 +502,7 @@ ATM Ethernet LAN Emulation in QDIO mode.
 
 %files osasnmpd
 %{_sbindir}/osasnmpd
-/lib/udev/rules.d/57-osasnmpd.rules
+%{_udevrulesdir}/57-osasnmpd.rules
 %{_mandir}/man8/osasnmpd.8*
 
 #
