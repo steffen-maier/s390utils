@@ -4,7 +4,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.34.0
+Version:        1.36.0
 Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
@@ -29,11 +29,10 @@ Source14:       device_cio_free
 Source15:       device_cio_free.service
 Source16:       ccw_init
 Source17:       ccw.udev
-Source18:       cpuplugd.initd
 Source19:       mon_statd.initd
 Source21:       normalize_dasd_arg
 
-Patch1:         s390-tools-1.34.0-zipl-flags.patch
+Patch1:         s390-tools-1.36.0-zipl-flags.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -137,8 +136,8 @@ install -p -m 755 etc/init.d/dumpconf ${RPM_BUILD_ROOT}%{_initddir}/dumpconf
 install -p -m 644 etc/sysconfig/mon_statd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
 install -p -m 755 %{SOURCE19} ${RPM_BUILD_ROOT}%{_initddir}/mon_statd
 
-install -p -m 644 etc/sysconfig/cpuplugd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-install -p -m 755 %{SOURCE18} ${RPM_BUILD_ROOT}%{_initddir}/cpuplugd
+install -p -m 644 etc/cpuplugd.conf ${RPM_BUILD_ROOT}%{_sysconfdir}/
+install -p -m 755 systemd/cpuplugd.service ${RPM_BUILD_ROOT}%{_unitdir}/
 
 install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}%{_udevrulesdir}
 
@@ -552,10 +551,10 @@ fi
 License:         GPLv2+
 Summary:         Daemon that manages CPU and memory resources
 Group:           System Environment/Daemons
-Requires:        coreutils
-Requires(pre):   chkconfig
-Requires(preun): chkconfig
-Requires(preun): initscripts
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
+BuildRequires: systemd
 
 %description cpuplugd
 Daemon that manages CPU and memory resources based on a set of rules.
@@ -563,22 +562,20 @@ Depending on the workload CPUs can be enabled or disabled. The amount of
 memory can be increased or decreased exploiting the CMM1 feature.
 
 %post cpuplugd
-/sbin/chkconfig --add cpuplugd
+%systemd_post cpuplugd.service
 
 %preun cpuplugd
-if [ $1 = 0 ]; then
-        # not for updates
-        /sbin/service cpuplugd stop > /dev/null 2>&1
-        /sbin/chkconfig --del cpuplugd
-fi
-:
+%systemd_preun cpuplugd.service
+
+%postun cpuplugd
+%systemd_postun_with_restart cpuplugd.service
 
 %files cpuplugd
-%{_initddir}/cpuplugd
-%config(noreplace) %{_sysconfdir}/sysconfig/cpuplugd
+%config(noreplace) %{_sysconfdir}/cpuplugd.conf
 %{_sbindir}/cpuplugd
 %{_mandir}/man5/cpuplugd.conf.5*
 %{_mandir}/man8/cpuplugd.8*
+%{_unitdir}/cpuplugd.service
 
 #
 # *********************** s390-tools ziomon package  *************************
@@ -812,6 +809,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Sep 07 2016 Dan Horák <dan[at]danny.cz> - 2:1.36.0-1
+- rebased to 1.36.0
+- switch cpuplugd to systemd service
+
 * Fri Apr 22 2016 Dan Horák <dan[at]danny.cz> - 2:1.34.0-1
 - rebased to 1.34.0
 
