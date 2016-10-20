@@ -137,7 +137,7 @@ install -p -m 644 etc/sysconfig/mon_statd ${RPM_BUILD_ROOT}%{_sysconfdir}/syscon
 install -p -m 755 %{SOURCE19} ${RPM_BUILD_ROOT}%{_initddir}/mon_statd
 
 install -p -m 644 etc/cpuplugd.conf ${RPM_BUILD_ROOT}%{_sysconfdir}/
-install -p -m 755 systemd/cpuplugd.service ${RPM_BUILD_ROOT}%{_unitdir}/
+install -p -m 644 systemd/cpuplugd.service ${RPM_BUILD_ROOT}%{_unitdir}/
 
 install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}%{_udevrulesdir}
 
