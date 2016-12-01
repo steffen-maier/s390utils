@@ -4,7 +4,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.36.0
+Version:        1.36.1
 Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
@@ -809,6 +809,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Dec 01 2016 Dan Horák <dan[at]danny.cz> - 2:1.36.1-1
+- rebased to 1.36.1
+
 * Wed Sep 07 2016 Dan Horák <dan[at]danny.cz> - 2:1.36.0-1
 - rebased to 1.36.0
 - switch cpuplugd to systemd service
