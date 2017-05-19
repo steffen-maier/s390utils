@@ -4,8 +4,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
-Version:        1.36.1
-Release:        2%{?dist}
+Version:        1.37.1
+Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -32,7 +32,7 @@ Source17:       ccw.udev
 Source19:       mon_statd.initd
 Source21:       normalize_dasd_arg
 
-Patch1:         s390-tools-1.36.0-zipl-flags.patch
+Patch1:         s390-tools-1.37.1-zipl-flags.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -154,7 +154,7 @@ popd
 
 # install usefull headers for devel subpackage
 mkdir -p $RPM_BUILD_ROOT%{_includedir}/%{name}
-install -p -m 644 include/vtoc.h $RPM_BUILD_ROOT%{_includedir}/%{name}
+install -p -m 644 include/lib/vtoc.h $RPM_BUILD_ROOT%{_includedir}/%{name}
 
 # CPI
 install -p -m 644 %{SOURCE11} ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig/cpi
@@ -308,8 +308,6 @@ s390 base tools. This collection provides the following utilities:
                    adapters.
      - cio_ignore: Query and modify the contents of the CIO device driver
                    blacklist.
-     - lsmem:      Display the online status of the available memory.
-     - chmem:      Set hotplug memory online or offline.
 
    * dumpconf:
      Allows to configure the dump device used for system dump in case a kernel
@@ -386,11 +384,11 @@ fi
 %{_sbindir}/dbginfo.sh
 %{_bindir}/lscpumf
 %{_sbindir}/lsluns
-%{_sbindir}/lsmem
+%exclude %{_sbindir}/lsmem
 %{_sbindir}/lsreipl
 %{_sbindir}/lsshut
 %{_sbindir}/chcpumf
-%{_sbindir}/chmem
+%exclude %{_sbindir}/chmem
 %{_sbindir}/chreipl
 %{_sbindir}/chshut
 %{_sbindir}/ip_watcher.pl
@@ -399,6 +397,7 @@ fi
 %{_sbindir}/xcec-bridge
 %{_sbindir}/hyptop
 %{_bindir}/vmconvert
+%{_bindir}/dump2tar
 %{_initddir}/dumpconf
 %ghost %config(noreplace) %{_sysconfdir}/zipl.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
@@ -407,12 +406,13 @@ fi
 %{_mandir}/man1/zfcpdbf.1*
 %{_mandir}/man1/lscpumf.1*
 %{_mandir}/man1/vmconvert.1*
+%{_mandir}/man1/dump2tar.1*
 %{_mandir}/man4/prandom.4*
 %{_mandir}/man5/zipl.conf.5*
 %{_mandir}/man8/chccwdev.8*
 %{_mandir}/man8/chchp.8*
 %{_mandir}/man8/chcpumf.8*
-%{_mandir}/man8/chmem.8*
+%exclude %{_mandir}/man8/chmem.8*
 %{_mandir}/man8/chreipl.8*
 %{_mandir}/man8/chshut.8*
 %{_mandir}/man8/chzcrypt.8*
@@ -428,7 +428,7 @@ fi
 %{_mandir}/man8/lschp.8*
 %{_mandir}/man8/lscss.8*
 %{_mandir}/man8/lsdasd.8*
-%{_mandir}/man8/lsmem.8*
+%exclude %{_mandir}/man8/lsmem.8*
 %{_mandir}/man8/lsluns.8*
 %{_mandir}/man8/lsqeth.8*
 %{_mandir}/man8/lsreipl.8*
@@ -809,6 +809,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri May 19 2017 Dan Horák <dan[at]danny.cz> - 2:1.37.1-1
+- rebased to 1.37.1
+- removed chmem/lsmem as they are now provided by util-linux >= 2.30 (#1452792)
+
 * Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2:1.36.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
