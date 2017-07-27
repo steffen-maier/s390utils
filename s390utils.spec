@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.37.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -809,6 +809,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Jul 27 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2:1.37.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
 * Fri May 19 2017 Dan Horák <dan[at]danny.cz> - 2:1.37.1-1
 - rebased to 1.37.1
 - removed chmem/lsmem as they are now provided by util-linux >= 2.30 (#1452792)
