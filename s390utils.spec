@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM System/z
 Group:          System Environment/Base
 Version:        1.37.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -809,6 +809,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Aug 16 2017 Dan Horák <dan@danny.cz> - 2:1.37.1-4
+- rebuild for librpm soname bump in rpm 4.13.90
+
 * Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2:1.37.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
