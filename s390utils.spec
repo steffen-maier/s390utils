@@ -4,14 +4,14 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
-Version:        1.39.0
+Version:        2.0.0
 Release:        1%{?dist}
 Epoch:          2
-License:        GPLv2 and GPLv2+ and CPL
+License:        MIT
 ExclusiveArch:  s390 s390x
-URL:            http://www.ibm.com/developerworks/linux/linux390/s390-tools.html
-# http://www.ibm.com/developerworks/linux/linux390/s390-tools-%%{version}.html
-Source0:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/s390-tools-%{version}.tar.bz2
+#URL:            http://www.ibm.com/developerworks/linux/linux390/s390-tools.html
+URL:            https://github.com/ibm-s390-tools/s390-tools
+Source0:        https://github.com/ibm-s390-tools/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
 Source2:        s390.sh
 Source3:        s390.csh
 Source4:        http://www.linuxvm.org/Patches/S390/cmsfs-%{cmsfsver}.tar.gz
@@ -174,14 +174,14 @@ touch $RPM_BUILD_ROOT%{_sysconfdir}/zipl.conf
 
 
 %files
-%doc README
+%doc README.md
 
 #
 # ************************* s390-tools base package  *************************
 #
 %package base
-# src_vipa is CPL, the rest is GPLv2 or GPLv2+
-License:        GPLv2 and GPLv2+ and CPL
+# src_vipa is CPL
+License:        MIT and CPL
 Summary:        S390 base tools
 Group:          System Environment/Base
 Requires:       perl gawk sed coreutils
@@ -334,7 +334,7 @@ For more information refer to the following publications:
 %systemd_postun_with_restart dumpconf.service
 
 %files base
-%doc README zdev/src/*.txt
+%doc README.md zdev/src/*.txt
 %doc LICENSE
 %{_sbindir}/chccwdev
 %{_sbindir}/chchp
@@ -478,7 +478,6 @@ For more information refer to the following publications:
 # *********************** s390-tools osasnmpd package  ***********************
 #
 %package osasnmpd
-License:        GPLv2+
 Summary:        SNMP sub-agent for OSA-Express cards
 Group:          System Environment/Daemons
 Requires:       net-snmp
@@ -499,7 +498,6 @@ ATM Ethernet LAN Emulation in QDIO mode.
 # *********************** s390-tools mon_statd package  **********************
 #
 %package mon_statd
-License:         GPLv2
 Summary:         Monitoring daemons for Linux in z/VM
 Group:           System Environment/Daemons
 Requires:        coreutils
@@ -540,7 +538,6 @@ Monitoring daemons for Linux in z/VM:
 # *********************** s390-tools cpuplugd package  ***********************
 #
 %package cpuplugd
-License:         GPLv2+
 Summary:         Daemon that manages CPU and memory resources
 Group:           System Environment/Daemons
 %{?systemd_requires}
@@ -571,7 +568,6 @@ memory can be increased or decreased exploiting the CMM1 feature.
 # *********************** s390-tools ziomon package  *************************
 #
 %package ziomon
-License:        GPLv2
 Summary:        S390 ziomon tools
 Group:          Applications/System
 Requires:       blktrace
@@ -611,7 +607,6 @@ Tool set to collect data for zfcp performance analysis and report.
 # *********************** s390-tools iucvterm package  *************************
 #
 %package iucvterm
-License:        GPLv2
 Summary:        z/VM IUCV terminal applications
 Group:          Applications/System
 Requires(pre):  shadow-utils
@@ -699,7 +694,6 @@ This package contains the CMS file system tools.
 # *********************** cmsfs-fuse package  ***********************
 #
 %package cmsfs-fuse
-License:        GPLv2
 Summary:        CMS file system based on FUSE
 Group:          System Environment/Base
 BuildRequires:  fuse-devel
@@ -718,7 +712,6 @@ This package contains the CMS file system based on FUSE.
 # *********************** zdsfs package  ***********************
 #
 %package zdsfs
-License:        GPLv2
 Summary:        z/OS data set access based on FUSE
 Group:          System Environment/Base
 BuildRequires:  fuse-devel
@@ -735,7 +728,6 @@ This package contains the z/OS data set access based on FUSE.
 # *********************** hmcdrvfs package  ***********************
 #
 %package hmcdrvfs
-License:       GPLv2
 Summary:       HMC drive file system based on FUSE
 Group:         System Environment/Base
 BuildRequires: fuse-devel
@@ -755,7 +747,6 @@ to list files and directories.
 # *********************** cpacfstatsd package  ***********************
 #
 %package cpacfstatsd
-License:       GPLv2
 Summary:       Monitor and maintain CPACF activity counters
 Group:         System Environment/Base
 Requires(post): systemd
@@ -787,7 +778,6 @@ and maintain CPACF activity counters.
 # *********************** devel package  ***********************
 #
 %package devel
-License:        GPLv2
 Summary:        Development files
 Group:          Development/Libraries
 
@@ -799,6 +789,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Aug 23 2017 Dan Horák <dan[at]danny.cz> - 2:2.0.0-1
+- rebased to first public release on github, functionally same as 1.39.0
+- relicensed to MIT
+
 * Wed Aug 23 2017 Dan Horák <dan[at]danny.cz> - 2:1.39.0-1
 - rebased to 1.39.0
 - completed switch to systemd
