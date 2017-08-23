@@ -2,10 +2,10 @@
 %define vipaver 2.1.0
 
 Name:           s390utils
-Summary:        Utilities and daemons for IBM System/z
+Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
-Version:        1.37.1
-Release:        4%{?dist}
+Version:        1.39.0
+Release:        1%{?dist}
 Epoch:          2
 License:        GPLv2 and GPLv2+ and CPL
 ExclusiveArch:  s390 s390x
@@ -19,9 +19,6 @@ Source5:        zfcpconf.sh
 # http://www.ibm.com/developerworks/linux/linux390/src_vipa-%%{vipaver}.html
 Source6:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/src_vipa-%{vipaver}.tar.gz
 Source7:        zfcp.udev
-# files for the Control Program Identification (Linux Call Home) feature (#463282)
-Source10:       cpi.initd
-Source11:       cpi.sysconfig
 # files for DASD initialization
 Source12:       dasd.udev
 Source13:       dasdconf.sh
@@ -29,10 +26,7 @@ Source14:       device_cio_free
 Source15:       device_cio_free.service
 Source16:       ccw_init
 Source17:       ccw.udev
-Source19:       mon_statd.initd
 Source21:       normalize_dasd_arg
-
-Patch1:         s390-tools-1.37.1-zipl-flags.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -59,7 +53,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %setup -q -n s390-tools-%{version} -a 4 -a 6
 
 # Fedora/RHEL changes
-%patch1 -p1 -b .zipl-flags
+# none
 
 #
 # cmsfs
@@ -92,7 +86,7 @@ popd
 
 %build
 make \
-        OPT_FLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing" \
+        OPT_FLAGS="$RPM_OPT_FLAGS" \
         BINDIR=/usr/sbin \
         DISTRELEASE=%{release} \
         V=1
@@ -108,9 +102,6 @@ popd
 
 
 %install
-# workaround an issue in the zipl-device-mapper patch
-rm -f zipl/src/zipl_helper.device-mapper.*
-
 make install \
         DESTDIR=$RPM_BUILD_ROOT \
         BINDIR=/usr/sbin \
@@ -118,7 +109,7 @@ make install \
         DISTRELEASE=%{release} \
         V=1
 
-mkdir -p $RPM_BUILD_ROOT{/boot,%{_udevrulesdir},%{_initddir},%{_sysconfdir}/{profile.d,sysconfig}}
+mkdir -p $RPM_BUILD_ROOT{/boot,%{_udevrulesdir},%{_sysconfdir}/{profile.d,sysconfig}}
 install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
 install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
@@ -130,16 +121,21 @@ install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_udevrulesdir}/56-dasd.rules
 
 touch $RPM_BUILD_ROOT%{_sysconfdir}/{zfcp.conf,dasd.conf}
 
-install -p -m 644 etc/sysconfig/dumpconf ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-install -p -m 755 etc/init.d/dumpconf ${RPM_BUILD_ROOT}%{_initddir}/dumpconf
+install -p -m 644 etc/sysconfig/dumpconf $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
+install -p -m 644 systemd/dumpconf.service $RPM_BUILD_ROOT%{_unitdir}/
 
-install -p -m 644 etc/sysconfig/mon_statd ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig
-install -p -m 755 %{SOURCE19} ${RPM_BUILD_ROOT}%{_initddir}/mon_statd
+install -p -m 644 etc/sysconfig/mon_fsstatd $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
+install -p -m 644 etc/sysconfig/mon_procd $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
+install -p -m 644 systemd/mon_fsstatd.service $RPM_BUILD_ROOT%{_unitdir}/
+install -p -m 644 systemd/mon_procd.service $RPM_BUILD_ROOT%{_unitdir}/
 
-install -p -m 644 etc/cpuplugd.conf ${RPM_BUILD_ROOT}%{_sysconfdir}/
-install -p -m 644 systemd/cpuplugd.service ${RPM_BUILD_ROOT}%{_unitdir}/
+install -p -m 644 etc/cpuplugd.conf $RPM_BUILD_ROOT%{_sysconfdir}/
+install -p -m 644 systemd/cpuplugd.service $RPM_BUILD_ROOT%{_unitdir}/
 
-install -Dp -m 644 etc/udev/rules.d/*.rules ${RPM_BUILD_ROOT}%{_udevrulesdir}
+install -p -m 644 etc/sysconfig/cpi $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
+install -p -m 644 systemd/cpi.service $RPM_BUILD_ROOT%{_unitdir}/
+
+install -Dp -m 644 etc/udev/rules.d/*.rules $RPM_BUILD_ROOT%{_udevrulesdir}
 
 # cmsfs tools must be available in /sbin
 for f in cat lst vol cp ck; do
@@ -156,30 +152,25 @@ popd
 mkdir -p $RPM_BUILD_ROOT%{_includedir}/%{name}
 install -p -m 644 include/lib/vtoc.h $RPM_BUILD_ROOT%{_includedir}/%{name}
 
-# CPI
-install -p -m 644 %{SOURCE11} ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig/cpi
-install -p -m 755 %{SOURCE10} ${RPM_BUILD_ROOT}%{_initddir}/cpi
-
 # device_cio_free
-install -p -m 755 %{SOURCE14} ${RPM_BUILD_ROOT}%{_sbindir}
-pushd ${RPM_BUILD_ROOT}%{_sbindir}
+install -p -m 755 %{SOURCE14} $RPM_BUILD_ROOT%{_sbindir}
+pushd $RPM_BUILD_ROOT%{_sbindir}
 for lnk in dasd zfcp znet; do
     ln -sf device_cio_free ${lnk}_cio_free
 done
 popd
-mkdir -p ${RPM_BUILD_ROOT}/lib/systemd/system
-mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/systemd/system/sysinit.target.wants
-install -p -m 644 %{SOURCE15} ${RPM_BUILD_ROOT}%{_unitdir}
-pushd ${RPM_BUILD_ROOT}%{_sysconfdir}/systemd/system/sysinit.target.wants
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/systemd/system/sysinit.target.wants
+install -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT%{_unitdir}
+pushd $RPM_BUILD_ROOT%{_sysconfdir}/systemd/system/sysinit.target.wants
 ln -sf %{_unitdir}/device_cio_free.service device_cio_free.service
 popd
 
 # ccw
-install -p -m 755 %{SOURCE16} ${RPM_BUILD_ROOT}/usr/lib/udev/ccw_init
-install -p -m 644 %{SOURCE17} ${RPM_BUILD_ROOT}%{_udevrulesdir}/81-ccw.rules
+install -p -m 755 %{SOURCE16} $RPM_BUILD_ROOT/usr/lib/udev/ccw_init
+install -p -m 644 %{SOURCE17} $RPM_BUILD_ROOT%{_udevrulesdir}/81-ccw.rules
 
 # zipl.conf to be ghosted
-touch ${RPM_BUILD_ROOT}%{_sysconfdir}/zipl.conf
+touch $RPM_BUILD_ROOT%{_sysconfdir}/zipl.conf
 
 
 %files
@@ -197,9 +188,7 @@ Requires:       perl gawk sed coreutils
 Requires:       sysfsutils
 Requires:       sg3_utils
 Requires:       ethtool
-Requires(pre):   chkconfig
-Requires(preun): chkconfig
-Requires(preun): initscripts
+%{?systemd_requires}
 BuildRequires:  ncurses-devel
 BuildRequires:  libpfm-devel
 BuildRequires:  glibc-static
@@ -333,86 +322,88 @@ For more information refer to the following publications:
    * "Using the dump tools"
 
 %post base
-/sbin/chkconfig --add dumpconf
-/sbin/chkconfig --add cpi
+%systemd_post cpi.service
+%systemd_post dumpconf.service
 
 %preun base
-if [ $1 = 0 ]; then
-        # not for updates
-        /sbin/service dumpconf stop > /dev/null 2>&1
-        /sbin/chkconfig --del dumpconf
-        /sbin/service cpi stop > /dev/null 2>&1
-        /sbin/chkconfig --del cpi
-fi
-:
+%systemd_preun cpi.service
+%systemd_preun dumpconf.service
+
+%postun base
+%systemd_postun_with_restart cpi.service
+%systemd_postun_with_restart dumpconf.service
 
 %files base
 %doc README zdev/src/*.txt
 %doc LICENSE
-%{_sbindir}/zipl
+%{_sbindir}/chccwdev
+%{_sbindir}/chchp
+%{_sbindir}/chcpumf
+%{_sbindir}/chreipl
+%{_sbindir}/chshut
+%{_sbindir}/chzcrypt
+%{_sbindir}/chzdev
+%{_sbindir}/cio_ignore
 %{_sbindir}/dasdfmt
 %{_sbindir}/dasdinfo
 %{_sbindir}/dasdstat
 %{_sbindir}/dasdview
+%{_sbindir}/dbginfo.sh
 %{_sbindir}/fdasd
-%{_sbindir}/chccwdev
-%{_sbindir}/chchp
-%{_sbindir}/chzcrypt
-%{_sbindir}/chzdev
-%{_sbindir}/cio_ignore
+%{_sbindir}/hyptop
+%{_sbindir}/ip_watcher.pl
 %{_sbindir}/lschp
 %{_sbindir}/lscss
 %{_sbindir}/lsdasd
 %{_sbindir}/lsqeth
+%{_sbindir}/lsluns
+%{_sbindir}/lsreipl
 %{_sbindir}/lsscm
+%{_sbindir}/lsshut
 %{_sbindir}/lstape
 %{_sbindir}/lszcrypt
 %{_sbindir}/lszdev
 %{_sbindir}/lszfcp
-%{_sbindir}/scsi_logging_level
-%{_sbindir}/zfcpdbf
 %{_sbindir}/qetharp
 %{_sbindir}/qethconf
 %{_sbindir}/qethqoat
-%{_sbindir}/tape390_display
+%{_sbindir}/scsi_logging_level
+%{_sbindir}/start_hsnc.sh
 %{_sbindir}/tape390_crypt
+%{_sbindir}/tape390_display
 %{_sbindir}/ttyrun
 %{_sbindir}/tunedasd
 %{_sbindir}/vmcp
-%{_sbindir}/zgetdump
-%{_sbindir}/znetconf
-%{_sbindir}/dbginfo.sh
-%{_bindir}/lscpumf
-%{_sbindir}/lsluns
-%exclude %{_sbindir}/lsmem
-%{_sbindir}/lsreipl
-%{_sbindir}/lsshut
-%{_sbindir}/chcpumf
-%exclude %{_sbindir}/chmem
-%{_sbindir}/chreipl
-%{_sbindir}/chshut
-%{_sbindir}/ip_watcher.pl
-%{_sbindir}/start_hsnc.sh
 %{_sbindir}/vmur
 %{_sbindir}/xcec-bridge
-%{_sbindir}/hyptop
-%{_bindir}/vmconvert
+%{_sbindir}/zfcpdbf
+%{_sbindir}/zgetdump
+%{_sbindir}/zipl
+%{_sbindir}/znetconf
+%{_bindir}/lscpumf
+# provided by util-linux
+%exclude %{_sbindir}/lsmem
+%exclude %{_sbindir}/chmem
 %{_bindir}/dump2tar
-%{_initddir}/dumpconf
+%{_bindir}/vmconvert
+%{_bindir}/zkey
+%{_unitdir}/cpi.service
+%{_unitdir}/dumpconf.service
 %ghost %config(noreplace) %{_sysconfdir}/zipl.conf
+%config(noreplace) %{_sysconfdir}/sysconfig/cpi
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
 /lib/s390-tools
 %{_mandir}/man1/dbginfo.sh.1*
-%{_mandir}/man1/zfcpdbf.1*
+%{_mandir}/man1/dump2tar.1*
 %{_mandir}/man1/lscpumf.1*
 %{_mandir}/man1/vmconvert.1*
-%{_mandir}/man1/dump2tar.1*
+%{_mandir}/man1/zfcpdbf.1*
+%{_mandir}/man1/zkey.1*
 %{_mandir}/man4/prandom.4*
 %{_mandir}/man5/zipl.conf.5*
 %{_mandir}/man8/chccwdev.8*
 %{_mandir}/man8/chchp.8*
 %{_mandir}/man8/chcpumf.8*
-%exclude %{_mandir}/man8/chmem.8*
 %{_mandir}/man8/chreipl.8*
 %{_mandir}/man8/chshut.8*
 %{_mandir}/man8/chzcrypt.8*
@@ -428,7 +419,6 @@ fi
 %{_mandir}/man8/lschp.8*
 %{_mandir}/man8/lscss.8*
 %{_mandir}/man8/lsdasd.8*
-%exclude %{_mandir}/man8/lsmem.8*
 %{_mandir}/man8/lsluns.8*
 %{_mandir}/man8/lsqeth.8*
 %{_mandir}/man8/lsreipl.8*
@@ -450,6 +440,9 @@ fi
 %{_mandir}/man8/zgetdump.8*
 %{_mandir}/man8/znetconf.8*
 %{_mandir}/man8/zipl.8*
+# provided by util-linux
+%exclude %{_mandir}/man8/chmem.8*
+%exclude %{_mandir}/man8/lsmem.8*
 %dir %{_datadir}/s390-tools/
 %{_datadir}/s390-tools/cpumf/
 
@@ -459,8 +452,6 @@ fi
 %{_sysconfdir}/profile.d/s390.sh
 %ghost %config(noreplace) %{_sysconfdir}/dasd.conf
 %ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
-%{_initddir}/cpi
-%config(noreplace) %{_sysconfdir}/sysconfig/cpi
 %{_sbindir}/dasdconf.sh
 %{_sbindir}/zfcpconf.sh
 %{_sbindir}/dasd_cio_free
@@ -512,9 +503,7 @@ License:         GPLv2
 Summary:         Monitoring daemons for Linux in z/VM
 Group:           System Environment/Daemons
 Requires:        coreutils
-Requires(pre):   chkconfig
-Requires(preun): chkconfig
-Requires(preun): initscripts
+%{?systemd_requires}
 
 %description mon_statd
 Monitoring daemons for Linux in z/VM:
@@ -526,21 +515,24 @@ Monitoring daemons for Linux in z/VM:
                  monitor stream.
 
 %post mon_statd
-/sbin/chkconfig --add mon_statd
+%systemd_post mon_fsstatd.service
+%systemd_post mon_procd.service
 
 %preun mon_statd
-if [ $1 = 0 ]; then
-        # not for updates
-        /sbin/service mon_statd stop > /dev/null 2>&1
-        /sbin/chkconfig --del mon_statd
-fi
-:
+%systemd_preun mon_fsstatd.service
+%systemd_preun mon_procd.service
+
+%postun mon_statd
+%systemd_postun_with_restart mon_fsstatd.service
+%systemd_postun_with_restart mon_procd.service
 
 %files mon_statd
 %{_sbindir}/mon_fsstatd
 %{_sbindir}/mon_procd
-%config(noreplace) %{_sysconfdir}/sysconfig/mon_statd
-%{_initddir}/mon_statd
+%config(noreplace) %{_sysconfdir}/sysconfig/mon_fsstatd
+%config(noreplace) %{_sysconfdir}/sysconfig/mon_procd
+%{_unitdir}/mon_fsstatd.service
+%{_unitdir}/mon_procd.service
 %{_mandir}/man8/mon_fsstatd.8*
 %{_mandir}/man8/mon_procd.8*
 
@@ -551,9 +543,7 @@ fi
 License:         GPLv2+
 Summary:         Daemon that manages CPU and memory resources
 Group:           System Environment/Daemons
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
+%{?systemd_requires}
 BuildRequires: systemd
 
 %description cpuplugd
@@ -809,6 +799,11 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Aug 23 2017 Dan Horák <dan[at]danny.cz> - 2:1.39.0-1
+- rebased to 1.39.0
+- completed switch to systemd
+- further cleanups and consolidation
+
 * Wed Aug 16 2017 Dan Horák <dan@danny.cz> - 2:1.37.1-4
 - rebuild for librpm soname bump in rpm 4.13.90
 
