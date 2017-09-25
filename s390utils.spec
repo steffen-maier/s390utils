@@ -4,7 +4,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
-Version:        2.0.0
+Version:        2.1.0
 Release:        1%{?dist}
 Epoch:          2
 License:        MIT
@@ -445,6 +445,7 @@ For more information refer to the following publications:
 %exclude %{_mandir}/man8/lsmem.8*
 %dir %{_datadir}/s390-tools/
 %{_datadir}/s390-tools/cpumf/
+%{_datadir}/s390-tools/netboot/
 
 # Additional Redhat specific stuff
 /boot/tape0
@@ -468,6 +469,7 @@ For more information refer to the following publications:
 %{_udevrulesdir}/59-dasd.rules
 %{_udevrulesdir}/60-readahead.rules
 %{_udevrulesdir}/81-ccw.rules
+%{_udevrulesdir}/90-cpi.rules
 
 # src_vipa
 %{_bindir}/src_vipa.sh
@@ -789,6 +791,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Sep 25 2017 Dan Horák <dan[at]danny.cz> - 2:2.1.0-1
+- rebased to 2.1.0
+
 * Wed Aug 23 2017 Dan Horák <dan[at]danny.cz> - 2:2.0.0-1
 - rebased to first public release on github, functionally same as 1.39.0
 - relicensed to MIT
