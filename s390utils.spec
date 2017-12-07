@@ -4,7 +4,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
-Version:        2.1.0
+Version:        2.2.0
 Release:        1%{?dist}
 Epoch:          2
 License:        MIT
@@ -381,9 +381,6 @@ For more information refer to the following publications:
 %{_sbindir}/zipl
 %{_sbindir}/znetconf
 %{_bindir}/lscpumf
-# provided by util-linux
-%exclude %{_sbindir}/lsmem
-%exclude %{_sbindir}/chmem
 %{_bindir}/dump2tar
 %{_bindir}/vmconvert
 %{_bindir}/zkey
@@ -440,9 +437,6 @@ For more information refer to the following publications:
 %{_mandir}/man8/zgetdump.8*
 %{_mandir}/man8/znetconf.8*
 %{_mandir}/man8/zipl.8*
-# provided by util-linux
-%exclude %{_mandir}/man8/chmem.8*
-%exclude %{_mandir}/man8/lsmem.8*
 %dir %{_datadir}/s390-tools/
 %{_datadir}/s390-tools/cpumf/
 %{_datadir}/s390-tools/netboot/
@@ -791,6 +785,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Dec 07 2017 Dan Horák <dan[at]danny.cz> - 2:2.2.0-1
+- rebased to 2.2.0
+
 * Mon Sep 25 2017 Dan Horák <dan[at]danny.cz> - 2:2.1.0-1
 - rebased to 2.1.0
 
