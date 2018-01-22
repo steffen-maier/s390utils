@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.2.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -27,6 +27,9 @@ Source15:       device_cio_free.service
 Source16:       ccw_init
 Source17:       ccw.udev
 Source21:       normalize_dasd_arg
+
+# https://github.com/ibm-s390-tools/s390-tools/commit/05de40cdeb0e1343343692e621a4bd6010d8cf6b
+Patch0: s390-tools-2.2.0-delim.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -51,6 +54,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 %prep
 %setup -q -n s390-tools-%{version} -a 4 -a 6
+%patch0 -p1
 
 # Fedora/RHEL changes
 # none
@@ -785,6 +789,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Jan 22 2018 Dan Horák <dan[at]danny.cz> - 2:2.2.0-2
+- fix build with non-standard %%dist
+
 * Thu Dec 07 2017 Dan Horák <dan[at]danny.cz> - 2:2.2.0-1
 - rebased to 2.2.0
 
