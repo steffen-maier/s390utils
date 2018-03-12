@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.3.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -86,18 +86,18 @@ popd
 
 %build
 make \
-        OPT_FLAGS="$RPM_OPT_FLAGS" \
+        CFLAGS="%{build_cflags}" CXXFLAGS="%{build_cflags}" LDFLAGS="%{build_ldflags}" \
         BINDIR=/usr/sbin \
         DISTRELEASE=%{release} \
         V=1
 
 pushd cmsfs-%{cmsfsver}
 ./configure
-make CC="gcc $RPM_OPT_FLAGS -fno-strict-aliasing"
+make CC="gcc %{build_cflags} -fno-strict-aliasing %{build_ldflags}"
 popd
 
 pushd src_vipa-%{vipaver}
-make CC_FLAGS="$RPM_OPT_FLAGS -fPIC" LIBDIR=%{_libdir}
+make CC_FLAGS="%{build_cflags} -fPIC" LD_FLAGS="%{build_ldflags} -shared" LIBDIR=%{_libdir}
 popd
 
 
@@ -785,6 +785,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Mar 12 2018 Dan Horák <dan[at]danny.cz> - 2:2.3.0-2
+- fix LDFLAGS injection (#1552661)
+
 * Wed Feb 21 2018 Rafael Santos <rdossant@redhat.com> - 2:2.3.0-1
 - rebased to 2.3.0
 
