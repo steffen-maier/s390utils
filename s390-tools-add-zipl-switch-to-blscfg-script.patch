@@ -1,0 +1,300 @@
+From 24369c7677048518858dfbc6d5e609f64a42eff6 Mon Sep 17 00:00:00 2001
+From: Javier Martinez Canillas <javierm@redhat.com>
+Date: Wed, 2 May 2018 12:27:05 +0200
+Subject: [PATCH] scripts: Add script to switch zipl config to a
+ BootLoaderSpec setup
+
+Add a zipl-switch-to-blscfg script that can be used to switch the zipl
+configuration in a system to use the BootLoaderSpec (BLS) config files
+to define the IPL sections instead of having them defined in zipl.conf.
+
+Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+---
+ scripts/Makefile                |   4 +-
+ scripts/zipl-switch-to-blscfg   | 207 ++++++++++++++++++++++++++++++++
+ scripts/zipl-switch-to-blscfg.1 |  45 +++++++
+ 3 files changed, 254 insertions(+), 2 deletions(-)
+ create mode 100755 scripts/zipl-switch-to-blscfg
+ create mode 100644 scripts/zipl-switch-to-blscfg.1
+
+diff --git a/scripts/Makefile b/scripts/Makefile
+index dc5b0f0dbe7..1a33e319693 100644
+--- a/scripts/Makefile
++++ b/scripts/Makefile
+@@ -1,7 +1,7 @@
+ include ../common.mak
+ 
+-SCRIPTS	= dbginfo.sh zfcpdbf scsi_logging_level
+-MAN_PAGES = dbginfo.sh.1 zfcpdbf.1
++SCRIPTS	= dbginfo.sh zfcpdbf zipl-switch-to-blscfg scsi_logging_level
++MAN_PAGES = dbginfo.sh.1 zfcpdbf.1 zipl-switch-to-blscfg.1
+ 
+ all:
+ 
+diff --git a/scripts/zipl-switch-to-blscfg b/scripts/zipl-switch-to-blscfg
+new file mode 100755
+index 00000000000..871935c783f
+--- /dev/null
++++ b/scripts/zipl-switch-to-blscfg
+@@ -0,0 +1,207 @@
++#!/bin/bash
++#
++# zipl-switch-to-blscfg - Switch zipl to use BootLoaderSpec configuration
++#
++# Copyright 2018 Red Hat, Inc.
++#
++# s390-tools is free software; you can redistribute it and/or modify
++# it under the terms of the MIT license. See LICENSE for details.
++#
++
++readonly SCRIPTNAME="${0##*/}"
++
++declare -A zipl_to_bls
++zipl_to_bls["image"]="linux"
++zipl_to_bls["ramdisk"]="initrd"
++zipl_to_bls["parameters"]="options"
++
++print_error() {
++    echo "$1" >&2
++    exit 1
++}
++
++function on_exit() {
++    if ! rm -rf $TMP; then
++        echo "Delete temporary files failed!" >&2
++        exit 1
++    fi
++}
++
++if ! TMP="$(mktemp -d)"; then
++    print_error "Creating a temporary dir for config files failed!"
++fi
++
++trap 'on_exit' EXIT
++
++print_version() {
++    cat <<EOF
++${SCRIPTNAME}: version %S390_TOOLS_VERSION%
++Copyright Red Hat, Inc. 2018
++EOF
++}
++
++print_usage()
++{
++    print_version
++
++    cat <<EOF
++
++Usage: ${SCRIPTNAME} [OPTIONS]
++
++Switches the zipl boot-loader configuration to use BootLoaderSpec files.
++
++Options:
++
++	-h, --help		print this help and exit
++	-v, --version      	print version information and exit
++	--backup-suffix=SUFFIX  suffix used for backup files, defaults to .bak
++	--bls-directory=DIR     path to generate BLS files, defaults to /boot/loader/entries
++	--config-file=FILE      path to zipl configuration file, defaults to /etc/zipl.conf
++	--ignore-default	ignore the default option from the zipl configuration file
++	--use-version-name	use the section kernel version as the BLS file name
++
++EOF
++}
++
++OPTS="$(getopt -o hv --long help,version,backup-suffix:,bls-directory:,config-file:,\
++ignore-default,use-version-name -n \'$SCRIPTNAME\' -- "$@")"
++eval set -- "$OPTS"
++
++BACKUP_SUFFIX=.bak
++BLS_DIR="/boot/loader/entries"
++CMDLINE_LINUX_DEBUG=" systemd.log_level=debug systemd.log_target=kmsg"
++LINUX_DEBUG_VERSION_POSTFIX="_with_debugging"
++LINUX_DEBUG_TITLE_POSTFIX=" with debugging"
++CONFIG="/etc/zipl.conf"
++
++while [ ${#} -gt 0 ]; do
++    case "$1" in
++	--help|-h)
++	    print_usage
++	    exit 0
++	    ;;
++	--version|-v)
++	    print_version
++	    exit 0
++	    ;;
++	--backup-suffix)
++	    BACKUP_SUFFIX=${2}
++	    shift
++	    ;;
++	--bls-directory)
++	    BLS_DIR=${2}
++	    shift
++	    ;;
++	--config-file)
++	    CONFIG=${2}
++	    shift
++	    ;;
++	--ignore-default)
++	    ignore_default=true
++	    ;;
++	--use-version-name)
++	    version_name=true
++	    ;;
++	--)
++	    shift
++	    break
++	    ;;
++	*)
++	    echo >&2
++	    echo "${SCRIPTNAME}: invalid option \"${1}\"" >&2
++	    echo "Try '${SCRIPTNAME} --help' for more information" >&2
++	    echo >&2
++	    exit 1
++	    ;;
++    esac
++    shift
++done
++
++TMP_CONFIG="${TMP}/${CONFIG##*/}"
++
++[[ -d "$BLS_DIR" ]] || mkdir -m 0700 -p "$BLS_DIR"
++
++if [ -f /etc/machine-id ]; then
++    read MACHINE_ID < /etc/machine-id
++    MACHINE_ID=${MACHINE_ID}-
++fi
++
++count=0
++OUTPUT=""
++TARGET=""
++while IFS='= ' read key val; do
++    # for BLS the default kernel is always the latest one
++    if [[ $key == \#* ]] || [[ $key == "default" && $ignore_default == true ]]; then
++        continue
++    fi
++
++    # remove spaces
++    key="$(echo $key | sed -e 's/^[ \t"]*//;s/[ \t"]*$//')"
++
++    if [[ $key = \[*] ]]; then
++        if [[ $key == "[defaultboot]" ]]; then
++            OUTPUT=${TMP_CONFIG}
++            echo $key >> ${OUTPUT}
++        else
++            key="${key%\]}"
++            key="${key#\[}"
++            OUTPUT=${BLS_DIR}/${MACHINE_ID}${key}.conf
++            if [ -f "${OUTPUT}" ]; then
++                print_error "BLS file ${OUTPUT} already exists"
++            fi
++        fi
++    elif [[ $val ]]; then
++        val="$(echo $val | sed -e 's/^[ \t"]*//;s/[ \t"]*$//')"
++        if [[ $key == "target" ]]; then
++            if [ -z ${TARGET} ]; then
++                echo $key=$val >> ${TMP_CONFIG}
++                TARGET=$val
++            else if [ "${TARGET}" != "${val}" ]; then
++                     print_error "BLS is only supported if all sections have the same target"
++                 fi
++            fi
++        else
++            if [ -n "${zipl_to_bls[$key]}" ]; then
++		if [[ $key = "image" ]]; then
++                    if [[ $val = *"vmlinuz-"* ]]; then
++                        version="${val##*/vmlinuz-}"
++                    else
++                        version="${val##*/}"
++                    fi
++                    echo "version $version" >> ${OUTPUT}
++                    if [[ $version = *"rescue"* ]]; then
++                        FILENAME=${BLS_DIR}/${MACHINE_ID}0-rescue.conf
++                    else
++                        FILENAME=${BLS_DIR}/${MACHINE_ID}${version}.conf
++                    fi
++
++                    if [[ ${OUTPUT} != ${FILENAME} && $version_name == true ]]; then
++                        mv ${OUTPUT} ${FILENAME}
++                        if [ ! $? -eq 0 ]; then
++                            print_error "Creating BLS file ${FILENAME} failed"
++                        fi
++                        OUTPUT=${FILENAME}
++                    fi
++		fi
++
++                echo "${zipl_to_bls[$key]} ${val}" >> ${OUTPUT}
++            else
++                echo $key=$val >> ${TMP_CONFIG}
++            fi
++        fi
++    fi
++done < "${CONFIG}"
++
++if [ -f "${CONFIG}${BACKUP_SUFFIX}" ]; then
++    print_error "Backup file ${CONFIG}${BACKUP_SUFFIX} already exists"
++fi
++
++cp -af "${CONFIG}" "${CONFIG}${BACKUP_SUFFIX}"
++mv "${TMP_CONFIG}" "${CONFIG}"
++
++zipl > /dev/null
++if [ ! $? -eq 0 ]; then
++    mv "${CONFIG}${BACKUP_SUFFIX}" "${CONFIG}"
++fi
++
++exit 0
+diff --git a/scripts/zipl-switch-to-blscfg.1 b/scripts/zipl-switch-to-blscfg.1
+new file mode 100644
+index 00000000000..6bd14d00d14
+--- /dev/null
++++ b/scripts/zipl-switch-to-blscfg.1
+@@ -0,0 +1,45 @@
++.TH ZIPL-SWITCH-TO-BLSCFG  1 "April 2018" "s390-tools"
++
++.SH NAME
++zipl-switch-to-blscfg \- Switch zipl to use BootLoaderSpec configuration
++
++.SH SYNOPSIS
++.br
++\fBzipl-switch-to-blscfg\fP [OPTIONS]
++.br
++\fBzipl-switch-to-blscfg\fP {\-h|\-v}
++
++.SH DESCRIPTION
++This script switches the zipl boot-loader configuration to use BootLoaderSpec files
++to define IPL sections. For each Linux kernel defined in the zipl.conf config file,
++a BLS fragment is generated in the BLS directory specified. Also, the zipl.conf is
++modified it only contains global configurations, all IPL sections comes from BLS.
++
++.SH OPTIONS
++.TP
++\fB\-h\fP, \fB\-\-help\fP
++Print this help and exit
++
++.TP
++\fB\-v\fP, \fB\-\-version\fP
++Print version information and exit
++
++.TP
++\fB\-\-backup-suffix <SUFFIX>\fP
++The suffix used for backup files, defaults to .bak.
++
++.TP
++\fB\-\-bls-directory <DIRECTORY>\fP
++The DIRECTORY where the BLS fragments will be generated. The directory is created if it doesn't exists, by default /boot/loader/entries is used.
++
++.TP
++\fB\-\-config-file <FILE>\fP
++The FILE used for zipl configuration file, defaults to /etc/zipl.conf.
++
++.TP
++\fB\-\-ignore-default\fP
++Ignore the default option from the zipl configuration file
++
++.TP
++\fB\-\-use-version-name\fP
++Use the section kernel version as the BLS file name
+-- 
+2.17.0
+

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+COMMAND="$1"
+
+case "$COMMAND" in
+    add|remove)
+	zipl > /dev/null
+	;;
+    *)
+        ;;
+esac

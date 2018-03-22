@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.4.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -27,9 +27,17 @@ Source15:       device_cio_free.service
 Source16:       ccw_init
 Source17:       ccw.udev
 Source21:       normalize_dasd_arg
+Source22:       20-zipl-kernel.install
+Source23:       52-zipl-rescue.install
+Source24:       91-zipl.install
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1566140
 Patch0:         s390-tools-2.3.0-zipl-pie.patch
+# https://github.com/ibm-s390-tools/s390-tools/pull/28
+Patch1:         s390-tools-zipl-Return-number-allocated-tokens.patch
+Patch2:         s390-tools-zipl-Add-BootLoaderSpec-support.patch
+Patch3:         s390-tools-add-zipl-switch-to-blscfg-script.patch
+Patch4:         s390-tools-zipl-invert-script-options.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -57,6 +65,10 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-pie
+%patch1 -p1 -b .number-allocated-tokens
+%patch2 -p1 -b .add-BootLoaderSpec-support
+%patch3 -p1 -b .add-zipl-switch-to-blscfg
+%patch4 -p1 -b .zipl-invert-script-options
 
 #
 # cmsfs
@@ -139,6 +151,14 @@ install -p -m 644 etc/sysconfig/cpi $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
 install -p -m 644 systemd/cpi.service $RPM_BUILD_ROOT%{_unitdir}/
 
 install -Dp -m 644 etc/udev/rules.d/*.rules $RPM_BUILD_ROOT%{_udevrulesdir}
+
+# Install kernel-install scripts
+install -d -m 0755 %{buildroot}%{_prefix}/lib/kernel/install.d/
+install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE22}
+install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE23}
+install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE24}
+install -d -m 0755 %{buildroot}%{_sysconfdir}/kernel/install.d/
+install -m 0644 /dev/null %{buildroot}%{_sysconfdir}/kernel/install.d/20-grubby.install
 
 # cmsfs tools must be available in /sbin
 for f in cat lst vol cp ck; do
@@ -382,6 +402,7 @@ For more information refer to the following publications:
 %{_sbindir}/zfcpdbf
 %{_sbindir}/zgetdump
 %{_sbindir}/zipl
+%{_sbindir}/zipl-switch-to-blscfg
 %{_sbindir}/znetconf
 %{_bindir}/lscpumf
 %{_bindir}/dump2tar
@@ -398,6 +419,7 @@ For more information refer to the following publications:
 %{_mandir}/man1/lscpumf.1*
 %{_mandir}/man1/vmconvert.1*
 %{_mandir}/man1/zfcpdbf.1*
+%{_mandir}/man1/zipl-switch-to-blscfg.1*
 %{_mandir}/man1/zkey.1*
 %{_mandir}/man4/prandom.4*
 %{_mandir}/man5/zipl.conf.5*
@@ -467,6 +489,10 @@ For more information refer to the following publications:
 %{_udevrulesdir}/60-readahead.rules
 %{_udevrulesdir}/81-ccw.rules
 %{_udevrulesdir}/90-cpi.rules
+%{_sysconfdir}/kernel/install.d/20-grubby.install
+%{_prefix}/lib/kernel/install.d/20-zipl-kernel.install
+%{_prefix}/lib/kernel/install.d/52-zipl-rescue.install
+%{_prefix}/lib/kernel/install.d/91-zipl.install
 
 # src_vipa
 %{_bindir}/src_vipa.sh
@@ -788,6 +814,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu May 24 2018 Javier Martinez Canillas <javierm@redhat.com> - 2:2.4.0-2
+- zipl: Add BootLoaderSpec support
+- Add kernel-install scripts to create BLS fragment files
+
 * Wed May 09 2018 Dan Horák <dan[at]danny.cz> - 2:2.4.0-1
 - rebased to 2.4.0
 
