@@ -1,0 +1,19 @@
+commit d87a3499ac4bb3f834982506c5b00d6470e1f015
+Author: Dan Horák <dan@danny.cz>
+Date:   Fri Apr 13 10:51:00 2018 +0200
+
+    compute the bootloader stage size to workaround PIE
+
+diff --git a/zipl/src/boot.c b/zipl/src/boot.c
+index 9daf47b..279d246 100644
+--- a/zipl/src/boot.c
++++ b/zipl/src/boot.c
+@@ -21,7 +21,7 @@
+ #include "error.h"
+ #include "misc.h"
+ 
+-#define DATA_SIZE(x)	((size_t) (&_binary_##x##_bin_size))
++#define DATA_SIZE(x)	((size_t) (&_binary_##x##_bin_end - &_binary_##x##_bin_start))
+ #define DATA_ADDR(x)	(&_binary_##x##_bin_start)
+ 
+ #define STAGE2_MAX_SIZE		0x3000

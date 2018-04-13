@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.3.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -27,6 +27,9 @@ Source15:       device_cio_free.service
 Source16:       ccw_init
 Source17:       ccw.udev
 Source21:       normalize_dasd_arg
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1566140
+Patch0:         s390-tools-2.3.0-zipl-pie.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -53,7 +56,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %setup -q -n s390-tools-%{version} -a 4 -a 6
 
 # Fedora/RHEL changes
-# none
+%patch0 -p1 -b .zipl-pie
 
 #
 # cmsfs
@@ -785,6 +788,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Apr 13 2018 Dan Horák <dan[at]danny.cz> - 2:2.3.0-3
+- fix building zipl with PIE (#1566140)
+
 * Mon Mar 12 2018 Dan Horák <dan[at]danny.cz> - 2:2.3.0-2
 - fix LDFLAGS injection (#1552661)
 
