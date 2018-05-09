@@ -4,8 +4,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
-Version:        2.3.0
-Release:        3%{?dist}
+Version:        2.4.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -788,6 +788,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed May 09 2018 Dan Horák <dan[at]danny.cz> - 2:2.4.0-1
+- rebased to 2.4.0
+
 * Fri Apr 13 2018 Dan Horák <dan[at]danny.cz> - 2:2.3.0-3
 - fix building zipl with PIE (#1566140)
 
