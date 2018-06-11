@@ -4,8 +4,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
-Version:        2.4.0
-Release:        2%{?dist}
+Version:        2.5.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -31,13 +31,8 @@ Source22:       20-zipl-kernel.install
 Source23:       52-zipl-rescue.install
 Source24:       91-zipl.install
 
-# https://bugzilla.redhat.com/show_bug.cgi?id=1566140
-Patch0:         s390-tools-2.3.0-zipl-pie.patch
-# https://github.com/ibm-s390-tools/s390-tools/pull/28
-Patch1:         s390-tools-zipl-Return-number-allocated-tokens.patch
-Patch2:         s390-tools-zipl-Add-BootLoaderSpec-support.patch
-Patch3:         s390-tools-add-zipl-switch-to-blscfg-script.patch
-Patch4:         s390-tools-zipl-invert-script-options.patch
+# change the defaults to match Fedora environment
+Patch0:         s390-tools-zipl-invert-script-options.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -64,11 +59,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %setup -q -n s390-tools-%{version} -a 4 -a 6
 
 # Fedora/RHEL changes
-%patch0 -p1 -b .zipl-pie
-%patch1 -p1 -b .number-allocated-tokens
-%patch2 -p1 -b .add-BootLoaderSpec-support
-%patch3 -p1 -b .add-zipl-switch-to-blscfg
-%patch4 -p1 -b .zipl-invert-script-options
+%patch0 -p1 -b .zipl-invert-script-options
 
 #
 # cmsfs
@@ -814,6 +805,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Jun 11 2018 Dan Horák <dan[at]danny.cz> - 2:2.5.0-1
+- rebased to 2.5.0
+
 * Thu May 24 2018 Javier Martinez Canillas <javierm@redhat.com> - 2:2.4.0-2
 - zipl: Add BootLoaderSpec support
 - Add kernel-install scripts to create BLS fragment files
