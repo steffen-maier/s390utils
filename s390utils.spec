@@ -46,6 +46,7 @@ Requires:       s390utils-iucvterm = %{epoch}:%{version}-%{release}
 Requires:       s390utils-ziomon = %{epoch}:%{version}-%{release}
 Requires:       s390utils-cmsfs = %{epoch}:%{version}-%{release}
 
+BuildRequires:  gcc-c++
 
 %description
 This is a meta package for installing the default s390-tools sub packages.
