@@ -5,15 +5,13 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.5.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
 #URL:            http://www.ibm.com/developerworks/linux/linux390/s390-tools.html
 URL:            https://github.com/ibm-s390-tools/s390-tools
 Source0:        https://github.com/ibm-s390-tools/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
-Source2:        s390.sh
-Source3:        s390.csh
 Source4:        http://www.linuxvm.org/Patches/S390/cmsfs-%{cmsfsver}.tar.gz
 Source5:        zfcpconf.sh
 # http://www.ibm.com/developerworks/linux/linux390/src_vipa-%%{vipaver}.html
@@ -118,8 +116,6 @@ make install \
 
 mkdir -p $RPM_BUILD_ROOT{/boot,%{_udevrulesdir},%{_sysconfdir}/{profile.d,sysconfig}}
 install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
-install -p -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
-install -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/profile.d
 install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT%{_sbindir}
 install -p -m 755 %{SOURCE13} $RPM_BUILD_ROOT%{_sbindir}
 install -p -m 755 %{SOURCE21} $RPM_BUILD_ROOT%{_sbindir}
@@ -461,8 +457,6 @@ For more information refer to the following publications:
 
 # Additional Redhat specific stuff
 /boot/tape0
-%{_sysconfdir}/profile.d/s390.csh
-%{_sysconfdir}/profile.d/s390.sh
 %ghost %config(noreplace) %{_sysconfdir}/dasd.conf
 %ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
 %{_sbindir}/dasdconf.sh
@@ -807,6 +801,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Jul 27 2018 Dan Horák <dan[at]danny.cz> - 2:2.5.0-4
+- don't override TERM for console
+
 * Thu Jul 26 2018 Dan Horák <dan[at]danny.cz> - 2:2.5.0-3
 - network-scripts are required for network device initialization
 
