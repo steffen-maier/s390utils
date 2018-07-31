@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.5.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -333,6 +333,10 @@ For more information refer to the following publications:
    * "Device Drivers, Features, and Commands" chapter "Useful Linux commands"
    * "Using the dump tools"
 
+%pre base
+# check for zkeyadm group and create it
+getent group zkeyadm > /dev/null || groupadd -r zkeyadm
+
 %post base
 %systemd_post cpi.service
 %systemd_post dumpconf.service
@@ -454,6 +458,8 @@ For more information refer to the following publications:
 %dir %{_datadir}/s390-tools/
 %{_datadir}/s390-tools/cpumf/
 %{_datadir}/s390-tools/netboot/
+%dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey
+%dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey/repository
 
 # Additional Redhat specific stuff
 /boot/tape0
@@ -801,6 +807,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Jul 31 2018 Dan Horák <dan[at]danny.cz> - 2:2.5.0-5
+- add missing zkey infrastructure (#1610242)
+
 * Fri Jul 27 2018 Dan Horák <dan[at]danny.cz> - 2:2.5.0-4
 - don't override TERM for console
 
