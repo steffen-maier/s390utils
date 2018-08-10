@@ -4,8 +4,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
-Version:        2.5.0
-Release:        5%{?dist}
+Version:        2.6.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -108,6 +108,7 @@ popd
 
 %install
 make install \
+        HAVE_DRACUT=1 \
         DESTDIR=$RPM_BUILD_ROOT \
         BINDIR=/usr/sbin \
         SYSTEMDSYSTEMUNITDIR=%{_unitdir} \
@@ -204,6 +205,8 @@ Requires:       network-scripts
 BuildRequires:  ncurses-devel
 BuildRequires:  libpfm-devel
 BuildRequires:  glibc-static
+BuildRequires:  cryptsetup-devel >= 2.0.3
+BuildRequires:  json-c-devel
 
 
 %description base
@@ -401,12 +404,14 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_bindir}/dump2tar
 %{_bindir}/vmconvert
 %{_bindir}/zkey
+%{_bindir}/zkey-cryptsetup
 %{_unitdir}/cpi.service
 %{_unitdir}/dumpconf.service
 %ghost %config(noreplace) %{_sysconfdir}/zipl.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/cpi
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
-/lib/s390-tools
+/lib/s390-tools/
+/usr/lib/dracut/modules.d/95zdev/
 %{_mandir}/man1/dbginfo.sh.1*
 %{_mandir}/man1/dump2tar.1*
 %{_mandir}/man1/lscpumf.1*
@@ -414,6 +419,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man1/zfcpdbf.1*
 %{_mandir}/man1/zipl-switch-to-blscfg.1*
 %{_mandir}/man1/zkey.1*
+%{_mandir}/man1/zkey-cryptsetup.1*
 %{_mandir}/man4/prandom.4*
 %{_mandir}/man5/zipl.conf.5*
 %{_mandir}/man8/chccwdev.8*
@@ -807,6 +813,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Aug 10 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-1
+- rebased to 2.6.0
+- include zdev dracut module
+
 * Tue Jul 31 2018 Dan Horák <dan[at]danny.cz> - 2:2.5.0-5
 - add missing zkey infrastructure (#1610242)
 
