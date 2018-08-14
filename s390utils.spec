@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.6.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -196,12 +196,13 @@ touch $RPM_BUILD_ROOT%{_sysconfdir}/zipl.conf
 License:        MIT and CPL
 Summary:        S390 base tools
 Group:          System Environment/Base
-Requires:       perl gawk sed coreutils
+Requires:       gawk sed coreutils
 Requires:       sysfsutils
 Requires:       sg3_utils
 Requires:       ethtool
 Requires:       network-scripts
 %{?systemd_requires}
+BuildRequires:  perl-generators
 BuildRequires:  ncurses-devel
 BuildRequires:  libpfm-devel
 BuildRequires:  glibc-static
@@ -813,6 +814,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Aug 14 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-2
+- fix R:/BR: perl
+
 * Fri Aug 10 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-1
 - rebased to 2.6.0
 - include zdev dracut module
