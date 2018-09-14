@@ -61,7 +61,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
-%patch1 -p0 -b .zipl-fiemap
+%patch1 -p1 -b .zipl-fiemap
 
 #
 # cmsfs
