@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.6.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -31,6 +31,8 @@ Source24:       91-zipl.install
 
 # change the defaults to match Fedora environment
 Patch0:         s390-tools-zipl-invert-script-options.patch
+# https://github.com/ibm-s390-tools/s390-tools/pull/36
+Patch1:         s390-tools-zipl-fiemap.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -59,6 +61,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
+%patch1 -p0 -b .zipl-fiemap
 
 #
 # cmsfs
@@ -814,6 +817,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Sep 14 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-3
+- add FIEMAP support into zipl
+
 * Tue Aug 14 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-2
 - fix R:/BR: perl
 
