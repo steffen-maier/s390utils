@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.6.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -128,20 +128,7 @@ install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_udevrulesdir}/56-dasd.rules
 
 touch $RPM_BUILD_ROOT%{_sysconfdir}/{zfcp.conf,dasd.conf}
 
-install -p -m 644 etc/sysconfig/dumpconf $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
-install -p -m 644 systemd/dumpconf.service $RPM_BUILD_ROOT%{_unitdir}/
-
-install -p -m 644 etc/sysconfig/mon_fsstatd $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
-install -p -m 644 etc/sysconfig/mon_procd $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
-install -p -m 644 systemd/mon_fsstatd.service $RPM_BUILD_ROOT%{_unitdir}/
-install -p -m 644 systemd/mon_procd.service $RPM_BUILD_ROOT%{_unitdir}/
-
-install -p -m 644 etc/cpuplugd.conf $RPM_BUILD_ROOT%{_sysconfdir}/
-install -p -m 644 systemd/cpuplugd.service $RPM_BUILD_ROOT%{_unitdir}/
-
-install -p -m 644 etc/sysconfig/cpi $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/
-install -p -m 644 systemd/cpi.service $RPM_BUILD_ROOT%{_unitdir}/
-
+# upstream udev rules
 install -Dp -m 644 etc/udev/rules.d/*.rules $RPM_BUILD_ROOT%{_udevrulesdir}
 
 # Install kernel-install scripts
@@ -174,11 +161,7 @@ for lnk in dasd zfcp znet; do
     ln -sf device_cio_free ${lnk}_cio_free
 done
 popd
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/systemd/system/sysinit.target.wants
 install -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT%{_unitdir}
-pushd $RPM_BUILD_ROOT%{_sysconfdir}/systemd/system/sysinit.target.wants
-ln -sf %{_unitdir}/device_cio_free.service device_cio_free.service
-popd
 
 # ccw
 install -p -m 755 %{SOURCE16} $RPM_BUILD_ROOT/usr/lib/udev/ccw_init
@@ -346,10 +329,18 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 
 %post base
 %systemd_post cpi.service
+%if 0
+# enable in F-31
+%systemd_post device_cio_free.service
+%else
+# explicit enable for upgrade patch from s390utils-base < 2.6.0-4
+systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
+%endif
 %systemd_post dumpconf.service
 
 %preun base
 %systemd_preun cpi.service
+%systemd_preun device_cio_free.service
 %systemd_preun dumpconf.service
 
 %postun base
@@ -483,7 +474,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/znet_cio_free
 %{_sbindir}/normalize_dasd_arg
 %{_unitdir}/device_cio_free.service
-%{_sysconfdir}/systemd/system/sysinit.target.wants/device_cio_free.service
 /usr/lib/udev/ccw_init
 %{_udevrulesdir}/40-z90crypt.rules
 %{_udevrulesdir}/56-zfcp.rules
@@ -817,6 +807,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Sep 17 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-4
+- drop redundant systemd services installation
+
 * Fri Sep 14 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-3
 - add FIEMAP support into zipl
 
