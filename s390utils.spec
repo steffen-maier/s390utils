@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.6.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -33,6 +33,8 @@ Source24:       91-zipl.install
 Patch0:         s390-tools-zipl-invert-script-options.patch
 # https://github.com/ibm-s390-tools/s390-tools/pull/36
 Patch1:         s390-tools-zipl-fiemap.patch
+# https://github.com/ibm-s390-tools/s390-tools/pull/35
+Patch2:         s390-tools-cleanup.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -62,6 +64,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
 %patch1 -p1 -b .zipl-fiemap
+%patch2 -p1 -b .cleanup
 
 #
 # cmsfs
@@ -807,6 +810,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Sep 21 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-5
+- Makefile cleanups
+
 * Mon Sep 17 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-4
 - drop redundant systemd services installation
 
