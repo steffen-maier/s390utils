@@ -98,7 +98,7 @@ case "$COMMAND" in
                 cp -aT "${KERNEL_DIR}/bls.conf" "${BLS_TARGET}" || exit $?
                 sed -i -e "s,^linux.*,linux /boot/vmlinuz-${KERNEL_VERSION},g" "${BLS_TARGET}"
                 sed -i -e "s,^initrd.*,initrd /boot/initramfs-${KERNEL_VERSION}.img,g" "${BLS_TARGET}"
-                sed -i -e "s,^options.*,options ${BOOT_OPTIONS[*]},g" "${BLS_TARGET}"
+                sed -i -e "s#^options.*#options ${BOOT_OPTIONS[*]}#g" "${BLS_TARGET}"
             else
                 mkbls "${KERNEL_VERSION}" \
                     "$(date -u +%Y%m%d%H%M%S -d "$(stat -c '%y' "${KERNEL_DIR}")")" \
@@ -115,7 +115,7 @@ case "$COMMAND" in
                 sed -i -e "s/^title.*/title ${TITLE}${LINUX_DEBUG_TITLE_POSTFIX}/" "${BLS_DEBUG}"
 		sed -i -e "s/^version.*/version ${VERSION}${LINUX_DEBUG_VERSION_POSTFIX}/" "${BLS_DEBUG}"
                 sed -i -e "s/^id.*/${BLSID}/" "${BLS_DEBUG}"
-                sed -i -e "s,^options.*,options ${BOOT_OPTIONS[*]}${CMDLINE_LINUX_DEBUG}," "${BLS_DEBUG}"
+                sed -i -e "s#^options.*#options ${BOOT_OPTIONS[*]}${CMDLINE_LINUX_DEBUG}#" "${BLS_DEBUG}"
 	    fi
 
             exit 0

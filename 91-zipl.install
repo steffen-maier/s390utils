@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ ! -f /etc/zipl.conf ]]; then
+    exit 0
+fi
+
 COMMAND="$1"
 
 case "$COMMAND" in

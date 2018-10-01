@@ -39,7 +39,7 @@ case "$COMMAND" in
             if [[ -f "${BLS_RESCUE}" ]] && grep -q '^options.*$kernelopts' "${BLS_RESCUE}"; then
                sed -i -e "s,^linux.*,linux /boot/vmlinuz-0-rescue-${MACHINE_ID},g" "${BLS_RESCUE}"
                sed -i -e "s,^initrd.*,initrd /boot/initramfs-0-rescue-${MACHINE_ID}.img,g" "${BLS_RESCUE}"
-               sed -i -e "s,^options.*,options ${BOOT_OPTIONS[*]},g" "${BLS_RESCUE}"
+               sed -i -e "s#^options.*#options ${BOOT_OPTIONS[*]}#g" "${BLS_RESCUE}"
             fi
         fi
         ;;
