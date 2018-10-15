@@ -106,12 +106,11 @@ case "$COMMAND" in
             fi
 
             if [ "x${MAKEDEBUG}" = "xyes" ]; then
-                ARCH="$(uname -m)"
-                BLS_DEBUG="$(echo ${BLS_TARGET} | sed -e "s/\.${ARCH}/-debug.${ARCH}/")"
+                BLS_DEBUG="$(echo ${BLS_TARGET} | sed -e "s/${KERNEL_VERSION}/${KERNEL_VERSION}~debug/")"
                 cp -aT  "${BLS_TARGET}" "${BLS_DEBUG}"
                 TITLE="$(grep '^title[ \t]' "${BLS_DEBUG}" | sed -e 's/^title[ \t]*//')"
 		VERSION="$(grep '^version[ \t]' "${BLS_DEBUG}" | sed -e 's/^version[ \t]*//')"
-                BLSID="$(grep '^id[ \t]' "${BLS_DEBUG}" | sed -e "s/\.${ARCH}/-debug.${ARCH}/")"
+                BLSID="$(grep '^id[ \t]' "${BLS_DEBUG}" | sed -e "s/${KERNEL_VERSION}/${KERNEL_VERSION}~debug/")"
                 sed -i -e "s/^title.*/title ${TITLE}${LINUX_DEBUG_TITLE_POSTFIX}/" "${BLS_DEBUG}"
 		sed -i -e "s/^version.*/version ${VERSION}${LINUX_DEBUG_VERSION_POSTFIX}/" "${BLS_DEBUG}"
                 sed -i -e "s/^id.*/${BLSID}/" "${BLS_DEBUG}"
