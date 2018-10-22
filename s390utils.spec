@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.6.0
-Release:        7%{?dist}
+Release:        8%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -36,6 +36,8 @@ Patch1:         s390-tools-zipl-fiemap.patch
 # https://github.com/ibm-s390-tools/s390-tools/pull/35
 Patch2:         s390-tools-cleanup.patch
 Patch3:         0007-blscfg-sort-like-rpm-nvr-not-like-a-single-version.patch
+# https://github.com/ibm-s390-tools/s390-tools/issues/46
+Patch4:         s390-tools-zkey-no-relink.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -68,6 +70,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %patch1 -p1 -b .zipl-fiemap
 %patch2 -p1 -b .cleanup
 %patch3 -p1 -b .blscfg-rpm-nvr-sort
+%patch4 -p1 -b .zkey-no-relink
 
 #
 # cmsfs
@@ -813,6 +816,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Oct 22 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-8
+- don't relink the zkey tools
+
 * Mon Oct 15 2018 Peter Jones <pjones@redhat.com> - 2.6.0-7
 - Make the blscfg sort order match what grub2 and grubby do. (pjones)
 - Add a ~debug suffix instead of -debug to sort it correctly. (javierm)
