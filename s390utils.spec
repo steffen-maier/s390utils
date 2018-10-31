@@ -4,8 +4,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
-Version:        2.6.0
-Release:        8%{?dist}
+Version:        2.7.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -31,13 +31,7 @@ Source24:       91-zipl.install
 
 # change the defaults to match Fedora environment
 Patch0:         s390-tools-zipl-invert-script-options.patch
-# https://github.com/ibm-s390-tools/s390-tools/pull/36
-Patch1:         s390-tools-zipl-fiemap.patch
-# https://github.com/ibm-s390-tools/s390-tools/pull/35
-Patch2:         s390-tools-cleanup.patch
 Patch3:         0007-blscfg-sort-like-rpm-nvr-not-like-a-single-version.patch
-# https://github.com/ibm-s390-tools/s390-tools/issues/46
-Patch4:         s390-tools-zkey-no-relink.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -67,10 +61,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
-%patch1 -p1 -b .zipl-fiemap
-%patch2 -p1 -b .cleanup
 %patch3 -p1 -b .blscfg-rpm-nvr-sort
-%patch4 -p1 -b .zkey-no-relink
 
 #
 # cmsfs
@@ -399,11 +390,13 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_sbindir}/vmcp
 %{_sbindir}/vmur
 %{_sbindir}/xcec-bridge
+%{_sbindir}/zcryptctl
 %{_sbindir}/zfcpdbf
 %{_sbindir}/zgetdump
 %{_sbindir}/zipl
 %{_sbindir}/zipl-switch-to-blscfg
 %{_sbindir}/znetconf
+%{_sbindir}/zpcictl
 %{_bindir}/lscpumf
 %{_bindir}/dump2tar
 %{_bindir}/vmconvert
@@ -462,9 +455,11 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_mandir}/man8/tunedasd.8*
 %{_mandir}/man8/vmcp.8*
 %{_mandir}/man8/vmur.8*
+%{_mandir}/man8/zcryptctl.8*
 %{_mandir}/man8/zgetdump.8*
 %{_mandir}/man8/znetconf.8*
 %{_mandir}/man8/zipl.8*
+%{_mandir}/man8/zpcictl.8*
 %dir %{_datadir}/s390-tools/
 %{_datadir}/s390-tools/cpumf/
 %{_datadir}/s390-tools/netboot/
@@ -816,6 +811,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Oct 31 2018 Dan Horák <dan[at]danny.cz> - 2:2.7.0-1
+- rebased to 2.7.0
+
 * Mon Oct 22 2018 Dan Horák <dan[at]danny.cz> - 2:2.6.0-8
 - don't relink the zkey tools
 
