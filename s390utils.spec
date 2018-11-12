@@ -5,7 +5,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.7.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -32,6 +32,8 @@ Source24:       91-zipl.install
 # change the defaults to match Fedora environment
 Patch0:         s390-tools-zipl-invert-script-options.patch
 Patch3:         0007-blscfg-sort-like-rpm-nvr-not-like-a-single-version.patch
+# https://github.com/ibm-s390-tools/s390-tools/pull/47
+Patch5:         s390-tools-zipl-title-section-name.patch
 
 Patch1000:      cmsfs-1.1.8-warnings.patch
 Patch1001:      cmsfs-1.1.8-kernel26.patch
@@ -62,6 +64,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
 %patch3 -p1 -b .blscfg-rpm-nvr-sort
+%patch5 -p1 -b .zipl-title-section-name.patch
 
 #
 # cmsfs
@@ -811,6 +814,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Nov 06 2018 Javier Martinez Canillas <javierm@redhat.com> - 2:2.7.0-2
+- Make zipl to use the BLS title field as the IPL section name
+
 * Wed Oct 31 2018 Dan Horák <dan[at]danny.cz> - 2:2.7.0-1
 - rebased to 2.7.0
 
