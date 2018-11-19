@@ -1,18 +1,16 @@
-%define cmsfsver 1.1.8c
 %define vipaver 2.1.0
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.7.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
 #URL:            http://www.ibm.com/developerworks/linux/linux390/s390-tools.html
 URL:            https://github.com/ibm-s390-tools/s390-tools
 Source0:        https://github.com/ibm-s390-tools/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
-Source4:        http://www.linuxvm.org/Patches/S390/cmsfs-%{cmsfsver}.tar.gz
 Source5:        zfcpconf.sh
 # http://www.ibm.com/developerworks/linux/linux390/src_vipa-%%{vipaver}.html
 Source6:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/src_vipa-%{vipaver}.tar.gz
@@ -35,10 +33,6 @@ Patch3:         0007-blscfg-sort-like-rpm-nvr-not-like-a-single-version.patch
 # https://github.com/ibm-s390-tools/s390-tools/pull/47
 Patch5:         s390-tools-zipl-title-section-name.patch
 
-Patch1000:      cmsfs-1.1.8-warnings.patch
-Patch1001:      cmsfs-1.1.8-kernel26.patch
-Patch1002:      cmsfs-1.1.8-use-detected-filesystem-block-size-on-FBA-devices.patch
-
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
 Requires:       s390utils-cpuplugd = %{epoch}:%{version}-%{release}
@@ -48,7 +42,6 @@ Requires:       s390utils-ziomon = %{epoch}:%{version}-%{release}
 Requires:       s390utils-cmsfs = %{epoch}:%{version}-%{release}
 
 BuildRequires:  gcc-c++
-BuildRequires:  rpm-devel
 
 %description
 This is a meta package for installing the default s390-tools sub packages.
@@ -59,40 +52,16 @@ The s390utils packages contain a set of user space utilities that should to
 be used together with the zSeries (s390) Linux kernel and device drivers.
 
 %prep
-%setup -q -n s390-tools-%{version} -a 4 -a 6
+%setup -q -n s390-tools-%{version} -a 6
 
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
 %patch3 -p1 -b .blscfg-rpm-nvr-sort
 %patch5 -p1 -b .zipl-title-section-name.patch
 
-#
-# cmsfs
-#
-pushd cmsfs-%{cmsfsver}
-# Patch to fix a couple of code bugs
-%patch1000 -p1 -b .warnings
-
-# build on kernel-2.6, too
-%patch1001 -p1 -b .cmsfs26
-
-# use detected filesystem block size (#651012)
-%patch1002 -p1 -b .use-detected-block-size
-popd
-
 
 # remove --strip from install
 find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
-
-pushd cmsfs-%{cmsfsver}
-# cmdfs: fix encoding
-iconv -f ISO8859-1 -t UTF-8 -o README.new README
-touch -r README README.new
-mv README.new README
-# prepare docs
-mv README README.cmsfs
-mv CREDITS CREDITS.cmsfs
-popd
 
 
 %build
@@ -101,11 +70,6 @@ make \
         BINDIR=/usr/sbin \
         DISTRELEASE=%{release} \
         V=1
-
-pushd cmsfs-%{cmsfsver}
-./configure
-make CC="gcc %{build_cflags} -fno-strict-aliasing %{build_ldflags}"
-popd
 
 pushd src_vipa-%{vipaver}
 make CC_FLAGS="%{build_cflags} -fPIC" LD_FLAGS="%{build_ldflags} -shared" LIBDIR=%{_libdir}
@@ -141,12 +105,6 @@ install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE23}
 install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE24}
 install -d -m 0755 %{buildroot}%{_sysconfdir}/kernel/install.d/
 install -m 0644 /dev/null %{buildroot}%{_sysconfdir}/kernel/install.d/20-grubby.install
-
-# cmsfs tools must be available in /sbin
-for f in cat lst vol cp ck; do
-    install -p -m 755 cmsfs-%{cmsfsver}/cmsfs${f} $RPM_BUILD_ROOT%{_sbindir}
-    install -p -m 644 cmsfs-%{cmsfsver}/cmsfs${f}.8 $RPM_BUILD_ROOT%{_mandir}/man8
-done
 
 # src_vipa
 pushd src_vipa-%{vipaver}
@@ -197,6 +155,7 @@ BuildRequires:  libpfm-devel
 BuildRequires:  glibc-static
 BuildRequires:  cryptsetup-devel >= 2.0.3
 BuildRequires:  json-c-devel
+BuildRequires:  rpm-devel
 
 
 %description base
@@ -690,30 +649,6 @@ fi
 %{_unitdir}/iucvtty-login@.service
 %{_unitdir}/ttyrun-getty@.service
 
-#
-# *********************** cmsfs package  ***********************
-#
-%package cmsfs
-License:        GPLv2
-Summary:        CMS file system tools
-Group:          System Environment/Base
-URL:            http://www.casita.net/pub/cmsfs/cmsfs.html
-# Requires:
-
-%description cmsfs
-This package contains the CMS file system tools.
-
-%files cmsfs
-%{_sbindir}/cmsfscat
-%{_sbindir}/cmsfsck
-%{_sbindir}/cmsfscp
-%{_sbindir}/cmsfslst
-%{_sbindir}/cmsfsvol
-%{_mandir}/man8/cmsfscat.8*
-%{_mandir}/man8/cmsfsck.8*
-%{_mandir}/man8/cmsfscp.8*
-%{_mandir}/man8/cmsfslst.8*
-%{_mandir}/man8/cmsfsvol.8*
 
 #
 # *********************** cmsfs-fuse package  ***********************
@@ -723,6 +658,7 @@ Summary:        CMS file system based on FUSE
 Group:          System Environment/Base
 BuildRequires:  fuse-devel
 Requires:       fuse
+Obsoletes:      %{name}-cmsfs < 2:2.7.0-3
 
 %description cmsfs-fuse
 This package contains the CMS file system based on FUSE.
@@ -814,6 +750,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Nov 19 2018 Dan Horák <dan[at]danny.cz> - 2:2.7.0-3
+- drop the original cmsfs subpackage
+
 * Tue Nov 06 2018 Javier Martinez Canillas <javierm@redhat.com> - 2:2.7.0-2
 - Make zipl to use the BLS title field as the IPL section name
 
