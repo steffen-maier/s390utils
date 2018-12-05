@@ -4,7 +4,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.7.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -39,7 +39,6 @@ Requires:       s390utils-cpuplugd = %{epoch}:%{version}-%{release}
 Requires:       s390utils-mon_statd = %{epoch}:%{version}-%{release}
 Requires:       s390utils-iucvterm = %{epoch}:%{version}-%{release}
 Requires:       s390utils-ziomon = %{epoch}:%{version}-%{release}
-Requires:       s390utils-cmsfs = %{epoch}:%{version}-%{release}
 
 BuildRequires:  gcc-c++
 
@@ -750,6 +749,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Dec 05 2018 Dan Horák <dan[at]danny.cz> - 2:2.7.0-4
+- fix deps for dropped cmsfs subpackage
+
 * Mon Nov 19 2018 Dan Horák <dan[at]danny.cz> - 2:2.7.0-3
 - drop the original cmsfs subpackage
 
