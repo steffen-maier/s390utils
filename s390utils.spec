@@ -3,8 +3,8 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
-Version:        2.7.0
-Release:        4%{?dist}
+Version:        2.7.1
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -29,7 +29,7 @@ Source24:       91-zipl.install
 
 # change the defaults to match Fedora environment
 Patch0:         s390-tools-zipl-invert-script-options.patch
-Patch3:         0007-blscfg-sort-like-rpm-nvr-not-like-a-single-version.patch
+Patch3:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
 # https://github.com/ibm-s390-tools/s390-tools/pull/47
 Patch5:         s390-tools-zipl-title-section-name.patch
 
@@ -749,6 +749,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Jan 02 2019 Dan Horák <dan[at]danny.cz> - 2:2.7.1-1
+- rebased to 2.7.1
+
 * Wed Dec 05 2018 Dan Horák <dan[at]danny.cz> - 2:2.7.0-4
 - fix deps for dropped cmsfs subpackage
 

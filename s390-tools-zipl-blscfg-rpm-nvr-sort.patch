@@ -1,18 +1,19 @@
-From 8ec7b75204f3c7bf691e14b89c73c5dd28d2a824 Mon Sep 17 00:00:00 2001
-From: Peter Jones <pjones@redhat.com>
-Date: Mon, 15 Oct 2018 13:54:16 -0400
-Subject: [PATCH] blscfg: sort like rpm nvr, not like a single version
-
-Signed-off-by: Peter Jones <pjones@redhat.com>
----
- zipl/src/scan.c   | 96 ++++++++++++++++++++++++++++++++++++++++++++++-
- zipl/src/Makefile |  3 +-
- 2 files changed, 96 insertions(+), 3 deletions(-)
-
-diff --git a/zipl/src/scan.c b/zipl/src/scan.c
-index fe72e9ab13d..63186222783 100644
---- a/zipl/src/scan.c
-+++ b/zipl/src/scan.c
+diff -up s390-tools-2.7.1/zipl/src/Makefile.blscfg-rpm-nvr-sort s390-tools-2.7.1/zipl/src/Makefile
+--- s390-tools-2.7.1/zipl/src/Makefile.blscfg-rpm-nvr-sort	2019-01-02 07:46:02.847225675 -0500
++++ s390-tools-2.7.1/zipl/src/Makefile	2019-01-02 07:48:51.267225675 -0500
+@@ -8,7 +8,8 @@ ALL_CPPFLAGS += -I../include -I../boot \
+ ALL_LDFLAGS += -Wl,-z,noexecstack $(NO_PIE_LDFLAGS)
+ 
+ libs =	$(rootdir)/libu2s/libu2s.a \
+-	$(rootdir)/libutil/libutil.a
++	$(rootdir)/libutil/libutil.a \
++	-lrpm
+ 
+ objects = misc.o error.o scan.o job.o boot.o bootmap.o disk.o \
+ 	  install.o zipl.o $(rootdir)/zipl/boot/data.o
+diff -up s390-tools-2.7.1/zipl/src/scan.c.blscfg-rpm-nvr-sort s390-tools-2.7.1/zipl/src/scan.c
+--- s390-tools-2.7.1/zipl/src/scan.c.blscfg-rpm-nvr-sort	2018-12-13 09:57:25.000000000 -0500
++++ s390-tools-2.7.1/zipl/src/scan.c	2019-01-02 07:46:02.847225675 -0500
 @@ -33,6 +33,8 @@
  
  #include "lib/util_base.h"
@@ -22,7 +23,7 @@ index fe72e9ab13d..63186222783 100644
  #include "boot.h"
  #include "error.h"
  #include "misc.h"
-@@ -652,14 +654,104 @@ bls_filter(const struct dirent *ent)
+@@ -652,13 +654,103 @@ bls_filter(const struct dirent *ent)
  	return strncmp(ent->d_name + offset, ".conf", strlen(".conf")) == 0;
  }
  
@@ -63,8 +64,9 @@ index fe72e9ab13d..63186222783 100644
 +		*release = NULL;
 +	}
 +}
-+
-+static int
+ 
+ static int
+-bls_sort(const struct dirent **ent_a, const struct dirent **ent_b)
 +split_cmp(char *nvr0, char *nvr1, int has_name)
 +{
 +	int ret = 0;
@@ -95,7 +97,8 @@ index fe72e9ab13d..63186222783 100644
 +/*        0: filename0 and filename1 are the same version */
 +/*       -1: filename1 is newer than filename0 */
 +static int bls_cmp(const char *filename0, const char *filename1)
-+{
+ {
+-	return strverscmp((*ent_a)->d_name, (*ent_b)->d_name);
 +	char *id0, *id1;
 +	int l, r;
 +
@@ -116,33 +119,13 @@ index fe72e9ab13d..63186222783 100644
 +	free(id1);
 +
 +	return r;
+ }
+ 
++static int
++bls_sort(const struct dirent **ent_a, const struct dirent **ent_b)
++{
++	return bls_cmp((*ent_a)->d_name, (*ent_b)->d_name);
 +}
  
  static int
- bls_sort(const struct dirent **ent_a, const struct dirent **ent_b)
- {
--	return strverscmp((*ent_a)->d_name, (*ent_b)->d_name);
-+	return bls_cmp((*ent_a)->d_name, (*ent_b)->d_name);
- }
- 
--
- static int
  scan_append_section_heading(struct scan_token* scan, int* index, char* name);
- static int
-diff --git a/zipl/src/Makefile b/zipl/src/Makefile
-index 1634c0d5121..bc797990652 100644
---- a/zipl/src/Makefile
-+++ b/zipl/src/Makefile
-@@ -11,7 +11,8 @@ ALL_CPPFLAGS += -I../include -I../boot \
- ALL_LDFLAGS += -Wl,-z,noexecstack $(NO_PIE_LDFLAGS)
- 
- libs =	$(rootdir)/libutil/libutil.a \
--	$(rootdir)/libu2s/libu2s.a
-+	$(rootdir)/libu2s/libu2s.a \
-+	-lrpm
- 
- objects = misc.o error.o scan.o job.o boot.o bootmap.o disk.o \
- 	  install.o zipl.o $(rootdir)/zipl/boot/data.o
--- 
-2.17.1
-
