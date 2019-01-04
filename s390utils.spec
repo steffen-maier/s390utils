@@ -30,8 +30,6 @@ Source24:       91-zipl.install
 # change the defaults to match Fedora environment
 Patch0:         s390-tools-zipl-invert-script-options.patch
 Patch3:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
-# https://github.com/ibm-s390-tools/s390-tools/pull/47
-Patch5:         s390-tools-zipl-title-section-name.patch
 
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -56,7 +54,6 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
 %patch3 -p1 -b .blscfg-rpm-nvr-sort
-%patch5 -p1 -b .zipl-title-section-name.patch
 
 
 # remove --strip from install
