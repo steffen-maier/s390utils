@@ -1,0 +1,30 @@
+From 210157480bb075b2ad9497882bd61e5220a261eb Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+Date: Wed, 9 Jan 2019 13:58:10 +0100
+Subject: [PATCH] support autoloading kernel pkey module
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The module is loaded automatically based on CPU features, but it's still
+too late in some use cases. Thus allow distros to use explicit loading.
+
+See also: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=63c19be095d0f8eb8992674991e44b4228bd4179
+
+Signed-off-by: Dan Horák <dan@danny.cz>
+---
+ etc/modules-load.d/s390-pkey.conf | 2 ++
+ 1 file changed, 2 insertions(+)
+ create mode 100644 etc/modules-load.d/s390-pkey.conf
+
+diff --git a/etc/modules-load.d/s390-pkey.conf b/etc/modules-load.d/s390-pkey.conf
+new file mode 100644
+index 0000000..972a099
+--- /dev/null
++++ b/etc/modules-load.d/s390-pkey.conf
+@@ -0,0 +1,2 @@
++# Load protected key support module on s390 early at boot
++pkey
+-- 
+2.17.2
+

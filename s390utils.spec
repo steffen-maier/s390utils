@@ -4,7 +4,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.7.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -29,7 +29,9 @@ Source24:       91-zipl.install
 
 # change the defaults to match Fedora environment
 Patch0:         s390-tools-zipl-invert-script-options.patch
-Patch3:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
+Patch1:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
+# https://github.com/ibm-s390-tools/s390-tools/pull/51
+Patch2:         s390-tools-pkey.patch
 
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -53,7 +55,8 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
-%patch3 -p1 -b .blscfg-rpm-nvr-sort
+%patch1 -p1 -b .blscfg-rpm-nvr-sort
+%patch2 -p1 -b .pkey
 
 
 # remove --strip from install
@@ -81,7 +84,7 @@ make install \
         DISTRELEASE=%{release} \
         V=1
 
-mkdir -p $RPM_BUILD_ROOT{/boot,%{_udevrulesdir},%{_sysconfdir}/{profile.d,sysconfig}}
+mkdir -p $RPM_BUILD_ROOT{/boot,%{_udevrulesdir},%{_sysconfdir}/{profile.d,sysconfig},%{_prefix}/lib/modules-load.d}
 install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
 install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT%{_sbindir}
 install -p -m 755 %{SOURCE13} $RPM_BUILD_ROOT%{_sbindir}
@@ -93,6 +96,9 @@ touch $RPM_BUILD_ROOT%{_sysconfdir}/{zfcp.conf,dasd.conf}
 
 # upstream udev rules
 install -Dp -m 644 etc/udev/rules.d/*.rules $RPM_BUILD_ROOT%{_udevrulesdir}
+
+# upstream modules config
+install -Dp -m 644 etc/modules-load.d/*.conf $RPM_BUILD_ROOT%{_prefix}/lib/modules-load.d
 
 # Install kernel-install scripts
 install -d -m 0755 %{buildroot}%{_prefix}/lib/kernel/install.d/
@@ -448,6 +454,7 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_prefix}/lib/kernel/install.d/20-zipl-kernel.install
 %{_prefix}/lib/kernel/install.d/52-zipl-rescue.install
 %{_prefix}/lib/kernel/install.d/91-zipl.install
+%{_prefix}/lib/modules-load.d/s390-pkey.conf
 
 # src_vipa
 %{_bindir}/src_vipa.sh
@@ -746,6 +753,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Jan 10 2019 Dan Horák <dan[at]danny.cz> - 2:2.7.1-2
+- load protected key support kernel module early on boot
+
 * Wed Jan 02 2019 Dan Horák <dan[at]danny.cz> - 2:2.7.1-1
 - rebased to 2.7.1
 
