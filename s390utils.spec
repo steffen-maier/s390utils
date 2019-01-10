@@ -78,27 +78,27 @@ popd
 %install
 make install \
         HAVE_DRACUT=1 \
-        DESTDIR=$RPM_BUILD_ROOT \
+        DESTDIR=%{buildroot} \
         BINDIR=/usr/sbin \
         SYSTEMDSYSTEMUNITDIR=%{_unitdir} \
         DISTRELEASE=%{release} \
         V=1
 
-mkdir -p $RPM_BUILD_ROOT{/boot,%{_udevrulesdir},%{_sysconfdir}/{profile.d,sysconfig},%{_prefix}/lib/modules-load.d}
-install -p -m 644 zipl/boot/tape0.bin $RPM_BUILD_ROOT/boot/tape0
-install -p -m 755 %{SOURCE5} $RPM_BUILD_ROOT%{_sbindir}
-install -p -m 755 %{SOURCE13} $RPM_BUILD_ROOT%{_sbindir}
-install -p -m 755 %{SOURCE21} $RPM_BUILD_ROOT%{_sbindir}
-install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_udevrulesdir}/56-zfcp.rules
-install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT%{_udevrulesdir}/56-dasd.rules
+mkdir -p %{buildroot}{/boot,%{_udevrulesdir},%{_sysconfdir}/{profile.d,sysconfig},%{_prefix}/lib/modules-load.d}
+install -p -m 644 zipl/boot/tape0.bin %{buildroot}/boot/tape0
+install -p -m 755 %{SOURCE5} %{buildroot}%{_sbindir}
+install -p -m 755 %{SOURCE13} %{buildroot}%{_sbindir}
+install -p -m 755 %{SOURCE21} %{buildroot}%{_sbindir}
+install -p -m 644 %{SOURCE7} %{buildroot}%{_udevrulesdir}/56-zfcp.rules
+install -p -m 644 %{SOURCE12} %{buildroot}%{_udevrulesdir}/56-dasd.rules
 
-touch $RPM_BUILD_ROOT%{_sysconfdir}/{zfcp.conf,dasd.conf}
+touch %{buildroot}%{_sysconfdir}/{zfcp.conf,dasd.conf}
 
 # upstream udev rules
-install -Dp -m 644 etc/udev/rules.d/*.rules $RPM_BUILD_ROOT%{_udevrulesdir}
+install -Dp -m 644 etc/udev/rules.d/*.rules %{buildroot}%{_udevrulesdir}
 
 # upstream modules config
-install -Dp -m 644 etc/modules-load.d/*.conf $RPM_BUILD_ROOT%{_prefix}/lib/modules-load.d
+install -Dp -m 644 etc/modules-load.d/*.conf %{buildroot}%{_prefix}/lib/modules-load.d
 
 # Install kernel-install scripts
 install -d -m 0755 %{buildroot}%{_prefix}/lib/kernel/install.d/
@@ -110,28 +110,28 @@ install -m 0644 /dev/null %{buildroot}%{_sysconfdir}/kernel/install.d/20-grubby.
 
 # src_vipa
 pushd src_vipa-%{vipaver}
-make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=$RPM_BUILD_ROOT LDCONFIG=/bin/true
+make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=%{buildroot} LDCONFIG=/bin/true
 popd
 
 # install usefull headers for devel subpackage
-mkdir -p $RPM_BUILD_ROOT%{_includedir}/%{name}
-install -p -m 644 include/lib/vtoc.h $RPM_BUILD_ROOT%{_includedir}/%{name}
+mkdir -p %{buildroot}%{_includedir}/%{name}
+install -p -m 644 include/lib/vtoc.h %{buildroot}%{_includedir}/%{name}
 
 # device_cio_free
-install -p -m 755 %{SOURCE14} $RPM_BUILD_ROOT%{_sbindir}
-pushd $RPM_BUILD_ROOT%{_sbindir}
+install -p -m 755 %{SOURCE14} %{buildroot}%{_sbindir}
+pushd %{buildroot}%{_sbindir}
 for lnk in dasd zfcp znet; do
     ln -sf device_cio_free ${lnk}_cio_free
 done
 popd
-install -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT%{_unitdir}
+install -p -m 644 %{SOURCE15} %{buildroot}%{_unitdir}
 
 # ccw
-install -p -m 755 %{SOURCE16} $RPM_BUILD_ROOT/usr/lib/udev/ccw_init
-install -p -m 644 %{SOURCE17} $RPM_BUILD_ROOT%{_udevrulesdir}/81-ccw.rules
+install -p -m 755 %{SOURCE16} %{buildroot}/usr/lib/udev/ccw_init
+install -p -m 644 %{SOURCE17} %{buildroot}%{_udevrulesdir}/81-ccw.rules
 
 # zipl.conf to be ghosted
-touch $RPM_BUILD_ROOT%{_sysconfdir}/zipl.conf
+touch %{buildroot}%{_sysconfdir}/zipl.conf
 
 
 %files
