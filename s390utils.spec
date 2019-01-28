@@ -2,7 +2,6 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Group:          System Environment/Base
 Version:        2.7.1
 Release:        3%{?dist}
 Epoch:          2
@@ -144,7 +143,6 @@ touch %{buildroot}%{_sysconfdir}/zipl.conf
 # src_vipa is CPL
 License:        MIT and CPL
 Summary:        S390 base tools
-Group:          System Environment/Base
 Requires:       gawk sed coreutils
 Requires:       sysfsutils
 Requires:       sg3_utils
@@ -466,7 +464,6 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 #
 %package osasnmpd
 Summary:        SNMP sub-agent for OSA-Express cards
-Group:          System Environment/Daemons
 Requires:       net-snmp
 Requires:       psmisc
 BuildRequires:  net-snmp-devel
@@ -486,7 +483,6 @@ ATM Ethernet LAN Emulation in QDIO mode.
 #
 %package mon_statd
 Summary:         Monitoring daemons for Linux in z/VM
-Group:           System Environment/Daemons
 Requires:        coreutils
 %{?systemd_requires}
 
@@ -526,7 +522,6 @@ Monitoring daemons for Linux in z/VM:
 #
 %package cpuplugd
 Summary:         Daemon that manages CPU and memory resources
-Group:           System Environment/Daemons
 %{?systemd_requires}
 BuildRequires: systemd
 
@@ -556,7 +551,6 @@ memory can be increased or decreased exploiting the CMM1 feature.
 #
 %package ziomon
 Summary:        S390 ziomon tools
-Group:          Applications/System
 Requires:       blktrace
 Requires:       coreutils
 Requires:       device-mapper-multipath
@@ -595,7 +589,6 @@ Tool set to collect data for zfcp performance analysis and report.
 #
 %package iucvterm
 Summary:        z/VM IUCV terminal applications
-Group:          Applications/System
 Requires(pre):  shadow-utils
 Requires(post): grep
 Requires(postun): grep
@@ -658,7 +651,6 @@ fi
 #
 %package cmsfs-fuse
 Summary:        CMS file system based on FUSE
-Group:          System Environment/Base
 BuildRequires:  fuse-devel
 Requires:       fuse
 Obsoletes:      %{name}-cmsfs < 2:2.7.0-3
@@ -677,7 +669,6 @@ This package contains the CMS file system based on FUSE.
 #
 %package zdsfs
 Summary:        z/OS data set access based on FUSE
-Group:          System Environment/Base
 BuildRequires:  fuse-devel
 Requires:       fuse
 
@@ -693,7 +684,6 @@ This package contains the z/OS data set access based on FUSE.
 #
 %package hmcdrvfs
 Summary:       HMC drive file system based on FUSE
-Group:         System Environment/Base
 BuildRequires: fuse-devel
 Requires:      fuse
 
@@ -712,7 +702,6 @@ to list files and directories.
 #
 %package cpacfstatsd
 Summary:       Monitor and maintain CPACF activity counters
-Group:         System Environment/Base
 Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
@@ -747,7 +736,6 @@ getent group cpacfstats >/dev/null || groupadd -r cpacfstats
 #
 %package devel
 Summary:        Development files
-Group:          Development/Libraries
 
 %description devel
 User-space development files for the s390/s390x architecture.
