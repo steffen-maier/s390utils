@@ -4,7 +4,7 @@ Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Group:          System Environment/Base
 Version:        2.7.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -716,6 +716,7 @@ Group:         System Environment/Base
 Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
+Requires(pre): shadow-utils
 BuildRequires: systemd
 
 %description cpacfstatsd
@@ -730,6 +731,9 @@ and maintain CPACF activity counters.
 
 %postun cpacfstatsd
 %systemd_postun_with_restart cpacfstatsd.service
+
+%pre cpacfstatsd
+getent group cpacfstats >/dev/null || groupadd -r cpacfstats
 
 %files cpacfstatsd
 %{_bindir}/cpacfstats
@@ -753,6 +757,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Jan 28 2019 Dan Horák <dan[at]danny.cz> - 2:2.7.1-3
+- create cpacfstats group needed by cpacfstatsd
+
 * Thu Jan 10 2019 Dan Horák <dan[at]danny.cz> - 2:2.7.1-2
 - load protected key support kernel module early on boot
 
