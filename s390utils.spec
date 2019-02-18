@@ -2,8 +2,8 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.7.1
-Release:        4%{?dist}
+Version:        2.8.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -29,8 +29,6 @@ Source24:       91-zipl.install
 # change the defaults to match Fedora environment
 Patch0:         s390-tools-zipl-invert-script-options.patch
 Patch1:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
-# https://github.com/ibm-s390-tools/s390-tools/pull/51
-Patch2:         s390-tools-pkey.patch
 
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -55,7 +53,6 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
 %patch1 -p1 -b .blscfg-rpm-nvr-sort
-%patch2 -p1 -b .pkey
 
 
 # remove --strip from install
@@ -745,6 +742,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Feb 18 2019 Dan Horák <dan[at]danny.cz> - 2:2.8.0-1
+- rebased to 2.8.0
+
 * Sat Feb 02 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2:2.7.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 
