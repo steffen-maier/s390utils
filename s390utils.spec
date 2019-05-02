@@ -3,7 +3,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.8.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -148,6 +148,7 @@ Requires:       sysfsutils
 Requires:       sg3_utils
 Requires:       ethtool
 Requires:       network-scripts
+Requires:       tar
 %{?systemd_requires}
 BuildRequires:  perl-generators
 BuildRequires:  ncurses-devel
@@ -745,6 +746,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu May 02 2019 Dan Horák <dan[at]danny.cz> - 2:2.8.0-3
+- dbginfo.sh needs tar (#1705628)
+
 * Sat Mar 09 2019 Dan Horák <dan[at]danny.cz> - 2:2.8.0-2
 - fix building zipl with gcc9 (#1687085)
 
