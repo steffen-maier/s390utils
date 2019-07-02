@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if ! [[ $KERNEL_INSTALL_MACHINE_ID ]]; then
+    exit 0
+fi
+
 [[ -f /etc/sysconfig/kernel ]] && . /etc/sysconfig/kernel
 
 COMMAND="$1"
@@ -10,9 +14,6 @@ KERNEL_IMAGE="$4"
 KERNEL_DIR="${KERNEL_IMAGE%/*}"
 
 MACHINE_ID=$KERNEL_INSTALL_MACHINE_ID
-
-# Remove it, since for zipl the images are always installed in /boot
-rm -rf "${BOOT_DIR_ABS%/*}"
 
 BLS_DIR="/boot/loader/entries"
 CMDLINE_LINUX_DEBUG=" systemd.log_level=debug systemd.log_target=kmsg"
