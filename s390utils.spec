@@ -3,7 +3,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.9.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -745,6 +745,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Jul 02 2019 Dan Horák <dan[at]danny.cz> - 2:2.9.0-3
+- fix /tmp being deleted when kernel-core is installed in a container (#1726286) (javierm)
+
 * Tue Jun 11 17:21:59 CEST 2019 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 2:2.9.0-2
 - Rebuild for RPM 4.15
 
