@@ -2,7 +2,7 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.10.0
+Version:        2.11.0
 Release:        1%{?dist}
 Epoch:          2
 License:        MIT
@@ -745,6 +745,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Sep 09 2019 Dan Horák <dan[at]danny.cz> - 2:2.11.0-1
+- rebased to 2.11.0
+
 * Mon Aug 05 2019 Dan Horák <dan[at]danny.cz> - 2:2.10.0-1
 - rebased to 2.10.0
 
