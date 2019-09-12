@@ -1,5 +1,10 @@
 %define vipaver 2.1.0
 
+# secure boot support is for RHEL only
+%if 0%{?rhel} >= 8
+%global signzipl 1
+%endif
+
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.11.0
@@ -25,6 +30,10 @@ Source21:       normalize_dasd_arg
 Source22:       20-zipl-kernel.install
 Source23:       52-zipl-rescue.install
 Source24:       91-zipl.install
+
+%if 0%{?signzipl}
+%define pesign_name redhatsecureboot302
+%endif
 
 # change the defaults to match Fedora environment
 Patch0:         s390-tools-zipl-invert-script-options.patch
@@ -79,6 +88,18 @@ make install \
         SYSTEMDSYSTEMUNITDIR=%{_unitdir} \
         DISTRELEASE=%{release} \
         V=1
+
+# sign the stage3 bootloader
+%if 0%{?signzipl}
+if [ -x /usr/bin/rpm-sign ]; then
+    pushd %{buildroot}/lib/s390-tools/
+        rpm-sign --key "%{pesign_name}" --lkmsign stage3.bin --output stage3.signed
+        mv stage3.signed stage3.bin
+    popd
+else
+    echo "rpm-sign not available, stage3 won't be signed"
+fi
+%endif
 
 mkdir -p %{buildroot}{/boot,%{_udevrulesdir},%{_sysconfdir}/{profile.d,sysconfig},%{_prefix}/lib/modules-load.d}
 install -p -m 644 zipl/boot/tape0.bin %{buildroot}/boot/tape0
