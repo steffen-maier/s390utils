@@ -74,7 +74,7 @@ case "$COMMAND" in
             fi
         fi
 
-        if [[ ! -f /sbin/new-kernel-pkg || -d "$BLS_DIR" ]]; then
+        if [[ ! -f /sbin/new-kernel-pkg || -d "${BLS_DIR}" ]]; then
             declare -a BOOT_OPTIONS
             if [[ -f /etc/kernel/cmdline ]]; then
                 read -r -d '' -a BOOT_OPTIONS < /etc/kernel/cmdline
@@ -146,7 +146,7 @@ case "$COMMAND" in
         exit 77
         ;;
     remove)
-        if [[ ! -f /sbin/new-kernel-pkg ]]; then
+        if [[ ! -f /sbin/new-kernel-pkg || -d "${BLS_DIR}" ]]; then
             ARCH="$(uname -m)"
             BLS_TARGET="${BLS_DIR}/${MACHINE_ID}-${KERNEL_VERSION}.conf"
             BLS_DEBUG="$(echo ${BLS_TARGET} | sed -e "s/${KERNEL_VERSION}/${KERNEL_VERSION}~debug/")"

@@ -15,7 +15,7 @@ BLS_DIR="/boot/loader/entries"
 [[ "$KERNEL_VERSION" == *\+* ]] && flavor=-"${KERNEL_VERSION##*+}"
 case "$COMMAND" in
     add)
-        if [[ ! -f /sbin/new-kernel-pkg ]]; then
+        if [[ ! -f /sbin/new-kernel-pkg || -d "${BLS_DIR}" ]]; then
             declare -a BOOT_OPTIONS
             if [[ -f /etc/kernel/cmdline ]]; then
                 read -r -d '' -a BOOT_OPTIONS < /etc/kernel/cmdline
