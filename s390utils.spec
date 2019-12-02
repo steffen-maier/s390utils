@@ -27,7 +27,6 @@ Source15:       device_cio_free.service
 Source16:       ccw_init
 Source17:       ccw.udev
 Source21:       normalize_dasd_arg
-Source22:       00-zipl-prepare.install
 Source23:       20-zipl-kernel.install
 Source24:       52-zipl-rescue.install
 Source25:       91-zipl.install
@@ -120,7 +119,6 @@ install -Dp -m 644 etc/modules-load.d/*.conf %{buildroot}%{_prefix}/lib/modules-
 
 # Install kernel-install scripts
 install -d -m 0755 %{buildroot}%{_prefix}/lib/kernel/install.d/
-install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE22}
 install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ zfcpdump/10-zfcpdump.install
 install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE23}
 install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE24}
@@ -473,7 +471,6 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_udevrulesdir}/81-ccw.rules
 %{_udevrulesdir}/90-cpi.rules
 %{_sysconfdir}/kernel/install.d/20-grubby.install
-%{_prefix}/lib/kernel/install.d/00-zipl-prepare.install
 %{_prefix}/lib/kernel/install.d/10-zfcpdump.install
 %{_prefix}/lib/kernel/install.d/20-zipl-kernel.install
 %{_prefix}/lib/kernel/install.d/52-zipl-rescue.install
