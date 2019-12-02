@@ -773,6 +773,7 @@ User-space development files for the s390/s390x architecture.
 %changelog
 * Mon Dec 02 2019 Dan Horák <dan[at]danny.cz> - 2:2.11.0-2
 - apply kernel install/update script fixes from #1600480, #1665060
+- merge stage3 signing support from RHEL
 
 * Mon Sep 09 2019 Dan Horák <dan[at]danny.cz> - 2:2.11.0-1
 - rebased to 2.11.0
