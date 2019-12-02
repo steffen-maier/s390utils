@@ -1,0 +1,9 @@
+#!/bin/bash
+
+COMMAND="$1"
+KERNEL_VERSION="$2"
+BOOT_DIR_ABS="$3"
+KERNEL_IMAGE="$4"
+
+# Remove it, since for zipl the images are always installed in /boot
+rm -rf "${BOOT_DIR_ABS%/*}"

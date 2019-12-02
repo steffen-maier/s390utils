@@ -8,7 +8,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.11.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -27,9 +27,10 @@ Source15:       device_cio_free.service
 Source16:       ccw_init
 Source17:       ccw.udev
 Source21:       normalize_dasd_arg
-Source22:       20-zipl-kernel.install
-Source23:       52-zipl-rescue.install
-Source24:       91-zipl.install
+Source22:       00-zipl-prepare.install
+Source23:       20-zipl-kernel.install
+Source24:       52-zipl-rescue.install
+Source25:       91-zipl.install
 
 %if 0%{?signzipl}
 %define pesign_name redhatsecureboot302
@@ -120,8 +121,10 @@ install -Dp -m 644 etc/modules-load.d/*.conf %{buildroot}%{_prefix}/lib/modules-
 # Install kernel-install scripts
 install -d -m 0755 %{buildroot}%{_prefix}/lib/kernel/install.d/
 install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE22}
+install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ zfcpdump/10-zfcpdump.install
 install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE23}
 install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE24}
+install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE25}
 install -d -m 0755 %{buildroot}%{_sysconfdir}/kernel/install.d/
 install -m 0644 /dev/null %{buildroot}%{_sysconfdir}/kernel/install.d/20-grubby.install
 
@@ -470,6 +473,8 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_udevrulesdir}/81-ccw.rules
 %{_udevrulesdir}/90-cpi.rules
 %{_sysconfdir}/kernel/install.d/20-grubby.install
+%{_prefix}/lib/kernel/install.d/00-zipl-prepare.install
+%{_prefix}/lib/kernel/install.d/10-zfcpdump.install
 %{_prefix}/lib/kernel/install.d/20-zipl-kernel.install
 %{_prefix}/lib/kernel/install.d/52-zipl-rescue.install
 %{_prefix}/lib/kernel/install.d/91-zipl.install
@@ -766,6 +771,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Dec 02 2019 Dan Horák <dan[at]danny.cz> - 2:2.11.0-2
+- apply kernel install/update script fixes from #1600480, #1665060
+
 * Mon Sep 09 2019 Dan Horák <dan[at]danny.cz> - 2:2.11.0-1
 - rebased to 2.11.0
 

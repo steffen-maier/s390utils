@@ -16,6 +16,7 @@ KERNEL_DIR="${KERNEL_IMAGE%/*}"
 MACHINE_ID=$KERNEL_INSTALL_MACHINE_ID
 
 BLS_DIR="/boot/loader/entries"
+ZIPLCFG="/etc/zipl.conf"
 CMDLINE_LINUX_DEBUG=" systemd.log_level=debug systemd.log_target=kmsg"
 LINUX_DEBUG_VERSION_POSTFIX="_with_debugging"
 LINUX_DEBUG_TITLE_POSTFIX=" with debugging"
@@ -106,6 +107,15 @@ case "$COMMAND" in
                     "${BOOT_OPTIONS[*]}" >"${BLS_TARGET}"
             fi
 
+            if [[ "$KERNEL_VERSION" == *\+* ]] && [ "x$DEFAULTDEBUG" != "xyes" ]; then
+                UPDATEDEFAULT="no"
+            fi
+
+            if [[ "x$UPDATEDEFAULT" = "xyes" ]]; then
+                TITLE="$(grep '^title[ \t]' "${BLS_TARGET}" | sed -e 's/^title[ \t]*//')"
+                NEWDEFAULT="${TITLE}"
+            fi
+
             if [ "x${MAKEDEBUG}" = "xyes" ]; then
                 BLS_DEBUG="$(echo ${BLS_TARGET} | sed -e "s/${KERNEL_VERSION}/${KERNEL_VERSION}~debug/")"
                 cp -aT  "${BLS_TARGET}" "${BLS_DEBUG}"
@@ -116,7 +126,15 @@ case "$COMMAND" in
 		sed -i -e "s/^version.*/version ${VERSION}${LINUX_DEBUG_VERSION_POSTFIX}/" "${BLS_DEBUG}"
                 sed -i -e "s/^id.*/${BLSID}/" "${BLS_DEBUG}"
                 sed -i -e "s#^options.*#options ${BOOT_OPTIONS[*]}${CMDLINE_LINUX_DEBUG}#" "${BLS_DEBUG}"
+                if [ -n "$NEWDEFAULT" -a "x$DEFAULTDEBUG" = "xyes" ]; then
+                    TITLE="$(grep '^title[ \t]' "${BLS_DEBUG}" | sed -e 's/^title[ \t]*//')"
+                    NEWDEFAULT="${TITLE}"
+                fi
 	    fi
+
+            if [ -n "$NEWDEFAULT" ]; then
+                sed -i -e "s,^default=.*,default=${NEWDEFAULT}," "${ZIPLCFG}"
+            fi
 
             exit 0
         fi
@@ -131,7 +149,16 @@ case "$COMMAND" in
         if [[ ! -f /sbin/new-kernel-pkg ]]; then
             ARCH="$(uname -m)"
             BLS_TARGET="${BLS_DIR}/${MACHINE_ID}-${KERNEL_VERSION}.conf"
-            BLS_DEBUG="$(echo ${BLS_TARGET} | sed -e "s/\.${ARCH}/-debug.${ARCH}/")"
+            BLS_DEBUG="$(echo ${BLS_TARGET} | sed -e "s/${KERNEL_VERSION}/${KERNEL_VERSION}~debug/")"
+
+            TITLE="$(grep '^title[ \t]' "${BLS_TARGET}" | sed -e 's/^title[ \t]*//')"
+            sed -i -e "/^default=${TITLE}/d" "${ZIPLCFG}"
+
+            if [[ -f "${BLS_DEBUG}" ]]; then
+                TITLE="$(grep '^title[ \t]' "${BLS_DEBUG}" | sed -e 's/^title[ \t]*//')"
+                sed -i -e "/^default=${TITLE}/d" "${ZIPLCFG}"
+            fi
+
             rm -f "${BLS_TARGET}" "${BLS_DEBUG}"
 
             for i in vmlinuz System.map config zImage.stub dtb; do
