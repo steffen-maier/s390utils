@@ -83,7 +83,7 @@ case "$COMMAND" in
             if ! [[ ${BOOT_OPTIONS[*]} ]]; then
                 read -r -d '' -a line < /proc/cmdline
                 for i in "${line[@]}"; do
-                    [[ "${i#initrd=*}" != "$i" ]] && continue
+                    [[ "${i#initrd=*}" != "$i" || "${i#BOOT_IMAGE=*}" != "$i" ]] && continue
                     BOOT_OPTIONS+=("$i")
                 done
             fi
