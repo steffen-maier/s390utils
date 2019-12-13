@@ -1,5 +1,3 @@
-%define vipaver 2.1.0
-
 # secure boot support is for RHEL only
 %if 0%{?rhel} >= 8
 %global signzipl 1
@@ -8,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.11.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -16,8 +14,6 @@ ExclusiveArch:  s390 s390x
 URL:            https://github.com/ibm-s390-tools/s390-tools
 Source0:        https://github.com/ibm-s390-tools/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
 Source5:        zfcpconf.sh
-# http://www.ibm.com/developerworks/linux/linux390/src_vipa-%%{vipaver}.html
-Source6:        http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/ht_src/src_vipa-%{vipaver}.tar.gz
 Source7:        zfcp.udev
 # files for DASD initialization
 Source12:       dasd.udev
@@ -57,7 +53,7 @@ The s390utils packages contain a set of user space utilities that should to
 be used together with the zSeries (s390) Linux kernel and device drivers.
 
 %prep
-%setup -q -n s390-tools-%{version} -a 6
+%setup -q -n s390-tools-%{version}
 
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
@@ -74,10 +70,6 @@ make \
         BINDIR=/usr/sbin \
         DISTRELEASE=%{release} \
         V=1
-
-pushd src_vipa-%{vipaver}
-make CC_FLAGS="%{build_cflags} -fPIC" LD_FLAGS="%{build_ldflags} -shared" LIBDIR=%{_libdir}
-popd
 
 
 %install
@@ -126,11 +118,6 @@ install -D -m 0755 -t %{buildroot}%{_prefix}/lib/kernel/install.d/ %{SOURCE25}
 install -d -m 0755 %{buildroot}%{_sysconfdir}/kernel/install.d/
 install -m 0644 /dev/null %{buildroot}%{_sysconfdir}/kernel/install.d/20-grubby.install
 
-# src_vipa
-pushd src_vipa-%{vipaver}
-make install LIBDIR=%{_libdir} SBINDIR=%{_bindir} INSTROOT=%{buildroot} LDCONFIG=/bin/true
-popd
-
 # install usefull headers for devel subpackage
 mkdir -p %{buildroot}%{_includedir}/%{name}
 install -p -m 644 include/lib/vtoc.h %{buildroot}%{_includedir}/%{name}
@@ -159,8 +146,7 @@ touch %{buildroot}%{_sysconfdir}/zipl.conf
 # ************************* s390-tools base package  *************************
 #
 %package base
-# src_vipa is CPL
-License:        MIT and CPL
+License:        MIT
 Summary:        S390 base tools
 Requires:       gawk sed coreutils
 Requires:       sysfsutils
@@ -477,11 +463,6 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_prefix}/lib/kernel/install.d/91-zipl.install
 %{_prefix}/lib/modules-load.d/s390-pkey.conf
 
-# src_vipa
-%{_bindir}/src_vipa.sh
-%{_libdir}/src_vipa.so
-%{_mandir}/man8/src_vipa.8*
-
 #
 # *********************** s390-tools osasnmpd package  ***********************
 #
@@ -768,6 +749,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Dec 13 2019 Dan Horák <dan[at]danny.cz> - 2:2.11.0-4
+- drop src_vipa (#1781683)
+- kernel-install: skip BOOT_IMAGE param when copying the cmdline to BLS snippets
+
 * Mon Dec 02 2019 Dan Horák <dan[at]danny.cz> - 2:2.11.0-3
 - apply kernel install/update script fixes from #1755899, #1778243
 
