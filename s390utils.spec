@@ -5,8 +5,8 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.11.0
-Release:        4%{?dist}
+Version:        2.12.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -749,6 +749,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Jan 06 2020 Dan Horák <dan[at]danny.cz> - 2:2.12.0-1
+- rebased to 2.12.0
+
 * Fri Dec 13 2019 Dan Horák <dan[at]danny.cz> - 2:2.11.0-4
 - drop src_vipa (#1781683)
 - kernel-install: skip BOOT_IMAGE param when copying the cmdline to BLS snippets
