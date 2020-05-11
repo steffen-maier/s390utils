@@ -162,6 +162,7 @@ BuildRequires:  glibc-static
 BuildRequires:  cryptsetup-devel >= 2.0.3
 BuildRequires:  json-c-devel
 BuildRequires:  rpm-devel
+BuildRequires:  glib2-devel
 
 
 %description base
