@@ -5,8 +5,8 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.12.0
-Release:        4%{?dist}
+Version:        2.13.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -287,6 +287,13 @@ s390 base tools. This collection provides the following utilities:
     Allows to set the system and sysplex names from the Linux guest to
     the HMC/SE using the Control Program Identification feature.
 
+    * genprotimg:
+    Tool for the creation of PV images. The image consists of a concatenation of
+    a plain text boot loader, the encrypted components for kernel, initrd, and
+    cmdline, and the integrity-protected PV header, containing metadata necessary for
+    running the guest in PV mode. Protected VMs (PVM) are KVM VMs, where KVM can't
+    access the VM's state like guest memory and guest registers anymore.
+
 For more information refer to the following publications:
    * "Device Drivers, Features, and Commands" chapter "Useful Linux commands"
    * "Using the dump tools"
@@ -368,6 +375,7 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_sbindir}/zpcictl
 %{_bindir}/lscpumf
 %{_bindir}/dump2tar
+%{_bindir}/genprotimg
 %{_bindir}/vmconvert
 %{_bindir}/zkey
 %{_bindir}/zkey-cryptsetup
@@ -402,6 +410,7 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_mandir}/man8/dasdview.8*
 %{_mandir}/man8/dumpconf.8*
 %{_mandir}/man8/fdasd.8*
+%{_mandir}/man8/genprotimg.8.*
 %{_mandir}/man8/hyptop.8*
 %{_mandir}/man8/lschp.8*
 %{_mandir}/man8/lscss.8*
@@ -432,6 +441,7 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_mandir}/man8/zpcictl.8*
 %dir %{_datadir}/s390-tools/
 %{_datadir}/s390-tools/cpumf/
+%{_datadir}/s390-tools/genprotimg/
 %{_datadir}/s390-tools/netboot/
 %dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey
 %dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey/repository
@@ -749,6 +759,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon May 11 2020 Dan Horák <dan[at]danny.cz> - 2:2.13.0-1
+- rebased to 2.13.0
+
 * Wed Apr 22 2020 Dan Horák <dan@danny.cz> - 2:2.12.0-4
 - rebuilt for json-c soname bump
 
