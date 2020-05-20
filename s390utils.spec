@@ -152,7 +152,6 @@ Requires:       gawk sed coreutils
 Requires:       sysfsutils
 Requires:       sg3_utils
 Requires:       ethtool
-Requires:       network-scripts
 Requires:       tar
 %{?systemd_requires}
 BuildRequires:  perl-generators
