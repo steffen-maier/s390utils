@@ -6,7 +6,7 @@ diff -up s390-tools-2.9.0/zipl/src/Makefile.blscfg-rpm-nvr-sort s390-tools-2.9.0
  ALL_LDFLAGS += -Wl,-z,noexecstack $(NO_PIE_LDFLAGS)
  
 -libs = $(rootdir)/libutil/libutil.a
-+libs = $(rootdir)/libutil/libutil.a -lrpm
++libs = $(rootdir)/libutil/libutil.a -lrpmio
  
  objects = misc.o error.o scan.o job.o boot.o bootmap.o disk.o \
  	  install.o zipl.o $(rootdir)/zipl/boot/data.o
