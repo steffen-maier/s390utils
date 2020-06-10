@@ -158,13 +158,7 @@ Requires:       coreutils
 This package provides minimal set of tools needed to system to boot.
 
 %post core
-%if 0
-# enable in F-31
 %systemd_post device_cio_free.service
-%else
-# explicit enable for upgrade patch from s390utils-base < 2.6.0-4
-systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
-%endif
 %systemd_post cpi.service
 
 %preun core
