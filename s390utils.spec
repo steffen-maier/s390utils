@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.13.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -35,6 +35,7 @@ Source25:       91-zipl.install
 Patch0:         s390-tools-zipl-invert-script-options.patch
 Patch1:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
 
+Requires:       s390utils-core = %{epoch}:%{version}-%{release}
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
 Requires:       s390utils-cpuplugd = %{epoch}:%{version}-%{release}
@@ -143,8 +144,82 @@ touch %{buildroot}%{_sysconfdir}/zipl.conf
 %doc README.md
 
 #
-# ************************* s390-tools base package  *************************
+# ************************* s390-tools core package  *************************
 #
+%package core
+License:        MIT
+Summary:        S390 base tools
+Requires:       coreutils
+%{?systemd_requires}
+# BRs are covered via the base package
+
+
+%description core
+This package provides minimal set of tools needed to system to boot.
+
+%post core
+%if 0
+# enable in F-31
+%systemd_post device_cio_free.service
+%else
+# explicit enable for upgrade patch from s390utils-base < 2.6.0-4
+systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
+%endif
+%systemd_post cpi.service
+
+%preun core
+%systemd_preun device_cio_free.service
+%systemd_preun cpi.service
+
+%postun core
+%systemd_postun_with_restart cpi.service
+
+%files core
+%doc README.md zdev/src/*.txt
+%doc LICENSE
+%{_sbindir}/chreipl
+%{_sbindir}/chzdev
+%{_sbindir}/dasdfmt
+%{_sbindir}/device_cio_free
+%{_sbindir}/zipl
+%dir /lib/s390-tools/
+/lib/s390-tools/{zipl,chreipl}_helper.*
+/lib/s390-tools/cpictl
+/lib/s390-tools/stage3.bin
+/lib/s390-tools/zdev-root-update
+/lib/s390-tools/zipl.conf
+%ghost %config(noreplace) %{_sysconfdir}/zipl.conf
+%{_unitdir}/cpi.service
+%config(noreplace) %{_sysconfdir}/sysconfig/cpi
+/usr/lib/dracut/modules.d/95zdev/
+%{_mandir}/man5/zipl.conf.5*
+%{_mandir}/man8/dasdfmt.8*
+%{_mandir}/man8/zipl.8*
+
+# Additional Redhat specific stuff
+%{_sbindir}/dasdconf.sh
+%{_sbindir}/normalize_dasd_arg
+%{_sbindir}/zfcpconf.sh
+%{_unitdir}/device_cio_free.service
+/usr/lib/udev/ccw_init
+%{_udevrulesdir}/40-z90crypt.rules
+%{_udevrulesdir}/56-dasd.rules
+%{_udevrulesdir}/56-zfcp.rules
+%{_udevrulesdir}/59-dasd.rules
+%{_udevrulesdir}/60-readahead.rules
+%{_udevrulesdir}/81-ccw.rules
+%{_udevrulesdir}/90-cpi.rules
+%{_sysconfdir}/kernel/install.d/20-grubby.install
+%{_prefix}/lib/kernel/install.d/10-zfcpdump.install
+%{_prefix}/lib/kernel/install.d/20-zipl-kernel.install
+%{_prefix}/lib/kernel/install.d/52-zipl-rescue.install
+%{_prefix}/lib/kernel/install.d/91-zipl.install
+%{_prefix}/lib/modules-load.d/s390-pkey.conf
+
+#
+# *********************** s390-tools base package  ***********************
+#
+
 %package base
 License:        MIT
 Summary:        S390 base tools
@@ -153,6 +228,7 @@ Requires:       sysfsutils
 Requires:       sg3_utils
 Requires:       ethtool
 Requires:       tar
+Requires:       s390utils-core = %{epoch}:%{version}-%{release}
 %{?systemd_requires}
 BuildRequires:  perl-generators
 BuildRequires:  ncurses-devel
@@ -283,11 +359,11 @@ s390 base tools. This collection provides the following utilities:
      - chshut:  Change actions which should be done in case of halt, poff,
                 reboot or panic.
 
-    * cpi:
+   * cpi:
     Allows to set the system and sysplex names from the Linux guest to
     the HMC/SE using the Control Program Identification feature.
 
-    * genprotimg:
+   * genprotimg:
     Tool for the creation of PV images. The image consists of a concatenation of
     a plain text boot loader, the encrypted components for kernel, initrd, and
     cmdline, and the integrity-protected PV header, containing metadata necessary for
@@ -303,23 +379,12 @@ For more information refer to the following publications:
 getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 
 %post base
-%systemd_post cpi.service
-%if 0
-# enable in F-31
-%systemd_post device_cio_free.service
-%else
-# explicit enable for upgrade patch from s390utils-base < 2.6.0-4
-systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
-%endif
 %systemd_post dumpconf.service
 
 %preun base
-%systemd_preun cpi.service
-%systemd_preun device_cio_free.service
 %systemd_preun dumpconf.service
 
 %postun base
-%systemd_postun_with_restart cpi.service
 %systemd_postun_with_restart dumpconf.service
 
 %files base
@@ -328,12 +393,9 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_sbindir}/chccwdev
 %{_sbindir}/chchp
 %{_sbindir}/chcpumf
-%{_sbindir}/chreipl
 %{_sbindir}/chshut
 %{_sbindir}/chzcrypt
-%{_sbindir}/chzdev
 %{_sbindir}/cio_ignore
-%{_sbindir}/dasdfmt
 %{_sbindir}/dasdinfo
 %{_sbindir}/dasdstat
 %{_sbindir}/dasdview
@@ -369,7 +431,6 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_sbindir}/zcryptstats
 %{_sbindir}/zfcpdbf
 %{_sbindir}/zgetdump
-%{_sbindir}/zipl
 %{_sbindir}/zipl-switch-to-blscfg
 %{_sbindir}/znetconf
 %{_sbindir}/zpcictl
@@ -379,13 +440,15 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_bindir}/vmconvert
 %{_bindir}/zkey
 %{_bindir}/zkey-cryptsetup
-%{_unitdir}/cpi.service
 %{_unitdir}/dumpconf.service
 %ghost %config(noreplace) %{_sysconfdir}/zipl.conf
-%config(noreplace) %{_sysconfdir}/sysconfig/cpi
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
-/lib/s390-tools/
-/usr/lib/dracut/modules.d/95zdev/
+/lib/s390-tools/cpumf_helper
+/lib/s390-tools/dumpconf
+/lib/s390-tools/lsznet.raw
+/lib/s390-tools/zfcpdump
+/lib/s390-tools/zfcpdump/zfcpdump-initrd
+/lib/s390-tools/znetcontrolunits
 %{_mandir}/man1/dbginfo.sh.1*
 %{_mandir}/man1/dump2tar.1*
 %{_mandir}/man1/lscpumf.1*
@@ -395,7 +458,6 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_mandir}/man1/zkey.1*
 %{_mandir}/man1/zkey-cryptsetup.1*
 %{_mandir}/man4/prandom.4*
-%{_mandir}/man5/zipl.conf.5*
 %{_mandir}/man8/chccwdev.8*
 %{_mandir}/man8/chchp.8*
 %{_mandir}/man8/chcpumf.8*
@@ -404,7 +466,6 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_mandir}/man8/chzcrypt.8*
 %{_mandir}/man8/chzdev.8*
 %{_mandir}/man8/cio_ignore.8*
-%{_mandir}/man8/dasdfmt.8*
 %{_mandir}/man8/dasdinfo.8*
 %{_mandir}/man8/dasdstat.8*
 %{_mandir}/man8/dasdview.8*
@@ -437,7 +498,6 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 %{_mandir}/man8/zcryptstats.8*
 %{_mandir}/man8/zgetdump.8*
 %{_mandir}/man8/znetconf.8*
-%{_mandir}/man8/zipl.8*
 %{_mandir}/man8/zpcictl.8*
 %dir %{_datadir}/s390-tools/
 %{_datadir}/s390-tools/cpumf/
@@ -450,28 +510,9 @@ systemctl --no-reload preset device_cio_free.service >/dev/null 2>&1 || :
 /boot/tape0
 %ghost %config(noreplace) %{_sysconfdir}/dasd.conf
 %ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
-%{_sbindir}/dasdconf.sh
-%{_sbindir}/zfcpconf.sh
 %{_sbindir}/dasd_cio_free
-%{_sbindir}/device_cio_free
 %{_sbindir}/zfcp_cio_free
 %{_sbindir}/znet_cio_free
-%{_sbindir}/normalize_dasd_arg
-%{_unitdir}/device_cio_free.service
-/usr/lib/udev/ccw_init
-%{_udevrulesdir}/40-z90crypt.rules
-%{_udevrulesdir}/56-zfcp.rules
-%{_udevrulesdir}/56-dasd.rules
-%{_udevrulesdir}/59-dasd.rules
-%{_udevrulesdir}/60-readahead.rules
-%{_udevrulesdir}/81-ccw.rules
-%{_udevrulesdir}/90-cpi.rules
-%{_sysconfdir}/kernel/install.d/20-grubby.install
-%{_prefix}/lib/kernel/install.d/10-zfcpdump.install
-%{_prefix}/lib/kernel/install.d/20-zipl-kernel.install
-%{_prefix}/lib/kernel/install.d/52-zipl-rescue.install
-%{_prefix}/lib/kernel/install.d/91-zipl.install
-%{_prefix}/lib/modules-load.d/s390-pkey.conf
 
 #
 # *********************** s390-tools osasnmpd package  ***********************
@@ -759,6 +800,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Jun 09 2020 Jakub Čajka <jcajka@redhat.com> - 2:2.13.0-3
+- split off core package with basic functionalities and reduced deps from base sub-package
+
 * Mon Jun 01 2020 Dan Horák <dan[at]danny.cz> - 2:2.13.0-2
 - avoid dependency on network-scripts (part of PR #4)
 
