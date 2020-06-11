@@ -148,7 +148,7 @@ touch %{buildroot}%{_sysconfdir}/zipl.conf
 #
 %package core
 License:        MIT
-Summary:        S390 base tools
+Summary:        S390 core tools
 Requires:       coreutils
 %{?systemd_requires}
 # BRs are covered via the base package
@@ -190,7 +190,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man8/dasdfmt.8*
 %{_mandir}/man8/zipl.8*
 
-# Additional Redhat specific stuff
+# Additional Fedora/RHEL specific stuff
 %{_sbindir}/dasdconf.sh
 %{_sbindir}/normalize_dasd_arg
 %{_sbindir}/zfcpconf.sh
@@ -500,7 +500,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey
 %dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey/repository
 
-# Additional Redhat specific stuff
+# Additional Fedora/RHEL specific stuff
 /boot/tape0
 %ghost %config(noreplace) %{_sysconfdir}/dasd.conf
 %ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
