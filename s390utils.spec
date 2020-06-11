@@ -174,7 +174,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_sbindir}/chreipl
 %{_sbindir}/chzdev
 %{_sbindir}/dasdfmt
-%{_sbindir}/device_cio_free
+%{_sbindir}/dasdinfo
 %{_sbindir}/zipl
 %dir /lib/s390-tools/
 /lib/s390-tools/{zipl,chreipl}_helper.*
@@ -190,12 +190,19 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man8/chreipl.8*
 %{_mandir}/man8/chzdev.8*
 %{_mandir}/man8/dasdfmt.8*
+%{_mandir}/man8/dasdinfo.8*
 %{_mandir}/man8/zipl.8*
 
 # Additional Fedora/RHEL specific stuff
+%ghost %config(noreplace) %{_sysconfdir}/dasd.conf
+%ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
 %{_sbindir}/dasdconf.sh
 %{_sbindir}/normalize_dasd_arg
 %{_sbindir}/zfcpconf.sh
+%{_sbindir}/device_cio_free
+%{_sbindir}/dasd_cio_free
+%{_sbindir}/zfcp_cio_free
+%{_sbindir}/znet_cio_free
 %{_unitdir}/device_cio_free.service
 /usr/lib/udev/ccw_init
 %{_udevrulesdir}/40-z90crypt.rules
@@ -392,7 +399,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/chshut
 %{_sbindir}/chzcrypt
 %{_sbindir}/cio_ignore
-%{_sbindir}/dasdinfo
 %{_sbindir}/dasdstat
 %{_sbindir}/dasdview
 %{_sbindir}/dbginfo.sh
@@ -460,7 +466,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/chshut.8*
 %{_mandir}/man8/chzcrypt.8*
 %{_mandir}/man8/cio_ignore.8*
-%{_mandir}/man8/dasdinfo.8*
 %{_mandir}/man8/dasdstat.8*
 %{_mandir}/man8/dasdview.8*
 %{_mandir}/man8/dumpconf.8*
@@ -502,11 +507,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 
 # Additional Fedora/RHEL specific stuff
 /boot/tape0
-%ghost %config(noreplace) %{_sysconfdir}/dasd.conf
-%ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
-%{_sbindir}/dasd_cio_free
-%{_sbindir}/zfcp_cio_free
-%{_sbindir}/znet_cio_free
 
 #
 # *********************** s390-tools osasnmpd package  ***********************
