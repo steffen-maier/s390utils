@@ -132,8 +132,12 @@ case "$COMMAND" in
                 fi
 	    fi
 
-            if [ -n "$NEWDEFAULT" ]; then
-                sed -i -e "s,^default=.*,default=${NEWDEFAULT}," "${ZIPLCFG}"
+            if [ -n "$NEWDEFAULT" ] && [ -f "${ZIPLCFG}" ]; then
+                if grep -q "^default=" "${ZIPLCFG}"; then
+                    sed -i -e "s,^default=.*,default=${NEWDEFAULT}," "${ZIPLCFG}"
+                else
+                    echo "default=${NEWDEFAULT}" >> "${ZIPLCFG}"
+                fi
             fi
 
             exit 0
@@ -151,8 +155,10 @@ case "$COMMAND" in
             BLS_TARGET="${BLS_DIR}/${MACHINE_ID}-${KERNEL_VERSION}.conf"
             BLS_DEBUG="$(echo ${BLS_TARGET} | sed -e "s/${KERNEL_VERSION}/${KERNEL_VERSION}~debug/")"
 
-            TITLE="$(grep '^title[ \t]' "${BLS_TARGET}" | sed -e 's/^title[ \t]*//')"
-            sed -i -e "/^default=${TITLE}/d" "${ZIPLCFG}"
+            if [ -f "${BLS_TARGET}" ] && [ -f "${ZIPLCFG}" ]; then
+                TITLE="$(grep '^title[ \t]' "${BLS_TARGET}" | sed -e 's/^title[ \t]*//')"
+                sed -i -e "/^default=${TITLE}/d" "${ZIPLCFG}"
+            fi
 
             if [[ -f "${BLS_DEBUG}" ]]; then
                 TITLE="$(grep '^title[ \t]' "${BLS_DEBUG}" | sed -e 's/^title[ \t]*//')"

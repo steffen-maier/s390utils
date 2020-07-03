@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.13.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -794,6 +794,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Jul 03 2020 Javier Martinez Canillas <javierm@redhat.com> - 2:2.13.0-4
+- add a default entry in zipl.conf if there isn't one present (#1698363)
+
 * Tue Jun 09 2020 Jakub Čajka <jcajka@redhat.com> - 2:2.13.0-3
 - split off core package with basic functionalities and reduced deps from base sub-package
 
