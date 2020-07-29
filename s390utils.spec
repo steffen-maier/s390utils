@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.13.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -794,6 +794,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Jul 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 2:2.13.0-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
 * Fri Jul 03 2020 Javier Martinez Canillas <javierm@redhat.com> - 2:2.13.0-4
 - add a default entry in zipl.conf if there isn't one present (#1698363)
 
