@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.14.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -792,6 +792,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Aug 25 2020 Dan Horák <dan[at]danny.cz> - 2:2.14.0-2
+- add support for auto LUN scan to zfcpconf.sh (#1552697)
+
 * Tue Aug 25 2020 Dan Horák <dan[at]danny.cz> - 2:2.14.0-1
 - rebased to 2.14.0
 
