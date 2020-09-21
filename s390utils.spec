@@ -792,6 +792,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Sep 21 2020 Dan Horák <dan[at]danny.cz> - 2:2.14.0-3
+- rebuilt for net-snmp 5.9
+
 * Wed Aug 26 2020 Dan Horák <dan[at]danny.cz> - 2:2.14.0-2
 - add support for auto LUN scan to zfcpconf.sh (#1552697)
 
