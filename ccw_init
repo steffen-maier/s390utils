@@ -35,6 +35,14 @@ get_config_by_subchannel ()
         | LC_ALL=C sed -e "$__sed_discard_ignored_files"
 }
 
+get_config_by_subchannel_nm ()
+{
+    LANG=C grep -E -i -l \
+        "^s390-subchannels=([0-9]\.[0-9]\.[a-f0-9]+;){0,2}${1};([0-9]\.[0-9]\.[a-f0-9]+;){0,2}$" \
+        /etc/NetworkManager/system-connections/*.nmconnection \
+        | LC_ALL=C sed -e "$__sed_discard_ignored_files"
+}
+
 CHANNEL=${DEVPATH##*/}
 
 if [ $MODE = "dracut" ]; then
@@ -65,7 +73,14 @@ elif [ $MODE = "normal" ]; then
     if [ -n "$CONFIG_FILE" ]; then
 	. $CONFIG_FILE
     else
-	exit 1
+	CONFIG_FILE=$(get_config_by_subchannel_nm $CHANNEL)
+	if [ -n "$CONFIG_FILE" ]; then
+	    NETTYPE=$(sed -nr "/^\[ethernet\]/ { :l /^s390-nettype[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" $CONFIG_FILE)
+	    SUBCHANNELS=$(sed -nr "/^\[ethernet\]/ { :l /^s390-subchannels[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" $CONFIG_FILE | sed -e "s/;/,/g" -e "s/,$//")
+	    LAYER2=$(sed -nr "/^\[ethernet-s390-options\]/ { :l /^layer2[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" $CONFIG_FILE)
+	else
+	    exit 1
+	fi
     fi
 else
     echo "Unknown mode=$MODE"

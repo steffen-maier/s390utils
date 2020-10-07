@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.14.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -792,6 +792,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Oct 07 2020 Dan Horák <dan[at]danny.cz> - 2:2.14.0-4
+- update scripts for https://fedoraproject.org/wiki/Changes/NetworkManager_keyfile_instead_of_ifcfg_rh
+
 * Mon Sep 21 2020 Dan Horák <dan[at]danny.cz> - 2:2.14.0-3
 - rebuilt for net-snmp 5.9
 
