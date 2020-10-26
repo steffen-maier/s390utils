@@ -173,6 +173,7 @@ This package provides minimal set of tools needed to system to boot.
 %doc LICENSE
 %{_sbindir}/chreipl
 %{_sbindir}/chzdev
+%{_sbindir}/cio_ignore
 %{_sbindir}/dasdfmt
 %{_sbindir}/dasdinfo
 %{_sbindir}/zipl
@@ -397,7 +398,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/chcpumf
 %{_sbindir}/chshut
 %{_sbindir}/chzcrypt
-%{_sbindir}/cio_ignore
 %{_sbindir}/dasdstat
 %{_sbindir}/dasdview
 %{_sbindir}/dbginfo.sh
