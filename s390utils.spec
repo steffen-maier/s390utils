@@ -5,8 +5,8 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.14.0
-Release:        4%{?dist}
+Version:        2.15.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -35,6 +35,10 @@ Source25:       91-zipl.install
 Patch0:         s390-tools-zipl-invert-script-options.patch
 Patch1:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
 
+# https://github.com/ibm-s390-tools/s390-tools/issues/93
+# https://github.com/ifranzki/s390-tools/commit/4a1979de79d9de48a44538f856f1d50f398541a8
+Patch100:       s390-tools-2.15.0-ekmfweb.patch
+
 Requires:       s390utils-core = %{epoch}:%{version}-%{release}
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -60,6 +64,7 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %patch0 -p1 -b .zipl-invert-script-options
 %patch1 -p1 -b .blscfg-rpm-nvr-sort
 
+%patch100 -p1 -b .ekmfweb
 
 # remove --strip from install
 find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
@@ -169,7 +174,7 @@ This package provides minimal set of tools needed to system to boot.
 %systemd_postun_with_restart cpi.service
 
 %files core
-%doc README.md zdev/src/*.txt
+%doc README.md zdev/src/chzdev_usage.txt
 %doc LICENSE
 %{_sbindir}/chreipl
 %{_sbindir}/chzdev
@@ -391,8 +396,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %systemd_postun_with_restart dumpconf.service
 
 %files base
-%doc README.md zdev/src/*.txt
-%doc LICENSE
+%doc README.md zdev/src/lszdev_usage.txt
 %{_sbindir}/chccwdev
 %{_sbindir}/chchp
 %{_sbindir}/chcpumf
@@ -413,6 +417,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/lsreipl
 %{_sbindir}/lsscm
 %{_sbindir}/lsshut
+%{_sbindir}/lsstp
 %{_sbindir}/lstape
 %{_sbindir}/lszcrypt
 %{_sbindir}/lszdev
@@ -446,9 +451,11 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
 /lib/s390-tools/dumpconf
 /lib/s390-tools/lsznet.raw
-/lib/s390-tools/zfcpdump
+%dir /lib/s390-tools/zfcpdump
 /lib/s390-tools/zfcpdump/zfcpdump-initrd
 /lib/s390-tools/znetcontrolunits
+%{_libdir}/libekmfweb.so.*
+%{_libdir}/zkey/zkey-ekmfweb.so
 %{_mandir}/man1/dbginfo.sh.1*
 %{_mandir}/man1/dump2tar.1*
 %{_mandir}/man1/lscpumf.1*
@@ -457,6 +464,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man1/zipl-switch-to-blscfg.1*
 %{_mandir}/man1/zkey.1*
 %{_mandir}/man1/zkey-cryptsetup.1*
+%{_mandir}/man1/zkey-ekmfweb.1*
 %{_mandir}/man4/prandom.4*
 %{_mandir}/man8/chccwdev.8*
 %{_mandir}/man8/chchp.8*
@@ -478,6 +486,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/lsreipl.8*
 %{_mandir}/man8/lsscm.8*
 %{_mandir}/man8/lsshut.8*
+%{_mandir}/man8/lsstp.8*
 %{_mandir}/man8/lstape.8*
 %{_mandir}/man8/lszcrypt.8*
 %{_mandir}/man8/lszdev.8*
@@ -501,6 +510,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_datadir}/s390-tools/netboot/
 %dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey
 %dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey/repository
+%config(noreplace) %attr(0660,root,zkeyadm)%{_sysconfdir}/zkey/kms-plugins.conf
 
 # Additional Fedora/RHEL specific stuff
 /boot/tape0
@@ -784,14 +794,21 @@ getent group cpacfstats >/dev/null || groupadd -r cpacfstats
 %package devel
 Summary:        Development files
 
+Requires: %{name}-base%{?_isa} = %{version}-%{release}
+
 %description devel
 User-space development files for the s390/s390x architecture.
 
 %files devel
-%{_includedir}/%{name}
+%{_includedir}/%{name}/
+%{_includedir}/ekmfweb/
+%{_libdir}/libekmfweb.so
 
 
 %changelog
+* Tue Oct 27 2020 Dan Horák <dan[at]danny.cz> - 2:2.15.0-1
+- rebased to 2.15.0
+
 * Wed Oct 07 2020 Dan Horák <dan[at]danny.cz> - 2:2.14.0-4
 - update scripts for https://fedoraproject.org/wiki/Changes/NetworkManager_keyfile_instead_of_ifcfg_rh
 
