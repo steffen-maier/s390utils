@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.15.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -98,6 +98,9 @@ else
     echo "rpm-sign not available, stage3 won't be signed"
 fi
 %endif
+
+# move tools to searchable dir
+mv %{buildroot}%{_datadir}/s390-tools/netboot/mk-s390image %{buildroot}%{_bindir}
 
 mkdir -p %{buildroot}{/boot,%{_udevrulesdir},%{_sysconfdir}/{profile.d,sysconfig},%{_prefix}/lib/modules-load.d}
 install -p -m 644 zipl/boot/tape0.bin %{buildroot}/boot/tape0
@@ -443,6 +446,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/zpcictl
 %{_bindir}/dump2tar
 %{_bindir}/genprotimg
+%{_bindir}/mk-s390image
 %{_bindir}/vmconvert
 %{_bindir}/zkey
 %{_bindir}/zkey-cryptsetup
@@ -806,6 +810,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Oct 28 2020 Dan Horák <dan[at]danny.cz> - 2:2.15.0-2
+- move mk-s390image to /usr/bin
+
 * Tue Oct 27 2020 Dan Horák <dan[at]danny.cz> - 2:2.15.0-1
 - rebased to 2.15.0
 
