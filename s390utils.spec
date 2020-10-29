@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.15.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -792,7 +792,7 @@ getent group cpacfstats >/dev/null || groupadd -r cpacfstats
 %package devel
 Summary:        Development files
 
-Requires: %{name}-base%{?_isa} = %{version}-%{release}
+Requires: %{name}-base%{?_isa} = %{epoch}:%{version}-%{release}
 
 %description devel
 User-space development files for the s390/s390x architecture.
@@ -804,6 +804,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Oct 29 2020 Petr Šabata <contyk@redhat.com> - 2:2.15.1-2
+- Fix the development package dependency by adding epoch
+
 * Thu Oct 29 2020 Dan Horák <dan[at]danny.cz> - 2:2.15.1-1
 - rebased to 2.15.1
 
