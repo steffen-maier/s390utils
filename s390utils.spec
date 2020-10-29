@@ -5,8 +5,8 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.15.0
-Release:        2%{?dist}
+Version:        2.15.1
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -35,10 +35,6 @@ Source25:       91-zipl.install
 Patch0:         s390-tools-zipl-invert-script-options.patch
 Patch1:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
 
-# https://github.com/ibm-s390-tools/s390-tools/issues/93
-# https://github.com/ifranzki/s390-tools/commit/4a1979de79d9de48a44538f856f1d50f398541a8
-Patch100:       s390-tools-2.15.0-ekmfweb.patch
-
 Requires:       s390utils-core = %{epoch}:%{version}-%{release}
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -63,8 +59,6 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
 %patch1 -p1 -b .blscfg-rpm-nvr-sort
-
-%patch100 -p1 -b .ekmfweb
 
 # remove --strip from install
 find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
@@ -810,6 +804,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Thu Oct 29 2020 Dan Horák <dan[at]danny.cz> - 2:2.15.1-1
+- rebased to 2.15.1
+
 * Wed Oct 28 2020 Dan Horák <dan[at]danny.cz> - 2:2.15.0-2
 - move mk-s390image to /usr/bin
 
