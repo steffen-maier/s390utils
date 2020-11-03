@@ -192,6 +192,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man5/zipl.conf.5*
 %{_mandir}/man8/chreipl.8*
 %{_mandir}/man8/chzdev.8*
+%{_mandir}/man8/cio_ignore.8*
 %{_mandir}/man8/dasdfmt.8*
 %{_mandir}/man8/dasdinfo.8*
 %{_mandir}/man8/zipl.8*
@@ -469,7 +470,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/chcpumf.8*
 %{_mandir}/man8/chshut.8*
 %{_mandir}/man8/chzcrypt.8*
-%{_mandir}/man8/cio_ignore.8*
 %{_mandir}/man8/dasdstat.8*
 %{_mandir}/man8/dasdview.8*
 %{_mandir}/man8/dumpconf.8*
