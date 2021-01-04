@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.15.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -178,6 +178,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_sbindir}/cio_ignore
 %{_sbindir}/dasdfmt
 %{_sbindir}/dasdinfo
+%{_sbindir}/fdasd
 %{_sbindir}/zipl
 %dir /lib/s390-tools/
 /lib/s390-tools/{zipl,chreipl}_helper.*
@@ -195,6 +196,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man8/cio_ignore.8*
 %{_mandir}/man8/dasdfmt.8*
 %{_mandir}/man8/dasdinfo.8*
+%{_mandir}/man8/fdasd.8*
 %{_mandir}/man8/zipl.8*
 
 # Additional Fedora/RHEL specific stuff
@@ -403,7 +405,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/dasdstat
 %{_sbindir}/dasdview
 %{_sbindir}/dbginfo.sh
-%{_sbindir}/fdasd
 %{_sbindir}/hyptop
 %{_sbindir}/ip_watcher.pl
 %{_sbindir}/lschp
@@ -473,7 +474,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/dasdstat.8*
 %{_mandir}/man8/dasdview.8*
 %{_mandir}/man8/dumpconf.8*
-%{_mandir}/man8/fdasd.8*
 %{_mandir}/man8/genprotimg.8.*
 %{_mandir}/man8/hyptop.8*
 %{_mandir}/man8/lschp.8*
@@ -804,6 +804,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Jan 04 2021 Dan Horák <dan[at]danny.cz> - 2:2.15.1-3
+- move fdasd to core
+
 * Thu Oct 29 2020 Petr Šabata <contyk@redhat.com> - 2:2.15.1-2
 - Fix the development package dependency by adding epoch
 
