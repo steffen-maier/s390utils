@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.15.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -179,6 +179,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_sbindir}/dasdfmt
 %{_sbindir}/dasdinfo
 %{_sbindir}/fdasd
+%{_sbindir}/lszdev
 %{_sbindir}/zipl
 %dir /lib/s390-tools/
 /lib/s390-tools/{zipl,chreipl}_helper.*
@@ -197,6 +198,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man8/dasdfmt.8*
 %{_mandir}/man8/dasdinfo.8*
 %{_mandir}/man8/fdasd.8*
+%{_mandir}/man8/lszdev.8*
 %{_mandir}/man8/zipl.8*
 
 # Additional Fedora/RHEL specific stuff
@@ -419,7 +421,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/lsstp
 %{_sbindir}/lstape
 %{_sbindir}/lszcrypt
-%{_sbindir}/lszdev
 %{_sbindir}/lszfcp
 %{_sbindir}/qetharp
 %{_sbindir}/qethconf
@@ -487,7 +488,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/lsstp.8*
 %{_mandir}/man8/lstape.8*
 %{_mandir}/man8/lszcrypt.8*
-%{_mandir}/man8/lszdev.8*
 %{_mandir}/man8/lszfcp.8*
 %{_mandir}/man8/qetharp.8*
 %{_mandir}/man8/qethconf.8*
@@ -804,6 +804,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Jan 05 2021 Dan Horák <dan[at]danny.cz> - 2:2.15.1-4
+- move lszdev to core
+
 * Mon Jan 04 2021 Dan Horák <dan[at]danny.cz> - 2:2.15.1-3
 - move fdasd to core
 
