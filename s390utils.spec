@@ -43,6 +43,7 @@ Requires:       s390utils-mon_statd = %{epoch}:%{version}-%{release}
 Requires:       s390utils-iucvterm = %{epoch}:%{version}-%{release}
 Requires:       s390utils-ziomon = %{epoch}:%{version}-%{release}
 
+BuildRequires: make
 BuildRequires:  gcc-c++
 
 %description
