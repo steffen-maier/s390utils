@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.15.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -805,6 +805,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 2:2.15.1-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
 * Tue Jan 05 2021 Dan Horák <dan[at]danny.cz> - 2:2.15.1-4
 - move lszdev to core
 
