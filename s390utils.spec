@@ -5,8 +5,8 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.15.1
-Release:        5%{?dist}
+Version:        2.16.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -35,6 +35,12 @@ Source25:       91-zipl.install
 Patch0:         s390-tools-zipl-invert-script-options.patch
 Patch1:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
 
+# upstream fixes
+# https://github.com/ibm-s390-linux/s390-tools/commit/3f3f063c98278f53ad3b34e68b70fca62eaea8fb
+Patch100:       s390-tools-2.16.0-zkey.patch
+# https://github.com/ibm-s390-linux/s390-tools/commit/b6bdd7744aba06d82f30b0c84012f0b06ccb01de
+Patch101:       s390-tools-2.16.0-genprotimg.patch
+
 Requires:       s390utils-core = %{epoch}:%{version}-%{release}
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -60,6 +66,10 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
 %patch1 -p1 -b .blscfg-rpm-nvr-sort
+
+# upstream fixes
+%patch100 -p1
+%patch101 -p1
 
 # remove --strip from install
 find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
@@ -408,6 +418,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/dasdstat
 %{_sbindir}/dasdview
 %{_sbindir}/dbginfo.sh
+%{_sbindir}/hsci
 %{_sbindir}/hyptop
 %{_sbindir}/ip_watcher.pl
 %{_sbindir}/lschp
@@ -477,6 +488,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/dasdview.8*
 %{_mandir}/man8/dumpconf.8*
 %{_mandir}/man8/genprotimg.8.*
+%{_mandir}/man8/hsci.8*
 %{_mandir}/man8/hyptop.8*
 %{_mandir}/man8/lschp.8*
 %{_mandir}/man8/lscss.8*
@@ -805,6 +817,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Feb 24 2021 Dan Horák <dan[at]danny.cz> - 2:2.16.0-1
+- rebased to 2.16.0
+
 * Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 2:2.15.1-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 
