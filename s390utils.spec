@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.16.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -246,7 +246,6 @@ This package provides minimal set of tools needed to system to boot.
 License:        MIT
 Summary:        S390 base tools
 Requires:       gawk sed coreutils
-Requires:       sysfsutils
 Requires:       sg3_utils
 Requires:       ethtool
 Requires:       tar
@@ -817,6 +816,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Mar 01 2021 Dan Horák <dan[at]danny.cz> - 2:2.16.0-2
+- drop superfluous Require from s390utils-base
+
 * Wed Feb 24 2021 Dan Horák <dan[at]danny.cz> - 2:2.16.0-1
 - rebased to 2.16.0
 
