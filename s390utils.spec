@@ -249,6 +249,7 @@ Requires:       gawk sed coreutils
 Requires:       sg3_utils
 Requires:       ethtool
 Requires:       tar
+Requires:       file
 Requires:       s390utils-core = %{epoch}:%{version}-%{release}
 %{?systemd_requires}
 BuildRequires:  perl-generators
