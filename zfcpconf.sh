@@ -36,7 +36,7 @@ if [ -f "$CONFIG" ]; then
       modprobe zfcp
    fi
    if [ ! -d /sys/bus/ccw/drivers/zfcp ]; then
-      return
+      exit 1
    fi
    sed 'y/ABCDEF/abcdef/' < $CONFIG | while read line; do
        case $line in
@@ -74,3 +74,4 @@ if [ -f "$CONFIG" ]; then
        esac
    done
 fi
+exit 0
