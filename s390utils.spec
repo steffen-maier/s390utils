@@ -5,14 +5,13 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.16.0
-Release:        2%{?dist}
+Version:        2.17.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
-#URL:            http://www.ibm.com/developerworks/linux/linux390/s390-tools.html
-URL:            https://github.com/ibm-s390-tools/s390-tools
-Source0:        https://github.com/ibm-s390-tools/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
+URL:            https://github.com/ibm-s390-linux/s390-tools
+Source0:        https://github.com/ibm-s390-linux/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
 Source5:        zfcpconf.sh
 Source7:        zfcp.udev
 # files for DASD initialization
@@ -35,12 +34,6 @@ Source25:       91-zipl.install
 Patch0:         s390-tools-zipl-invert-script-options.patch
 Patch1:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
 
-# upstream fixes
-# https://github.com/ibm-s390-linux/s390-tools/commit/3f3f063c98278f53ad3b34e68b70fca62eaea8fb
-Patch100:       s390-tools-2.16.0-zkey.patch
-# https://github.com/ibm-s390-linux/s390-tools/commit/b6bdd7744aba06d82f30b0c84012f0b06ccb01de
-Patch101:       s390-tools-2.16.0-genprotimg.patch
-
 Requires:       s390utils-core = %{epoch}:%{version}-%{release}
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
 Requires:       s390utils-osasnmpd = %{epoch}:%{version}-%{release}
@@ -49,7 +42,7 @@ Requires:       s390utils-mon_statd = %{epoch}:%{version}-%{release}
 Requires:       s390utils-iucvterm = %{epoch}:%{version}-%{release}
 Requires:       s390utils-ziomon = %{epoch}:%{version}-%{release}
 
-BuildRequires: make
+BuildRequires:  make
 BuildRequires:  gcc-c++
 
 %description
@@ -66,10 +59,6 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 # Fedora/RHEL changes
 %patch0 -p1 -b .zipl-invert-script-options
 %patch1 -p1 -b .blscfg-rpm-nvr-sort
-
-# upstream fixes
-%patch100 -p1
-%patch101 -p1
 
 # remove --strip from install
 find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
@@ -259,6 +248,7 @@ BuildRequires:  cryptsetup-devel >= 2.0.3
 BuildRequires:  json-c-devel
 BuildRequires:  rpm-devel
 BuildRequires:  glib2-devel
+BuildRequires:  libxml2-devel
 
 
 %description base
@@ -418,6 +408,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/dasdstat
 %{_sbindir}/dasdview
 %{_sbindir}/dbginfo.sh
+%{_sbindir}/hsavmcore
 %{_sbindir}/hsci
 %{_sbindir}/hyptop
 %{_sbindir}/ip_watcher.pl
@@ -425,6 +416,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/lscpumf
 %{_sbindir}/lscss
 %{_sbindir}/lsdasd
+%{_sbindir}/lshwc
 %{_sbindir}/lsqeth
 %{_sbindir}/lsluns
 %{_sbindir}/lsreipl
@@ -468,17 +460,22 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 /lib/s390-tools/zfcpdump/zfcpdump-initrd
 /lib/s390-tools/znetcontrolunits
 %{_libdir}/libekmfweb.so.*
+%{_libdir}/libkmipclient.so.*
 %{_libdir}/zkey/zkey-ekmfweb.so
+%{_libdir}/zkey/zkey-kmip.so
 %{_mandir}/man1/dbginfo.sh.1*
 %{_mandir}/man1/dump2tar.1*
 %{_mandir}/man1/lscpumf.1*
+%{_mandir}/man1/lshwc.1*
 %{_mandir}/man1/vmconvert.1*
 %{_mandir}/man1/zfcpdbf.1*
 %{_mandir}/man1/zipl-switch-to-blscfg.1*
 %{_mandir}/man1/zkey.1*
 %{_mandir}/man1/zkey-cryptsetup.1*
 %{_mandir}/man1/zkey-ekmfweb.1*
+%{_mandir}/man1/zkey-kmip.1*
 %{_mandir}/man4/prandom.4*
+%{_mandir}/man5/hsavmcore.conf.5*
 %{_mandir}/man8/chccwdev.8*
 %{_mandir}/man8/chchp.8*
 %{_mandir}/man8/chcpumf.8*
@@ -488,6 +485,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/dasdview.8*
 %{_mandir}/man8/dumpconf.8*
 %{_mandir}/man8/genprotimg.8.*
+%{_mandir}/man8/hsavmcore.8*
 %{_mandir}/man8/hsci.8*
 %{_mandir}/man8/hyptop.8*
 %{_mandir}/man8/lschp.8*
@@ -520,6 +518,9 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_datadir}/s390-tools/genprotimg/
 %{_datadir}/s390-tools/netboot/
 %dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey
+%dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey/kmip
+%dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey/kmip/profiles
+%config(noreplace) %attr(0660,root,zkeyadm)%{_sysconfdir}/zkey/kmip/profiles/*.profile
 %dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey/repository
 %config(noreplace) %attr(0660,root,zkeyadm)%{_sysconfdir}/zkey/kms-plugins.conf
 
@@ -813,10 +814,18 @@ User-space development files for the s390/s390x architecture.
 %files devel
 %{_includedir}/%{name}/
 %{_includedir}/ekmfweb/
+%{_includedir}/kmipclient/
 %{_libdir}/libekmfweb.so
+%{_libdir}/libkmipclient.so
 
 
 %changelog
+* Wed Jul 07 2021 Dan Horák <dan[at]danny.cz> - 2:2.17.0-1
+- rebased to 2.17.0
+- zfcpconf: set exit code explicitly (#1977434)
+- mk-s390image script requires file (#1973239)
+- drop obsolete setting from device_cio_free.service (#1972449)
+
 * Mon Mar 01 2021 Dan Horák <dan[at]danny.cz> - 2:2.16.0-2
 - drop superfluous Require from s390utils-base
 
