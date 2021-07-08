@@ -12,16 +12,16 @@ License:        MIT
 ExclusiveArch:  s390 s390x
 URL:            https://github.com/ibm-s390-linux/s390-tools
 Source0:        https://github.com/ibm-s390-linux/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
-Source5:        zfcpconf.sh
-Source7:        zfcp.udev
+Source5:        https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/zfcpconf.sh
+Source7:        https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/zfcp.udev
 # files for DASD initialization
-Source12:       dasd.udev
-Source13:       dasdconf.sh
-Source14:       device_cio_free
-Source15:       device_cio_free.service
-Source16:       ccw_init
-Source17:       ccw.udev
-Source21:       normalize_dasd_arg
+Source12:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/dasd.udev
+Source13:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/dasdconf.sh
+Source14:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/device_cio_free
+Source15:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/device_cio_free.service
+Source16:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/ccw_init
+Source17:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/ccw.udev
+Source21:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/normalize_dasd_arg
 Source23:       20-zipl-kernel.install
 Source24:       52-zipl-rescue.install
 Source25:       91-zipl.install
