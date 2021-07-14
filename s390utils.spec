@@ -66,6 +66,7 @@ find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
 %build
 make \
         CFLAGS="%{build_cflags}" CXXFLAGS="%{build_cflags}" LDFLAGS="%{build_ldflags}" \
+        NO_PIE_LDFLAGS="" \
         BINDIR=/usr/sbin \
         DISTRELEASE=%{release} \
         V=1
