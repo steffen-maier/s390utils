@@ -461,6 +461,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 /lib/s390-tools/znetcontrolunits
 %{_libdir}/libekmfweb.so.*
 %{_libdir}/libkmipclient.so.*
+%dir %{_libdir}/zkey
 %{_libdir}/zkey/zkey-ekmfweb.so
 %{_libdir}/zkey/zkey-kmip.so
 %{_mandir}/man1/dbginfo.sh.1*
