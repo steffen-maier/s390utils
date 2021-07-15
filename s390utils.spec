@@ -181,7 +181,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_sbindir}/fdasd
 %{_sbindir}/lszdev
 %{_sbindir}/zipl
-%dir /lib/s390-tools/
+%dir /lib/s390-tools
 /lib/s390-tools/{zipl,chreipl}_helper.*
 /lib/s390-tools/cpictl
 /lib/s390-tools/stage3.bin
@@ -515,7 +515,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/zgetdump.8*
 %{_mandir}/man8/znetconf.8*
 %{_mandir}/man8/zpcictl.8*
-%dir %{_datadir}/s390-tools/
+%dir %{_datadir}/s390-tools
 %{_datadir}/s390-tools/genprotimg/
 %{_datadir}/s390-tools/netboot/
 %dir %attr(0770,root,zkeyadm) %{_sysconfdir}/zkey
