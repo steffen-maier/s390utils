@@ -5,8 +5,8 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.17.0
-Release:        2%{?dist}
+Version:        2.18.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -181,10 +181,12 @@ This package provides minimal set of tools needed to system to boot.
 %{_sbindir}/fdasd
 %{_sbindir}/lszdev
 %{_sbindir}/zipl
+%{_sbindir}/zipl-editenv
 %dir /lib/s390-tools
 /lib/s390-tools/{zipl,chreipl}_helper.*
 /lib/s390-tools/cpictl
 /lib/s390-tools/stage3.bin
+/lib/s390-tools/zdev_id
 /lib/s390-tools/zdev-root-update
 /lib/s390-tools/zipl.conf
 %ghost %config(noreplace) %{_sysconfdir}/zipl.conf
@@ -200,6 +202,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man8/fdasd.8*
 %{_mandir}/man8/lszdev.8*
 %{_mandir}/man8/zipl.8*
+%{_mandir}/man8/zipl-editenv.8*
 
 # Additional Fedora/RHEL specific stuff
 %ghost %config(noreplace) %{_sysconfdir}/dasd.conf
@@ -219,6 +222,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_udevrulesdir}/59-dasd.rules
 %{_udevrulesdir}/60-readahead.rules
 %{_udevrulesdir}/81-ccw.rules
+%{_udevrulesdir}/81-dpm.rules
 %{_udevrulesdir}/90-cpi.rules
 %{_sysconfdir}/kernel/install.d/20-grubby.install
 %{_prefix}/lib/kernel/install.d/10-zfcpdump.install
@@ -430,6 +434,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/qethconf
 %{_sbindir}/qethqoat
 %{_sbindir}/scsi_logging_level
+%{_sbindir}/sclpdbf
 %{_sbindir}/start_hsnc.sh
 %{_sbindir}/tape390_crypt
 %{_sbindir}/tape390_display
@@ -821,6 +826,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Tue Oct 05 2021 Dan Horák <dan[at]danny.cz> - 2:2.18.0-1
+- rebased to 2.18.0
+
 * Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 2:2.17.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
 

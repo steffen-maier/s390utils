@@ -8,8 +8,8 @@ diff -up s390-tools-2.9.0/zipl/src/Makefile.blscfg-rpm-nvr-sort s390-tools-2.9.0
 -libs = $(rootdir)/libutil/libutil.a
 +libs = $(rootdir)/libutil/libutil.a -lrpmio -lrpm
  
- objects = misc.o error.o scan.o job.o boot.o bootmap.o disk.o \
- 	  install.o zipl.o $(rootdir)/zipl/boot/data.o
+ objects = misc.o error.o scan.o job.o boot.o bootmap.o fs-map.o disk.o \
+ 	  bootmap_header.o envblk.o install.o zipl.o $(rootdir)/zipl/boot/data.o
 diff -up s390-tools-2.9.0/zipl/src/scan.c.blscfg-rpm-nvr-sort s390-tools-2.9.0/zipl/src/scan.c
 --- s390-tools-2.9.0/zipl/src/scan.c.blscfg-rpm-nvr-sort	2019-05-21 09:13:36.000000000 -0400
 +++ s390-tools-2.9.0/zipl/src/scan.c	2019-05-22 08:16:17.317273801 -0400
