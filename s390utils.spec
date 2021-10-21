@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.18.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -180,6 +180,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_sbindir}/dasdinfo
 %{_sbindir}/fdasd
 %{_sbindir}/lszdev
+%{_sbindir}/vmcp
 %{_sbindir}/zipl
 %{_sbindir}/zipl-editenv
 %dir /lib/s390-tools
@@ -201,6 +202,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man8/dasdinfo.8*
 %{_mandir}/man8/fdasd.8*
 %{_mandir}/man8/lszdev.8*
+%{_mandir}/man8/vmcp.8*
 %{_mandir}/man8/zipl.8*
 %{_mandir}/man8/zipl-editenv.8*
 
@@ -440,7 +442,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/tape390_display
 %{_sbindir}/ttyrun
 %{_sbindir}/tunedasd
-%{_sbindir}/vmcp
 %{_sbindir}/vmur
 %{_sbindir}/xcec-bridge
 %{_sbindir}/zcryptctl
@@ -513,7 +514,6 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/tape390_display.8*
 %{_mandir}/man8/ttyrun.8*
 %{_mandir}/man8/tunedasd.8*
-%{_mandir}/man8/vmcp.8*
 %{_mandir}/man8/vmur.8*
 %{_mandir}/man8/zcryptctl.8*
 %{_mandir}/man8/zcryptstats.8*
@@ -826,6 +826,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Wed Oct 20 2021 Dan Horák <dan[at]danny.cz> - 2:2.18.0-2
+- move vmcp to core (#1931287)
+
 * Tue Oct 05 2021 Dan Horák <dan[at]danny.cz> - 2:2.18.0-1
 - rebased to 2.18.0
 
