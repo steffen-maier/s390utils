@@ -5,8 +5,8 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.18.0
-Release:        2%{?dist}
+Version:        2.19.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -65,9 +65,12 @@ find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
 
 %build
 make \
-        CFLAGS="%{build_cflags}" CXXFLAGS="%{build_cflags}" LDFLAGS="%{build_ldflags}" \
+        CFLAGS="%{build_cflags}" CXXFLAGS="%{build_cxxflags}" LDFLAGS="%{build_ldflags}" \
+        HAVE_DRACUT=1 \
+        ENABLE_DOC=1 \
         NO_PIE_LDFLAGS="" \
         BINDIR=/usr/sbin \
+        UDEVRUNDIR=/run/udev \
         DISTRELEASE=%{release} \
         V=1
 
@@ -75,9 +78,11 @@ make \
 %install
 make install \
         HAVE_DRACUT=1 \
+        ENABLE_DOC=1 \
         DESTDIR=%{buildroot} \
         BINDIR=/usr/sbin \
         SYSTEMDSYSTEMUNITDIR=%{_unitdir} \
+        UDEVRUNDIR=/run/udev \
         DISTRELEASE=%{release} \
         V=1
 
@@ -727,6 +732,7 @@ fi
 Summary:        CMS file system based on FUSE
 BuildRequires:  fuse-devel
 Requires:       fuse
+Requires:       glibc-gconv-extra
 Obsoletes:      %{name}-cmsfs < 2:2.7.0-3
 
 %description cmsfs-fuse
@@ -807,6 +813,45 @@ getent group cpacfstats >/dev/null || groupadd -r cpacfstats
 %{_unitdir}/cpacfstatsd.service
 
 #
+# *********************** chreipl-fcp-mpath package  ***********************
+#
+%package chreipl-fcp-mpath
+Summary:          Use multipath information for re-IPL path failover
+BuildRequires:    make
+BuildRequires:    bash
+BuildRequires:    coreutils
+BuildRequires:    pandoc
+BuildRequires:    gawk
+BuildRequires:    gzip
+BuildRequires:    sed
+Requires:         bash
+Requires:         coreutils
+Requires:         util-linux
+Requires:         systemd-udev
+Requires:         device-mapper-multipath
+Requires:         dracut
+
+%description chreipl-fcp-mpath
+The chreipl-fcp-mpath toolset monitors udev events about paths to the re-IPL
+volume. If the currently configured FCP re-IPL path becomes unavailable, the
+toolset checks for operational paths to the same volume. If available, it
+reconfigures the FCP re-IPL settings to use an operational path.
+
+%files chreipl-fcp-mpath
+%doc chreipl-fcp-mpath/README.md
+%doc chreipl-fcp-mpath/README.html
+%dir %{_prefix}/lib/chreipl-fcp-mpath/
+%{_prefix}/lib/chreipl-fcp-mpath/*
+%{_prefix}/lib/dracut/dracut.conf.d/70-chreipl-fcp-mpath.conf
+%{_prefix}/lib/udev/chreipl-fcp-mpath-is-ipl-tgt
+%{_prefix}/lib/udev/chreipl-fcp-mpath-is-ipl-vol
+%{_prefix}/lib/udev/chreipl-fcp-mpath-is-reipl-zfcp
+%{_prefix}/lib/udev/chreipl-fcp-mpath-record-volume-identifier
+%{_prefix}/lib/udev/chreipl-fcp-mpath-try-change-ipl-path
+%{_udevrulesdir}/70-chreipl-fcp-mpath.rules
+%{_mandir}/man7/chreipl-fcp-mpath.7*
+
+#
 # *********************** devel package  ***********************
 #
 %package devel
@@ -826,6 +871,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Nov 12 2021 Dan Horák <dan[at]danny.cz> - 2:2.19.0-1
+- rebased to 2.19.0
+- cmsfs-fuse Requires glibc-gconv-extra (#2022652)
+
 * Wed Oct 20 2021 Dan Horák <dan[at]danny.cz> - 2:2.18.0-2
 - move vmcp to core (#1931287)
 
