@@ -146,6 +146,10 @@ install -p -m 644 %{SOURCE17} %{buildroot}%{_udevrulesdir}/81-ccw.rules
 # zipl.conf to be ghosted
 touch %{buildroot}%{_sysconfdir}/zipl.conf
 
+# fixups
+# https://bugzilla.redhat.com/show_bug.cgi?id=2024102
+chmod 755 %{buildroot}/lib/s390-tools/cpictl
+
 
 %files
 %doc README.md
