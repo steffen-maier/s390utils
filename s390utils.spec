@@ -6,7 +6,7 @@
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
 Version:        2.19.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -875,6 +875,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Nov 26 2021 Dan Horák <dan[at]danny.cz> - 2:2.19.0-2
+- update ccw udev rules
+
 * Fri Nov 12 2021 Dan Horák <dan[at]danny.cz> - 2:2.19.0-1
 - rebased to 2.19.0
 - cmsfs-fuse Requires glibc-gconv-extra (#2022652)
