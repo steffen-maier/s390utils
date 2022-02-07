@@ -3,10 +3,14 @@
 %global signzipl 1
 %endif
 
+%if 0%{?fedora}
+%global with_pandoc 1
+%endif
+
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.19.0
-Release:        3%{?dist}
+Version:        2.20.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -59,6 +63,9 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %patch0 -p1 -b .zipl-invert-script-options
 %patch1 -p1 -b .blscfg-rpm-nvr-sort
 
+# drop -Werror from genprotimg to allow building with GCC 12
+sed -i.bak -e 's/-Werror//g' genprotimg/src/Makefile genprotimg/boot/Makefile
+
 # remove --strip from install
 find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
 
@@ -67,7 +74,9 @@ find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
 make \
         CFLAGS="%{build_cflags}" CXXFLAGS="%{build_cxxflags}" LDFLAGS="%{build_ldflags}" \
         HAVE_DRACUT=1 \
+%if 0%{?with_pandoc}
         ENABLE_DOC=1 \
+%endif
         NO_PIE_LDFLAGS="" \
         BINDIR=/usr/sbin \
         UDEVRUNDIR=/run/udev \
@@ -78,7 +87,9 @@ make \
 %install
 make install \
         HAVE_DRACUT=1 \
+%if 0%{?with_pandoc}
         ENABLE_DOC=1 \
+%endif
         DESTDIR=%{buildroot} \
         BINDIR=/usr/sbin \
         SYSTEMDSYSTEMUNITDIR=%{_unitdir} \
@@ -734,8 +745,8 @@ fi
 #
 %package cmsfs-fuse
 Summary:        CMS file system based on FUSE
-BuildRequires:  fuse-devel
-Requires:       fuse
+BuildRequires:  fuse3-devel
+Requires:       fuse3
 Requires:       glibc-gconv-extra
 Obsoletes:      %{name}-cmsfs < 2:2.7.0-3
 
@@ -753,9 +764,9 @@ This package contains the CMS file system based on FUSE.
 #
 %package zdsfs
 Summary:        z/OS data set access based on FUSE
-BuildRequires:  fuse-devel
+BuildRequires:  fuse3-devel
 BuildRequires:  libcurl-devel
-Requires:       fuse
+Requires:       fuse3
 
 %description zdsfs
 This package contains the z/OS data set access based on FUSE.
@@ -769,8 +780,8 @@ This package contains the z/OS data set access based on FUSE.
 #
 %package hmcdrvfs
 Summary:       HMC drive file system based on FUSE
-BuildRequires: fuse-devel
-Requires:      fuse
+BuildRequires: fuse3-devel
+Requires:      fuse3
 
 %description hmcdrvfs
 This package contains a HMC drive file system based on FUSE and a tool
@@ -824,7 +835,9 @@ Summary:          Use multipath information for re-IPL path failover
 BuildRequires:    make
 BuildRequires:    bash
 BuildRequires:    coreutils
+%if 0%{?with_pandoc}
 BuildRequires:    pandoc
+%endif
 BuildRequires:    gawk
 BuildRequires:    gzip
 BuildRequires:    sed
@@ -843,7 +856,9 @@ reconfigures the FCP re-IPL settings to use an operational path.
 
 %files chreipl-fcp-mpath
 %doc chreipl-fcp-mpath/README.md
+%if 0%{?with_pandoc}
 %doc chreipl-fcp-mpath/README.html
+%endif
 %dir %{_prefix}/lib/chreipl-fcp-mpath/
 %{_prefix}/lib/chreipl-fcp-mpath/*
 %{_prefix}/lib/dracut/dracut.conf.d/70-chreipl-fcp-mpath.conf
@@ -853,7 +868,9 @@ reconfigures the FCP re-IPL settings to use an operational path.
 %{_prefix}/lib/udev/chreipl-fcp-mpath-record-volume-identifier
 %{_prefix}/lib/udev/chreipl-fcp-mpath-try-change-ipl-path
 %{_udevrulesdir}/70-chreipl-fcp-mpath.rules
+%if 0%{?with_pandoc}
 %{_mandir}/man7/chreipl-fcp-mpath.7*
+%endif
 
 #
 # *********************** devel package  ***********************
@@ -875,6 +892,10 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Feb 07 2022 Dan Horák <dan[at]danny.cz> - 2:2.20.0-1
+- rebased to 2.20.0
+- switch to fuse3
+
 * Sat Jan 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 2:2.19.0-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
