@@ -864,9 +864,7 @@ reconfigures the FCP re-IPL settings to use an operational path.
 %{_prefix}/lib/udev/chreipl-fcp-mpath-record-volume-identifier
 %{_prefix}/lib/udev/chreipl-fcp-mpath-try-change-ipl-path
 %{_udevrulesdir}/70-chreipl-fcp-mpath.rules
-%if 0%{?with_pandoc}
 %{_mandir}/man7/chreipl-fcp-mpath.7*
-%endif
 
 #
 # *********************** devel package  ***********************
