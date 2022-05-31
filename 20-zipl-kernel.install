@@ -88,12 +88,6 @@ case "$COMMAND" in
                 done
             fi
 
-            if ! [[ ${BOOT_OPTIONS[*]} ]]; then
-                echo "Could not determine the kernel command line parameters." >&2
-                echo "Please specify the kernel command line in /etc/kernel/cmdline!" >&2
-                exit 1
-            fi
-
             [[ -d "$BLS_DIR" ]] || mkdir -m 0700 -p "$BLS_DIR"
             BLS_TARGET="${BLS_DIR}/${MACHINE_ID}-${KERNEL_VERSION}.conf"
             if [[ -f "${KERNEL_DIR}/bls.conf" ]]; then
