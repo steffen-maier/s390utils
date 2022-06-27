@@ -61,10 +61,10 @@ index 871935c783f..d8d5eca5867 100755
  	    ;;
  	--)
  	    shift
-diff --git a/scripts/zipl-switch-to-blscfg.1 b/scripts/zipl-switch-to-blscfg.1
+diff --git a/scripts/zipl-switch-to-blscfg.8 b/scripts/zipl-switch-to-blscfg.8
 index 6bd14d00d14..71b904ffd1c 100644
---- a/scripts/zipl-switch-to-blscfg.1
-+++ b/scripts/zipl-switch-to-blscfg.1
+--- a/scripts/zipl-switch-to-blscfg.8
++++ b/scripts/zipl-switch-to-blscfg.8
 @@ -37,9 +37,9 @@ The DIRECTORY where the BLS fragments will be generated. The directory is create
  The FILE used for zipl configuration file, defaults to /etc/zipl.conf.
  

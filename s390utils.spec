@@ -9,8 +9,8 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.21.0
-Release:        2%{?dist}
+Version:        2.22.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -207,6 +207,7 @@ This package provides minimal set of tools needed to system to boot.
 /lib/s390-tools/zdev-root-update
 /lib/s390-tools/zipl.conf
 %ghost %config(noreplace) %{_sysconfdir}/zipl.conf
+%config(noreplace) %{_sysconfdir}/ziplenv
 %{_unitdir}/cpi.service
 %config(noreplace) %{_sysconfdir}/sysconfig/cpi
 /usr/lib/dracut/modules.d/95zdev/
@@ -448,6 +449,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_sbindir}/lstape
 %{_sbindir}/lszcrypt
 %{_sbindir}/lszfcp
+%{_sbindir}/pai
 %{_sbindir}/qetharp
 %{_sbindir}/qethconf
 %{_sbindir}/qethqoat
@@ -470,12 +472,16 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_bindir}/dump2tar
 %{_bindir}/genprotimg
 %{_bindir}/mk-s390image
+%{_bindir}/pvattest
+%{_bindir}/pvextract-hdr
 %{_bindir}/vmconvert
 %{_bindir}/zkey
 %{_bindir}/zkey-cryptsetup
 %{_unitdir}/dumpconf.service
 %ghost %config(noreplace) %{_sysconfdir}/zipl.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/dumpconf
+%{_sysconfdir}/mdevctl.d/*
+/usr/lib/dracut/modules.d/99ngdump/
 /lib/s390-tools/dumpconf
 /lib/s390-tools/lsznet.raw
 %dir /lib/s390-tools/zfcpdump
@@ -486,13 +492,13 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %dir %{_libdir}/zkey
 %{_libdir}/zkey/zkey-ekmfweb.so
 %{_libdir}/zkey/zkey-kmip.so
-%{_mandir}/man1/dbginfo.sh.1*
 %{_mandir}/man1/dump2tar.1*
-%{_mandir}/man1/lscpumf.1*
-%{_mandir}/man1/lshwc.1*
+%{_mandir}/man1/genprotimg.1*
+%{_mandir}/man1/pvattest.1*
+%{_mandir}/man1/pvattest-create.1*
+%{_mandir}/man1/pvattest-perform.1*
+%{_mandir}/man1/pvattest-verify.1*
 %{_mandir}/man1/vmconvert.1*
-%{_mandir}/man1/zfcpdbf.1*
-%{_mandir}/man1/zipl-switch-to-blscfg.1*
 %{_mandir}/man1/zkey.1*
 %{_mandir}/man1/zkey-cryptsetup.1*
 %{_mandir}/man1/zkey-ekmfweb.1*
@@ -506,14 +512,16 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/chzcrypt.8*
 %{_mandir}/man8/dasdstat.8*
 %{_mandir}/man8/dasdview.8*
+%{_mandir}/man8/dbginfo.sh.8*
 %{_mandir}/man8/dumpconf.8*
-%{_mandir}/man8/genprotimg.8.*
 %{_mandir}/man8/hsavmcore.8*
 %{_mandir}/man8/hsci.8*
 %{_mandir}/man8/hyptop.8*
 %{_mandir}/man8/lschp.8*
+%{_mandir}/man8/lscpumf.8*
 %{_mandir}/man8/lscss.8*
 %{_mandir}/man8/lsdasd.8*
+%{_mandir}/man8/lshwc.8*
 %{_mandir}/man8/lsluns.8*
 %{_mandir}/man8/lsqeth.8*
 %{_mandir}/man8/lsreipl.8*
@@ -523,6 +531,7 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/lstape.8*
 %{_mandir}/man8/lszcrypt.8*
 %{_mandir}/man8/lszfcp.8*
+%{_mandir}/man8/pai.8*
 %{_mandir}/man8/qetharp.8*
 %{_mandir}/man8/qethconf.8*
 %{_mandir}/man8/qethqoat.8*
@@ -533,7 +542,9 @@ getent group zkeyadm > /dev/null || groupadd -r zkeyadm
 %{_mandir}/man8/vmur.8*
 %{_mandir}/man8/zcryptctl.8*
 %{_mandir}/man8/zcryptstats.8*
+%{_mandir}/man8/zfcpdbf.8*
 %{_mandir}/man8/zgetdump.8*
+%{_mandir}/man8/zipl-switch-to-blscfg.8*
 %{_mandir}/man8/znetconf.8*
 %{_mandir}/man8/zpcictl.8*
 %dir %{_datadir}/s390-tools
@@ -886,6 +897,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Mon Jun 20 2022 Dan Horák <dan[at]danny.cz> - 2:2.22.0-1
+- rebased to 2.22.0
+
 * Tue May 31 2022 Dan Horák <dan[at]danny.cz> - 2:2.21.0-2
 - do not fail on emtpy /proc/cmdline when installing kernel (#1899759)
 
