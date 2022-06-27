@@ -272,6 +272,7 @@ BuildRequires:  json-c-devel
 BuildRequires:  rpm-devel
 BuildRequires:  glib2-devel
 BuildRequires:  libxml2-devel
+BuildRequires:  liblockfile-devel
 
 
 %description base
