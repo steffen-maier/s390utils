@@ -9,8 +9,8 @@
 
 Name:           s390utils
 Summary:        Utilities and daemons for IBM z Systems
-Version:        2.22.0
-Release:        2%{?dist}
+Version:        2.23.0
+Release:        1%{?dist}
 Epoch:          2
 License:        MIT
 ExclusiveArch:  s390 s390x
@@ -79,7 +79,6 @@ make \
 %endif
         NO_PIE_LDFLAGS="" \
         BINDIR=/usr/sbin \
-        UDEVRUNDIR=/run/udev \
         DISTRELEASE=%{release} \
         V=1
 
@@ -93,7 +92,6 @@ make install \
         DESTDIR=%{buildroot} \
         BINDIR=/usr/sbin \
         SYSTEMDSYSTEMUNITDIR=%{_unitdir} \
-        UDEVRUNDIR=/run/udev \
         DISTRELEASE=%{release} \
         V=1
 
@@ -811,6 +809,7 @@ Requires(preun): systemd
 Requires(postun): systemd
 Requires(pre): shadow-utils
 BuildRequires: systemd
+BuildRequires: systemd-devel
 
 %description cpacfstatsd
 The cpacfstats tools provide a client/server application set to monitor
@@ -898,6 +897,9 @@ User-space development files for the s390/s390x architecture.
 
 
 %changelog
+* Fri Aug 19 2022 Dan Horák <dan[at]danny.cz> - 2:2.23.0-1
+- rebased to 2.23.0
+
 * Sat Jul 23 2022 Fedora Release Engineering <releng@fedoraproject.org> - 2:2.22.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
