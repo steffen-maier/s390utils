@@ -1,4 +1,4 @@
-From 14119148dabb7f4f633623c00eece44c5771db10 Mon Sep 17 00:00:00 2001
+From a17c57bf2b7b6d64a509cb5fb02fe46849bc550c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Mon, 20 Jun 2022 17:43:05 +0200
 Subject: [PATCH 1/2] Revert "zipl/src: Implement sorting bls entries by
@@ -194,10 +194,10 @@ index 0cea1d4..9352f76 100644
  		return n;
  
 -- 
-2.36.1
+2.37.3
 
 
-From 661f143bb0b429c732d0ad9756c745dcb8799bc7 Mon Sep 17 00:00:00 2001
+From 7a51cfc15b870d90bffe1e24a1da922663ffe1d7 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Mon, 20 Jun 2022 17:46:59 +0200
 Subject: [PATCH 2/2] blscfg: sort like rpm nvr, not like a single version
@@ -208,20 +208,19 @@ Content-Transfer-Encoding: 8bit
 Signed-off-by: Peter Jones <pjones@redhat.com>
 Signed-off-by: Dan Horák <dan@danny.cz>
 ---
- zipl/src/Makefile |  2 +-
+ zipl/src/Makefile |  1 +
  zipl/src/scan.c   | 96 ++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 95 insertions(+), 3 deletions(-)
+ 2 files changed, 95 insertions(+), 2 deletions(-)
 
 diff --git a/zipl/src/Makefile b/zipl/src/Makefile
-index 786bb7f..1adc486 100644
+index 64eabe4..7043005 100644
 --- a/zipl/src/Makefile
 +++ b/zipl/src/Makefile
-@@ -7,7 +7,7 @@ ALL_CPPFLAGS += -I../include -I../boot \
- 	    -D_FILE_OFFSET_BITS=64 $(NO_PIE_CFLAGS)
- ALL_LDFLAGS += -Wl,-z,noexecstack $(NO_PIE_LDFLAGS)
+@@ -9,6 +9,7 @@ ALL_LDFLAGS += -Wl,-z,noexecstack $(NO_PIE_LDFLAGS)
  
--libs = $(rootdir)/libutil/libutil.a
-+libs = $(rootdir)/libutil/libutil.a -lrpmio -lrpm
+ libs =  $(rootdir)/libutil/libutil.a \
+ 	$(rootdir)/libvtoc/libvtoc.a \
++	-lrpmio -lrpm
  
  objects = misc.o error.o scan.o job.o boot.o bootmap.o fs-map.o disk.o \
  	  bootmap_header.o envblk.o install.o zipl.o $(rootdir)/zipl/boot/data.o
@@ -345,5 +344,5 @@ index 9352f76..3327e2d 100644
  static int
  scan_append_section_heading(struct scan_token* scan, int* index, char* name);
 -- 
-2.36.1
+2.37.3
 
