@@ -76,16 +76,24 @@ case "$COMMAND" in
 
         if [[ ! -f /sbin/new-kernel-pkg || -d "${BLS_DIR}" ]]; then
             declare -a BOOT_OPTIONS
+            if [[ ! -f /etc/kernel/cmdline ]]; then
+                last=''
+                for entry in "${BLS_DIR}"/*.conf; do
+                    last="$entry"
+                done
+                if [[ ! -z "$last" ]]; then
+                    args="$(awk '/options/{$1="";$0=$0;$1=$1;print}' $last)"
+                    echo "$args" > /etc/kernel/cmdline
+                fi
+            fi
             if [[ -f /etc/kernel/cmdline ]]; then
                 read -r -d '' -a BOOT_OPTIONS < /etc/kernel/cmdline
             fi
 
             if ! [[ ${BOOT_OPTIONS[*]} ]]; then
-                read -r -d '' -a line < /proc/cmdline
-                for i in "${line[@]}"; do
-                    [[ "${i#initrd=*}" != "$i" || "${i#BOOT_IMAGE=*}" != "$i" ]] && continue
-                    BOOT_OPTIONS+=("$i")
-                done
+                echo "Could not determine the kernel command line parameters." >&2
+                echo "Please specify the kernel command line in /etc/kernel/cmdline!" >&2
+                exit 1
             fi
 
             [[ -d "$BLS_DIR" ]] || mkdir -m 0700 -p "$BLS_DIR"
