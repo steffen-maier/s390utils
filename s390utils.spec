@@ -35,6 +35,8 @@ Source21:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/
 Source23:       20-zipl-kernel.install
 Source24:       52-zipl-rescue.install
 Source25:       91-zipl.install
+Source26:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/zfcpconfmigrate.sh
+
 
 %if %{with signzipl}
 %define pesign_name redhatsecureboot302
@@ -157,6 +159,7 @@ mv %{buildroot}%{_datadir}/s390-tools/netboot/mk-s390image %{buildroot}%{_bindir
 mkdir -p %{buildroot}{/boot,%{_udevrulesdir},%{_sysconfdir}/{profile.d,sysconfig},%{_prefix}/lib/modules-load.d}
 install -p -m 644 zipl/boot/tape0.bin %{buildroot}/boot/tape0
 install -p -m 755 %{SOURCE5} %{buildroot}%{_sbindir}
+install -p -m 755 %{SOURCE26} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE13} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE21} %{buildroot}%{_sbindir}
 install -p -m 644 %{SOURCE7} %{buildroot}%{_udevrulesdir}/56-zfcp.rules
@@ -272,6 +275,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_sbindir}/dasdconf.sh
 %{_sbindir}/normalize_dasd_arg
 %{_sbindir}/zfcpconf.sh
+%{_sbindir}/zfcpconfmigrate.sh
 %{_sbindir}/device_cio_free
 %{_sbindir}/dasd_cio_free
 %{_sbindir}/zfcp_cio_free
