@@ -1,4 +1,4 @@
-From a17c57bf2b7b6d64a509cb5fb02fe46849bc550c Mon Sep 17 00:00:00 2001
+From b2daaa34776ba6afec879e362378f6f7563590a6 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
 Date: Mon, 20 Jun 2022 17:43:05 +0200
 Subject: [PATCH 1/2] Revert "zipl/src: Implement sorting bls entries by
@@ -194,10 +194,10 @@ index 0cea1d4..9352f76 100644
  		return n;
  
 -- 
-2.37.3
+2.39.2
 
 
-From 7a51cfc15b870d90bffe1e24a1da922663ffe1d7 Mon Sep 17 00:00:00 2001
+From 692e70bcfc32a05e30146bd7077c41e0eaceff03 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Mon, 20 Jun 2022 17:46:59 +0200
 Subject: [PATCH 2/2] blscfg: sort like rpm nvr, not like a single version
@@ -213,7 +213,7 @@ Signed-off-by: Dan Horák <dan@danny.cz>
  2 files changed, 95 insertions(+), 2 deletions(-)
 
 diff --git a/zipl/src/Makefile b/zipl/src/Makefile
-index 64eabe4..7043005 100644
+index cab5655..7ec215d 100644
 --- a/zipl/src/Makefile
 +++ b/zipl/src/Makefile
 @@ -9,6 +9,7 @@ ALL_LDFLAGS += -Wl,-z,noexecstack $(NO_PIE_LDFLAGS)
@@ -223,7 +223,7 @@ index 64eabe4..7043005 100644
 +	-lrpmio -lrpm
  
  objects = misc.o error.o scan.o job.o boot.o bootmap.o fs-map.o disk.o \
- 	  bootmap_header.o envblk.o install.o zipl.o $(rootdir)/zipl/boot/data.o
+ 	  bootmap_header.o envblk.o install.o zipl.o
 diff --git a/zipl/src/scan.c b/zipl/src/scan.c
 index 9352f76..3327e2d 100644
 --- a/zipl/src/scan.c
@@ -344,5 +344,5 @@ index 9352f76..3327e2d 100644
  static int
  scan_append_section_heading(struct scan_token* scan, int* index, char* name);
 -- 
-2.37.3
+2.39.2
 
