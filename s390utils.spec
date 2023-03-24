@@ -23,8 +23,6 @@ License:        MIT AND LGPL-2.1-or-later
 ExclusiveArch:  s390 s390x
 URL:            https://github.com/ibm-s390-linux/s390-tools
 Source0:        https://github.com/ibm-s390-linux/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
-Source12:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/dasd.udev
-Source13:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/dasdconf.sh
 Source14:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/device_cio_free
 Source15:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/device_cio_free.service
 Source16:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/ccw_init
@@ -161,11 +159,7 @@ install -p -m 644 zipl/boot/tape0.bin %{buildroot}/boot/tape0
 install -p -m 755 %{SOURCE26} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE27} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE28} %{buildroot}%{_sbindir}
-install -p -m 755 %{SOURCE13} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE21} %{buildroot}%{_sbindir}
-install -p -m 644 %{SOURCE12} %{buildroot}%{_udevrulesdir}/56-dasd.rules
-
-touch %{buildroot}%{_sysconfdir}/{dasd.conf}
 
 # upstream udev rules
 install -Dp -m 644 etc/udev/rules.d/*.rules %{buildroot}%{_udevrulesdir}
@@ -270,8 +264,6 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man8/zipl-editenv.8*
 
 # Additional Fedora/RHEL specific stuff
-%ghost %config(noreplace) %{_sysconfdir}/dasd.conf
-%{_sbindir}/dasdconf.sh
 %{_sbindir}/normalize_dasd_arg
 %{_sbindir}/dasdconfmigrate.sh
 %{_sbindir}/zfcpconfmigrate.sh
@@ -283,7 +275,6 @@ This package provides minimal set of tools needed to system to boot.
 %{_unitdir}/device_cio_free.service
 /usr/lib/udev/ccw_init
 %{_udevrulesdir}/40-z90crypt.rules
-%{_udevrulesdir}/56-dasd.rules
 %{_udevrulesdir}/59-dasd.rules
 %{_udevrulesdir}/60-readahead.rules
 %{_udevrulesdir}/81-ccw.rules
