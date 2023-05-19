@@ -38,7 +38,7 @@ Patch0:         s390-tools-zipl-invert-script-options.patch
 Patch1:         s390-tools-zipl-blscfg-rpm-nvr-sort.patch
 
 # upstream fixes/updates
-Patch100:       s390utils-%%{version}-fedora.patch
+Patch100:       s390utils-%{version}-fedora.patch
 
 Requires:       s390utils-core = %{epoch}:%{version}-%{release}
 Requires:       s390utils-base = %{epoch}:%{version}-%{release}
