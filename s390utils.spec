@@ -63,11 +63,11 @@ be used together with the zSeries (s390) Linux kernel and device drivers.
 %setup -q -n s390-tools-%{version}
 
 # Fedora/RHEL changes
-%patch0 -p1 -b .zipl-invert-script-options
-%patch1 -p1 -b .blscfg-rpm-nvr-sort
+%patch 0 -p1 -b .zipl-invert-script-options
+%patch 1 -p1 -b .blscfg-rpm-nvr-sort
 
 # upstream fixes/updates
-%patch100 -p1
+%patch 100 -p1
 
 # remove --strip from install
 find . -name Makefile | xargs sed -i 's/$(INSTALL) -s/$(INSTALL)/g'
