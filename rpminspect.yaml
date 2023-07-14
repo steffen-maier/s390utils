@@ -1,0 +1,8 @@
+---
+pathmigration:
+    excluded_paths:
+        - /lib/s390-tools
+
+badfuncs:
+    ignore:
+        - /usr/sbin/qethqoat
