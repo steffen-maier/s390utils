@@ -25,8 +25,6 @@ URL:            https://github.com/ibm-s390-linux/s390-tools
 Source0:        https://github.com/ibm-s390-linux/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
 Source14:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/device_cio_free
 Source15:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/device_cio_free.service
-Source16:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/ccw_init
-Source17:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/ccw.udev
 Source21:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/normalize_dasd_arg
 Source23:       20-zipl-kernel.install
 Source24:       52-zipl-rescue.install
@@ -189,10 +187,6 @@ done
 popd
 install -p -m 644 %{SOURCE15} %{buildroot}%{_unitdir}
 
-# ccw
-install -p -m 755 %{SOURCE16} %{buildroot}/usr/lib/udev/ccw_init
-install -p -m 644 %{SOURCE17} %{buildroot}%{_udevrulesdir}/81-ccw.rules
-
 # zipl.conf to be ghosted
 touch %{buildroot}%{_sysconfdir}/zipl.conf
 
@@ -273,11 +267,9 @@ This package provides minimal set of tools needed to system to boot.
 %{_sbindir}/zfcp_cio_free
 %{_sbindir}/znet_cio_free
 %{_unitdir}/device_cio_free.service
-/usr/lib/udev/ccw_init
 %{_udevrulesdir}/40-z90crypt.rules
 %{_udevrulesdir}/59-dasd.rules
 %{_udevrulesdir}/60-readahead.rules
-%{_udevrulesdir}/81-ccw.rules
 %{_udevrulesdir}/81-dpm.rules
 %{_udevrulesdir}/90-cpi.rules
 %{_sysconfdir}/kernel/install.d/20-grubby.install
