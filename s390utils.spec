@@ -37,6 +37,7 @@ Source24:       52-zipl-rescue.install
 Source25:       91-zipl.install
 Source26:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/zfcpconfmigrate.sh
 Source27:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/dasdconfmigrate.sh
+Source28:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/znetconfmigrate.sh
 
 
 %if %{with signzipl}
@@ -162,6 +163,7 @@ install -p -m 644 zipl/boot/tape0.bin %{buildroot}/boot/tape0
 install -p -m 755 %{SOURCE5} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE26} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE27} %{buildroot}%{_sbindir}
+install -p -m 755 %{SOURCE28} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE13} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE21} %{buildroot}%{_sbindir}
 install -p -m 644 %{SOURCE7} %{buildroot}%{_udevrulesdir}/56-zfcp.rules
@@ -279,6 +281,7 @@ This package provides minimal set of tools needed to system to boot.
 %{_sbindir}/dasdconfmigrate.sh
 %{_sbindir}/zfcpconf.sh
 %{_sbindir}/zfcpconfmigrate.sh
+%{_sbindir}/znetconfmigrate.sh
 %{_sbindir}/device_cio_free
 %{_sbindir}/dasd_cio_free
 %{_sbindir}/zfcp_cio_free
