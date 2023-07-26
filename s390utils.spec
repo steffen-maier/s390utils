@@ -25,7 +25,6 @@ URL:            https://github.com/ibm-s390-linux/s390-tools
 Source0:        https://github.com/ibm-s390-linux/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
 Source14:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/device_cio_free
 Source15:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/device_cio_free.service
-Source21:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/normalize_dasd_arg
 Source23:       20-zipl-kernel.install
 Source24:       52-zipl-rescue.install
 Source25:       91-zipl.install
@@ -157,7 +156,6 @@ install -p -m 644 zipl/boot/tape0.bin %{buildroot}/boot/tape0
 install -p -m 755 %{SOURCE26} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE27} %{buildroot}%{_sbindir}
 install -p -m 755 %{SOURCE28} %{buildroot}%{_sbindir}
-install -p -m 755 %{SOURCE21} %{buildroot}%{_sbindir}
 
 # upstream udev rules
 install -Dp -m 644 etc/udev/rules.d/*.rules %{buildroot}%{_udevrulesdir}
@@ -258,7 +256,6 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man8/zipl-editenv.8*
 
 # Additional Fedora/RHEL specific stuff
-%{_sbindir}/normalize_dasd_arg
 %{_sbindir}/dasdconfmigrate.sh
 %{_sbindir}/zfcpconfmigrate.sh
 %{_sbindir}/znetconfmigrate.sh
