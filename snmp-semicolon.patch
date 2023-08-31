@@ -1,0 +1,12 @@
+diff -ruNp a/osasnmpd/ibmOSAMib.h b/osasnmpd/ibmOSAMib.h
+--- a/osasnmpd/ibmOSAMib.h	2023-08-30 20:13:41.231150334 +0200
++++ b/osasnmpd/ibmOSAMib.h	2023-08-30 20:13:27.414030798 +0200
+@@ -16,7 +16,7 @@
+ 
+ /* we may use header_generic and header_simple_table from the util_funcs module */
+ 
+-config_require(util_funcs)
++config_require(util_funcs);
+ 
+ 
+ /* function prototypes */
