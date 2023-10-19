@@ -236,6 +236,9 @@ This package provides minimal set of tools needed to system to boot.
 /lib/s390-tools/stage3.bin
 /lib/s390-tools/zdev_id
 /lib/s390-tools/zdev-root-update
+/lib/s390-tools/zdev-to-dasd_mod.dasd
+/lib/s390-tools/zdev-from-dasd_mod.dasd
+/lib/s390-tools/zdev-to-rd.znet
 /lib/s390-tools/zipl.conf
 %ghost %config(noreplace) %{_sysconfdir}/zipl.conf
 %config(noreplace) %{_sysconfdir}/ziplenv
