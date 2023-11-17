@@ -257,6 +257,12 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man8/vmcp.8*
 %{_mandir}/man8/zipl.8*
 %{_mandir}/man8/zipl-editenv.8*
+%{_udevrulesdir}/40-z90crypt.rules
+%{_udevrulesdir}/59-dasd.rules
+%{_udevrulesdir}/60-readahead.rules
+%{_udevrulesdir}/81-dpm.rules
+%{_udevrulesdir}/90-cpi.rules
+%{_prefix}/lib/modules-load.d/s390-pkey.conf
 
 # Additional Fedora/RHEL specific stuff
 %{_sbindir}/dasdconfmigrate.sh
@@ -267,17 +273,11 @@ This package provides minimal set of tools needed to system to boot.
 %{_sbindir}/zfcp_cio_free
 %{_sbindir}/znet_cio_free
 %{_unitdir}/device_cio_free.service
-%{_udevrulesdir}/40-z90crypt.rules
-%{_udevrulesdir}/59-dasd.rules
-%{_udevrulesdir}/60-readahead.rules
-%{_udevrulesdir}/81-dpm.rules
-%{_udevrulesdir}/90-cpi.rules
 %{_sysconfdir}/kernel/install.d/20-grubby.install
 %{_prefix}/lib/kernel/install.d/10-zfcpdump.install
 %{_prefix}/lib/kernel/install.d/20-zipl-kernel.install
 %{_prefix}/lib/kernel/install.d/52-zipl-rescue.install
 %{_prefix}/lib/kernel/install.d/91-zipl.install
-%{_prefix}/lib/modules-load.d/s390-pkey.conf
 
 #
 # *********************** s390-tools base package  ***********************
