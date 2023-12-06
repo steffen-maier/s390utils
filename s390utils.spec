@@ -23,18 +23,15 @@ License:        MIT AND LGPL-2.1-or-later
 ExclusiveArch:  s390 s390x
 URL:            https://github.com/ibm-s390-linux/s390-tools
 Source0:        https://github.com/ibm-s390-linux/s390-tools/archive/v%{version}.tar.gz#/s390-tools-%{version}.tar.gz
-Source5:        https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/zfcpconf.sh
-Source7:        https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/zfcp.udev
-Source12:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/dasd.udev
-Source13:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/dasdconf.sh
 Source14:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/device_cio_free
 Source15:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/device_cio_free.service
-Source16:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/ccw_init
-Source17:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/ccw.udev
-Source21:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/normalize_dasd_arg
 Source23:       20-zipl-kernel.install
 Source24:       52-zipl-rescue.install
 Source25:       91-zipl.install
+Source26:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/zfcpconfmigrate.sh
+Source27:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/dasdconfmigrate.sh
+Source28:       https://fedorapeople.org/cgit/sharkcz/public_git/utils.git/tree/znetconfmigrate.sh
+
 
 %if %{with signzipl}
 %define pesign_name redhatsecureboot302
@@ -156,13 +153,9 @@ mv %{buildroot}%{_datadir}/s390-tools/netboot/mk-s390image %{buildroot}%{_bindir
 
 mkdir -p %{buildroot}{/boot,%{_udevrulesdir},%{_sysconfdir}/{profile.d,sysconfig},%{_prefix}/lib/modules-load.d}
 install -p -m 644 zipl/boot/tape0.bin %{buildroot}/boot/tape0
-install -p -m 755 %{SOURCE5} %{buildroot}%{_sbindir}
-install -p -m 755 %{SOURCE13} %{buildroot}%{_sbindir}
-install -p -m 755 %{SOURCE21} %{buildroot}%{_sbindir}
-install -p -m 644 %{SOURCE7} %{buildroot}%{_udevrulesdir}/56-zfcp.rules
-install -p -m 644 %{SOURCE12} %{buildroot}%{_udevrulesdir}/56-dasd.rules
-
-touch %{buildroot}%{_sysconfdir}/{zfcp.conf,dasd.conf}
+install -p -m 755 %{SOURCE26} %{buildroot}%{_sbindir}
+install -p -m 755 %{SOURCE27} %{buildroot}%{_sbindir}
+install -p -m 755 %{SOURCE28} %{buildroot}%{_sbindir}
 
 # upstream udev rules
 install -Dp -m 644 etc/udev/rules.d/*.rules %{buildroot}%{_udevrulesdir}
@@ -191,10 +184,6 @@ for lnk in dasd zfcp znet; do
 done
 popd
 install -p -m 644 %{SOURCE15} %{buildroot}%{_unitdir}
-
-# ccw
-install -p -m 755 %{SOURCE16} %{buildroot}/usr/lib/udev/ccw_init
-install -p -m 644 %{SOURCE17} %{buildroot}%{_udevrulesdir}/81-ccw.rules
 
 # zipl.conf to be ghosted
 touch %{buildroot}%{_sysconfdir}/zipl.conf
@@ -247,6 +236,9 @@ This package provides minimal set of tools needed to system to boot.
 /lib/s390-tools/stage3.bin
 /lib/s390-tools/zdev_id
 /lib/s390-tools/zdev-root-update
+/lib/s390-tools/zdev-to-dasd_mod.dasd
+/lib/s390-tools/zdev-from-dasd_mod.dasd
+/lib/s390-tools/zdev-to-rd.znet
 /lib/s390-tools/zipl.conf
 %ghost %config(noreplace) %{_sysconfdir}/zipl.conf
 %config(noreplace) %{_sysconfdir}/ziplenv
@@ -265,33 +257,27 @@ This package provides minimal set of tools needed to system to boot.
 %{_mandir}/man8/vmcp.8*
 %{_mandir}/man8/zipl.8*
 %{_mandir}/man8/zipl-editenv.8*
+%{_udevrulesdir}/40-z90crypt.rules
+%{_udevrulesdir}/59-dasd.rules
+%{_udevrulesdir}/60-readahead.rules
+%{_udevrulesdir}/81-dpm.rules
+%{_udevrulesdir}/90-cpi.rules
+%{_prefix}/lib/modules-load.d/s390-pkey.conf
 
 # Additional Fedora/RHEL specific stuff
-%ghost %config(noreplace) %{_sysconfdir}/dasd.conf
-%ghost %config(noreplace) %{_sysconfdir}/zfcp.conf
-%{_sbindir}/dasdconf.sh
-%{_sbindir}/normalize_dasd_arg
-%{_sbindir}/zfcpconf.sh
+%{_sbindir}/dasdconfmigrate.sh
+%{_sbindir}/zfcpconfmigrate.sh
+%{_sbindir}/znetconfmigrate.sh
 %{_sbindir}/device_cio_free
 %{_sbindir}/dasd_cio_free
 %{_sbindir}/zfcp_cio_free
 %{_sbindir}/znet_cio_free
 %{_unitdir}/device_cio_free.service
-/usr/lib/udev/ccw_init
-%{_udevrulesdir}/40-z90crypt.rules
-%{_udevrulesdir}/56-dasd.rules
-%{_udevrulesdir}/56-zfcp.rules
-%{_udevrulesdir}/59-dasd.rules
-%{_udevrulesdir}/60-readahead.rules
-%{_udevrulesdir}/81-ccw.rules
-%{_udevrulesdir}/81-dpm.rules
-%{_udevrulesdir}/90-cpi.rules
 %{_sysconfdir}/kernel/install.d/20-grubby.install
 %{_prefix}/lib/kernel/install.d/10-zfcpdump.install
 %{_prefix}/lib/kernel/install.d/20-zipl-kernel.install
 %{_prefix}/lib/kernel/install.d/52-zipl-rescue.install
 %{_prefix}/lib/kernel/install.d/91-zipl.install
-%{_prefix}/lib/modules-load.d/s390-pkey.conf
 
 #
 # *********************** s390-tools base package  ***********************
